@@ -78,7 +78,8 @@ export const INITIAL_QUESTIONS = [
           lng: 77.2268,
           name: 'Chawri Bazar Gate 3 (Street Food Alley)',
           neighborhood: 'Old Delhi',
-          type: 'food'
+          type: 'food',
+          isCustomPin: true,
         },
         insiderTip: 'Cycle rickshaws from metro to Jama Masjid should be ₹20-₹30 per head max. Never pay ₹100.',
         photos: [

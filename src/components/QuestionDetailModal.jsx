@@ -14,6 +14,7 @@ import {
 import { POPULAR_LANDMARKS } from '../data/tariffs.js';
 import PhotoGallery from './PhotoGallery.jsx';
 import PhotoUploader from './PhotoUploader.jsx';
+import LocationPickerMap from './LocationPickerMap.jsx';
 
 export default function QuestionDetailModal({
   question,
@@ -27,10 +28,21 @@ export default function QuestionDetailModal({
   const [authorName, setAuthorName] = useState('Local Explorer');
   const [authorBadge, setAuthorBadge] = useState('Verified Local');
   const [attachPin, setAttachPin] = useState(true);
+  const [pinMode, setPinMode] = useState('map'); // 'map' (custom pinpoint) | 'landmark' (predefined)
   const [selectedLandmarkId, setSelectedLandmarkId] = useState('moolchand');
   const [customSpotName, setCustomSpotName] = useState('');
   const [insiderTip, setInsiderTip] = useState('');
   const [answerPhotos, setAnswerPhotos] = useState([]);
+
+  // State for interactive pinpointing
+  const [customPinCoords, setCustomPinCoords] = useState({
+    lat: question?.lat || 28.5459,
+    lng: question?.lng || 77.2732,
+    area: question?.locationName || 'South Delhi',
+    nearestLandmark: question?.locationName || 'Okhla Phase 3',
+    description: `Near ${question?.locationName || 'South Delhi'}`,
+    isCustomPin: true,
+  });
 
   if (!question) return null;
 
@@ -40,18 +52,33 @@ export default function QuestionDetailModal({
 
     let pin = null;
     if (attachPin) {
-      const landmark = POPULAR_LANDMARKS.find((l) => l.id === selectedLandmarkId) || POPULAR_LANDMARKS[0];
-      const spotName = customSpotName.trim() || landmark.name;
+      if (pinMode === 'map') {
+        const spotTitle = customSpotName.trim() || customPinCoords.description || 'Secret Local Spot';
+        pin = {
+          name: spotTitle,
+          lat: customPinCoords.lat,
+          lng: customPinCoords.lng,
+          neighborhood: customPinCoords.area || customPinCoords.nearestLandmark || 'Delhi Area',
+          type: 'gem',
+          isCustomPin: true,
+          insiderTip: insiderTip.trim() || null,
+          suggestedBy: authorName || 'Helpful Resident',
+        };
+      } else {
+        const landmark = POPULAR_LANDMARKS.find((l) => l.id === selectedLandmarkId) || POPULAR_LANDMARKS[0];
+        const spotName = customSpotName.trim() || landmark.name;
 
-      pin = {
-        name: spotName,
-        lat: landmark.lat,
-        lng: landmark.lng,
-        neighborhood: landmark.area,
-        type: 'gem',
-        insiderTip: insiderTip.trim() || null,
-        suggestedBy: authorName || 'Helpful Resident',
-      };
+        pin = {
+          name: spotName,
+          lat: landmark.lat,
+          lng: landmark.lng,
+          neighborhood: landmark.area,
+          type: 'gem',
+          isCustomPin: false,
+          insiderTip: insiderTip.trim() || null,
+          suggestedBy: authorName || 'Helpful Resident',
+        };
+      }
     }
 
     onAddAnswer(question.id, {
@@ -235,8 +262,12 @@ export default function QuestionDetailModal({
                         <div>
                           <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
                             <span>{ans.pin.name}</span>
-                            <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded font-bold uppercase">
-                              Pinned Location
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                              ans.pin.isCustomPin
+                                ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              {ans.pin.isCustomPin ? '✨ Custom Pinned Spot' : 'Official Landmark'}
                             </span>
                           </div>
                           <div className="text-[11px] text-stone-500 font-medium">
@@ -329,45 +360,96 @@ export default function QuestionDetailModal({
                 </div>
 
                 {attachPin && (
-                  <div className="pt-2 border-t border-stone-200/80 space-y-2.5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                          Select nearby area / landmark:
-                        </label>
-                        <select
-                          value={selectedLandmarkId}
-                          onChange={(e) => setSelectedLandmarkId(e.target.value)}
-                          className="w-full bg-white border border-[#E8E5DF] rounded-lg p-2 text-xs text-stone-900 font-medium"
-                        >
-                          {POPULAR_LANDMARKS.map((l) => (
-                            <option key={l.id} value={l.id}>
-                              {l.name} ({l.area})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                  <div className="pt-2 border-t border-stone-200/80 space-y-3">
+                    {/* Method Selector Tabs */}
+                    <div className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-xl">
+                      <button
+                        type="button"
+                        onClick={() => setPinMode('map')}
+                        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                          pinMode === 'map'
+                            ? 'bg-white text-[#D9532F] shadow-xs'
+                            : 'text-stone-600 hover:text-stone-900'
+                        }`}
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
+                        <span>📍 Pinpoint on Map (Hidden / Unofficial Spot)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPinMode('landmark')}
+                        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                          pinMode === 'landmark'
+                            ? 'bg-white text-[#D9532F] shadow-xs'
+                            : 'text-stone-600 hover:text-stone-900'
+                        }`}
+                      >
+                        <Compass className="w-3.5 h-3.5 text-stone-500" />
+                        <span>🏛️ Select Registered Landmark</span>
+                      </button>
+                    </div>
 
-                      <div>
-                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                          Specific spot / stall name:
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Moolchand Paratha Corner Gate 2"
-                          value={customSpotName}
-                          onChange={(e) => setCustomSpotName(e.target.value)}
-                          className="w-full bg-white border border-[#E8E5DF] rounded-lg p-2 text-xs text-stone-900"
+                    {pinMode === 'map' ? (
+                      /* Mode A: Interactive Map Pinpoint Picker for unofficial / hidden spots */
+                      <div className="space-y-2">
+                        <LocationPickerMap
+                          initialLat={question?.lat || 28.5459}
+                          initialLng={question?.lng || 77.2732}
+                          spotName={customSpotName}
+                          onSpotNameChange={setCustomSpotName}
+                          onSelectLocation={setCustomPinCoords}
+                          height="220px"
                         />
+                        <div className="text-[11px] text-emerald-800 bg-emerald-50/80 p-2 rounded-lg border border-emerald-200 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>
+                            <strong>Exact Pinpoint Ready:</strong> Even if this spot is an unnamed alley or unlisted street cart, travelers will see your exact pin on the city map!
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      /* Mode B: Predefined Landmark / Metro Dropdown */
+                      <div className="space-y-2.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                              Select nearby area / landmark:
+                            </label>
+                            <select
+                              value={selectedLandmarkId}
+                              onChange={(e) => setSelectedLandmarkId(e.target.value)}
+                              className="w-full bg-white border border-[#E8E5DF] rounded-lg p-2 text-xs text-stone-900 font-medium"
+                            >
+                              {POPULAR_LANDMARKS.map((l) => (
+                                <option key={l.id} value={l.id}>
+                                  {l.name} ({l.area})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
 
-                    <div className="text-[11px] text-stone-500 bg-white p-2 rounded-lg border border-stone-200 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                      <span>
-                        When travelers click your answer, the map will smoothly fly to <strong>{customSpotName || POPULAR_LANDMARKS.find(l => l.id === selectedLandmarkId)?.name}</strong>!
-                      </span>
-                    </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                              Specific spot / stall name:
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Moolchand Paratha Corner Gate 2"
+                              value={customSpotName}
+                              onChange={(e) => setCustomSpotName(e.target.value)}
+                              className="w-full bg-white border border-[#E8E5DF] rounded-lg p-2 text-xs text-stone-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="text-[11px] text-stone-500 bg-white p-2 rounded-lg border border-stone-200 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          <span>
+                            When travelers click your answer, the map will smoothly fly to <strong>{customSpotName || POPULAR_LANDMARKS.find(l => l.id === selectedLandmarkId)?.name}</strong>!
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

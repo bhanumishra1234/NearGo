@@ -299,3 +299,39 @@ export function evaluateDriverQuote(quotedPrice, fairEstimate) {
     };
   }
 }
+
+// Smart reverse-proximity lookup to identify nearest landmark & Delhi NCR zone for any custom GPS/map coordinate
+export function findNearestAreaOrLandmark(lat, lng) {
+  if (!lat || !lng) return { area: 'Delhi NCR', nearestLandmark: 'Delhi Center', distanceKm: 0, description: 'Delhi NCR' };
+
+  let closest = null;
+  let minDistance = Infinity;
+
+  for (const landmark of POPULAR_LANDMARKS) {
+    const d = calculateDistance(lat, lng, landmark.lat, landmark.lng);
+    if (d < minDistance) {
+      minDistance = d;
+      closest = landmark;
+    }
+  }
+
+  if (closest) {
+    if (minDistance <= 0.5) {
+      return {
+        area: closest.area,
+        nearestLandmark: closest.name,
+        distanceKm: Math.round(minDistance * 10) / 10,
+        description: `Near ${closest.name} (~${Math.round(minDistance * 1000)}m away)`,
+      };
+    } else {
+      return {
+        area: closest.area,
+        nearestLandmark: closest.name,
+        distanceKm: Math.round(minDistance * 10) / 10,
+        description: `${closest.area} (near ${closest.name})`,
+      };
+    }
+  }
+  return { area: 'Delhi NCR', nearestLandmark: 'Delhi', distanceKm: 0, description: 'Delhi NCR' };
+}
+

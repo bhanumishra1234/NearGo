@@ -140,7 +140,7 @@ export default function MapContainer({
       });
     }
 
-    // 2. Answer Pinned Spots (Emerald Green / Local Secret Spots)
+    // 2. Answer Pinned Spots (Emerald Green / Local Secret Spots / Custom Pinpoints)
     if (filterType === 'all' || filterType === 'gems') {
       questions.forEach((q) => {
         q.answers.forEach((ans) => {
@@ -151,6 +151,7 @@ export default function MapContainer({
             (highlightedPin.lat && Math.abs(highlightedPin.lat - p.lat) < 0.0001 && Math.abs(highlightedPin.lng - p.lng) < 0.0001) ||
             (highlightedPin.name && highlightedPin.name.toLowerCase() === p.name.toLowerCase())
           );
+          const isCustom = p.isCustomPin;
 
           const customIcon = L.divIcon({
             className: 'custom-gem-icon',
@@ -159,11 +160,13 @@ export default function MapContainer({
                 <div class="w-8 h-8 rounded-full ${
                   isHighlighted
                     ? 'bg-[#D9532F] ring-4 ring-terracotta-200 scale-125 shadow-xl animate-pulse text-white'
+                    : isCustom
+                    ? 'bg-amber-600 border-2 border-white shadow-md text-white'
                     : 'bg-emerald-600 border-2 border-white shadow-md text-white'
                 } flex items-center justify-center transition-transform hover:scale-125">
-                  <span class="text-xs">📍</span>
+                  <span class="text-xs">${isCustom ? '✨' : '📍'}</span>
                 </div>
-                <div class="absolute -bottom-1 w-2 h-2 ${isHighlighted ? 'bg-[#D9532F]' : 'bg-emerald-600'} rotate-45"></div>
+                <div class="absolute -bottom-1 w-2 h-2 ${isHighlighted ? 'bg-[#D9532F]' : isCustom ? 'bg-amber-600' : 'bg-emerald-600'} rotate-45"></div>
               </div>
             `,
             iconSize: [32, 38],
@@ -173,13 +176,17 @@ export default function MapContainer({
           const marker = L.marker([p.lat, p.lng], { icon: customIcon }).addTo(markersLayer.current);
 
           marker.bindPopup(`
-            <div style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; padding:2px; min-width:200px;">
-              <div style="display:flex; align-items:center; gap:4px; font-size:10px; text-transform:uppercase; font-weight:800; color:#15803D; margin-bottom:2px;">
-                <span>Suggested Local Spot</span> • <span>${ans.author.badge}</span>
+            <div style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; padding:4px; min-width:210px;">
+              <div style="display:flex; align-items:center; gap:5px; margin-bottom:4px; flex-wrap:wrap;">
+                <span style="font-size:9px; font-weight:800; text-transform:uppercase; color:${isCustom ? '#B45309' : '#15803D'}; background:${isCustom ? '#FEF3C7' : '#DCFCE7'}; padding:2px 6px; border-radius:4px; border:1px solid ${isCustom ? '#FCD34D' : '#86EFAC'};">
+                  ${isCustom ? '✨ Unofficial Hidden Spot' : 'Suggested Local Spot'}
+                </span>
+                <span style="font-size:9px; color:#6B7280; font-weight:600;">${ans.author.badge}</span>
               </div>
-              <div style="font-weight:700; font-size:13px; color:#1C1917; margin-bottom:4px;">${p.name}</div>
-              <div style="font-size:11px; color:#6B7280; margin-bottom:6px;">📍 ${p.neighborhood || 'Delhi Area'}</div>
-              <div style="font-size:11px; color:#374151; background:#FAF8F5; padding:6px 8px; border-radius:6px; border-left:3px solid #15803D; margin-bottom:6px;">
+              <div style="font-weight:700; font-size:13px; color:#1C1917; margin-bottom:2px;">${p.name}</div>
+              <div style="font-size:11px; color:#6B7280; margin-bottom:4px;">📍 ${p.neighborhood || 'Delhi Area'}</div>
+              <div style="font-size:10px; color:#9CA3AF; font-family:monospace; margin-bottom:6px;">GPS: ${p.lat.toFixed(4)}°, ${p.lng.toFixed(4)}°</div>
+              <div style="font-size:11px; color:#374151; background:#FAF8F5; padding:6px 8px; border-radius:6px; border-left:3px solid ${isCustom ? '#D97706' : '#15803D'}; margin-bottom:6px;">
                 "${ans.insiderTip || ans.body.slice(0, 95) + '...'}"
               </div>
               <div style="font-size:10px; color:#B57850;">Suggested by: <strong>${ans.author.name}</strong></div>
@@ -396,20 +403,24 @@ export default function MapContainer({
       <div ref={mapRef} className="w-full h-full flex-1" />
 
       {/* Bottom Map Legend */}
-      <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8E5DF] shadow-md flex items-center gap-4 text-[11px] text-stone-700 font-medium">
+      <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8E5DF] shadow-md flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-stone-700 font-medium">
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-[#D9532F]"></span>
           <span>Traveler Questions</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-          <span>Suggested Local Spots</span>
+          <span>Suggested Spots</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+          <span>Unofficial Gems (✨)</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-          <span>NCR Metro Stations</span>
+          <span>NCR Metro</span>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-stone-400">
+        <div className="hidden md:flex items-center gap-1.5 text-stone-400">
           <CheckCircle2 className="w-3.5 h-3.5 text-stone-500" />
           <span>OpenStreetMap Live</span>
         </div>

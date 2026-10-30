@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { HelpCircle, ShieldCheck, MapPin, Sparkles, Navigation, Send, X, Camera } from 'lucide-react';
+import { HelpCircle, ShieldCheck, MapPin, Sparkles, Navigation, Send, X, Camera, Compass } from 'lucide-react';
 import { POPULAR_LANDMARKS } from '../data/tariffs.js';
 import { VIBE_CATEGORIES } from '../data/vibeData.js';
 import PhotoUploader from './PhotoUploader.jsx';
+import LocationPickerMap from './LocationPickerMap.jsx';
 
 export default function AskQuestionModal({ onClose, onAddQuestion }) {
   const [title, setTitle] = useState('');
@@ -10,7 +11,16 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
   const [authorName, setAuthorName] = useState('Traveler ' + Math.floor(100 + Math.random() * 900));
   const [category, setCategory] = useState('transport');
   const [vibeCategory, setVibeCategory] = useState('student_budget');
+  const [locationMode, setLocationMode] = useState('landmark'); // 'landmark' | 'map'
   const [selectedLandmarkId, setSelectedLandmarkId] = useState('iiitd');
+  const [customSpotName, setCustomSpotName] = useState('');
+  const [customCoords, setCustomCoords] = useState({
+    lat: 28.5459,
+    lng: 77.2732,
+    area: 'South Delhi',
+    nearestLandmark: 'Okhla Phase 3',
+    description: 'South Delhi (near Okhla Phase 3)',
+  });
   const [requestFareCheck, setRequestFareCheck] = useState(true);
   const [fareOrigin, setFareOrigin] = useState('Okhla Phase 3 (South Delhi)');
   const [fareDestination, setFareDestination] = useState('Chandni Chowk Market');
@@ -20,7 +30,20 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
     e.preventDefault();
     if (!title.trim() || !body.trim()) return;
 
-    const landmark = POPULAR_LANDMARKS.find((l) => l.id === selectedLandmarkId) || POPULAR_LANDMARKS[0];
+    let locationName = '';
+    let lat = 28.5459;
+    let lng = 77.2732;
+
+    if (locationMode === 'map') {
+      locationName = customSpotName.trim() || customCoords.description || 'Custom Pinpointed Area';
+      lat = customCoords.lat;
+      lng = customCoords.lng;
+    } else {
+      const landmark = POPULAR_LANDMARKS.find((l) => l.id === selectedLandmarkId) || POPULAR_LANDMARKS[0];
+      locationName = customSpotName.trim() || landmark.name;
+      lat = landmark.lat;
+      lng = landmark.lng;
+    }
 
     const communityMapping = {
       transport: 'c/DelhiTransit',
@@ -36,9 +59,10 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
       community: communityMapping[category] || 'c/DelhiLocal',
       category,
       vibeCategory,
-      locationName: landmark.name,
-      lat: landmark.lat,
-      lng: landmark.lng,
+      locationName,
+      lat,
+      lng,
+      isCustomLocation: locationMode === 'map',
       tags: [
         category === 'transport' ? '#AutoFare' : `#${category}`,
         requestFareCheck ? '#FairPriceCheck' : '#LocalAdvice',
@@ -162,22 +186,67 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
             </div>
           </div>
 
-          {/* Landmark Selector */}
-          <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1">
-              Relevant City Area / Nearest Landmark
-            </label>
-            <select
-              value={selectedLandmarkId}
-              onChange={(e) => setSelectedLandmarkId(e.target.value)}
-              className="w-full bg-[#FAF8F5] border border-[#E8E5DF] rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:border-terracotta-400"
-            >
-              {POPULAR_LANDMARKS.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name} ({l.area})
-                </option>
-              ))}
-            </select>
+          {/* Location Mode Selector (Landmark vs Pinpoint on Map) */}
+          <div className="space-y-2 bg-[#FAF8F5] p-3 rounded-xl border border-stone-200">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-[#D9532F]" />
+                <span>Question Location (On-Map Pin)</span>
+              </label>
+              <span className="text-[10px] text-stone-500 font-medium">Pinpoint any spot or alley</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setLocationMode('landmark')}
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  locationMode === 'landmark'
+                    ? 'bg-white text-[#D9532F] shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5 text-stone-500" />
+                <span>🏛️ Select Registered Landmark</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocationMode('map')}
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  locationMode === 'map'
+                    ? 'bg-white text-[#D9532F] shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
+                <span>📍 Pinpoint on Map (Custom Spot)</span>
+              </button>
+            </div>
+
+            {locationMode === 'landmark' ? (
+              <select
+                value={selectedLandmarkId}
+                onChange={(e) => setSelectedLandmarkId(e.target.value)}
+                className="w-full bg-white border border-[#E8E5DF] rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:border-terracotta-400 font-medium"
+              >
+                {POPULAR_LANDMARKS.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name} ({l.area})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="space-y-2 pt-1">
+                <LocationPickerMap
+                  initialLat={28.5459}
+                  initialLng={77.2732}
+                  spotName={customSpotName}
+                  onSpotNameChange={setCustomSpotName}
+                  onSelectLocation={setCustomCoords}
+                  height="200px"
+                />
+              </div>
+            )}
           </div>
 
           {/* Live Fair Price Check Attachment */}
