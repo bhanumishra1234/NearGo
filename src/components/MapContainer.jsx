@@ -17,12 +17,15 @@ export default function MapContainer({
   const [filterType, setFilterType] = useState('all'); // all | questions | gems
   const [activeCenter, setActiveCenter] = useState('southDelhi');
 
-  // Centers dictionary
+  // Regional quick navigation centers
   const PRESET_CENTERS = {
-    southDelhi: { name: 'South Delhi (Okhla/Kalkaji)', lat: 28.5459, lng: 77.2732, zoom: 14 },
-    chandniChowk: { name: 'Old Delhi / Chandni Chowk', lat: 28.6562, lng: 77.2309, zoom: 14 },
-    moolchand: { name: 'Moolchand / Lajpat Nagar', lat: 28.5670, lng: 77.2389, zoom: 14 },
-    mkt: { name: 'Majnu Ka Tilla', lat: 28.7032, lng: 77.2289, zoom: 14 },
+    southDelhi: { name: 'South Delhi (Okhla/Kalkaji)', lat: 28.5459, lng: 77.2732, zoom: 13 },
+    centralDelhi: { name: 'Connaught Place', lat: 28.6315, lng: 77.2167, zoom: 14 },
+    oldDelhi: { name: 'Old Delhi (Chandni Chowk)', lat: 28.6562, lng: 77.2309, zoom: 14 },
+    cyberCity: { name: 'Gurgaon (Cyber City)', lat: 28.4950, lng: 77.0895, zoom: 14 },
+    noida: { name: 'Noida (Sec 18)', lat: 28.5708, lng: 77.3260, zoom: 14 },
+    duNorth: { name: 'North Campus (DU)', lat: 28.6942, lng: 77.2064, zoom: 14 },
+    aerocity: { name: 'Aerocity / T3 Airport', lat: 28.5530, lng: 77.1100, zoom: 13 },
   };
 
   useEffect(() => {

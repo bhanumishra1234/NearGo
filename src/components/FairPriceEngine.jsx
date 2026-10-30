@@ -145,6 +145,36 @@ export default function FairPriceEngine({ onClose }) {
             >
               🚆 New Delhi Railway Stn ➔ Connaught Place
             </button>
+            <button
+              onClick={() => setPreset('iiitd', 'cyber-hub', false, '750')}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                originId === 'iiitd' && destId === 'cyber-hub'
+                  ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F] font-bold'
+                  : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-300'
+              }`}
+            >
+              🏢 South Delhi ➔ DLF Cyber City (Gurgaon)
+            </button>
+            <button
+              onClick={() => setPreset('t3-airport', 'cp', true, '1400')}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                originId === 't3-airport' && destId === 'cp'
+                  ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F] font-bold'
+                  : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-300'
+              }`}
+            >
+              ✈️ IGI Airport T3 ➔ Connaught Place (Late Night)
+            </button>
+            <button
+              onClick={() => setPreset('iiitd', 'noida-sec18', false, '400')}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                originId === 'iiitd' && destId === 'noida-sec18'
+                  ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F] font-bold'
+                  : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-300'
+              }`}
+            >
+              🛍️ South Delhi ➔ Noida Sector 18 (Atta)
+            </button>
           </div>
         </div>
 

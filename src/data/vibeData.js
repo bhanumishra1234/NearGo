@@ -168,5 +168,70 @@ export const VIBE_CURATED_SPOTS = [
     lat: 28.5459,
     lng: 77.2732,
     crowdVibe: 'Youthful night crowd, student banter, budget midnight fuel'
+  },
+  {
+    id: 'vibe-6',
+    name: 'DLF CyberHub Open Amphitheatre',
+    tag: 'aesthetic_chill',
+    vibeScore: 95,
+    neighborhood: 'Gurgaon (Cyber City)',
+    openTill: '1:00 AM',
+    avgCost: '₹350 - ₹700',
+    insiderTip: 'Take the Yellow Line to Sikanderpur and switch to the Rapid Metro (1 stop to Cyber City). The open plaza has live acoustic music on weekends.',
+    lat: 28.4950,
+    lng: 77.0895,
+    crowdVibe: 'Tech professionals, lively open-air dining, artisan gelatos'
+  },
+  {
+    id: 'vibe-7',
+    name: 'Brahmaputra Market (BP Market)',
+    tag: 'foodie_paradise',
+    vibeScore: 96,
+    neighborhood: 'Noida (Sector 29)',
+    openTill: '11:00 PM',
+    avgCost: '₹120 - ₹250',
+    insiderTip: 'Noida’s holy grail for evening street food: sizzling galouti kebabs, fresh fruit chaat, shawarmas, and kathi rolls without mall markups.',
+    lat: 28.5620,
+    lng: 77.3360,
+    crowdVibe: 'Buzzing evening street food lane, family crowds, aromatic grills'
+  },
+  {
+    id: 'vibe-8',
+    name: 'Hudson Lane Cafe Strip',
+    tag: 'student_budget',
+    vibeScore: 93,
+    neighborhood: 'North Campus (DU)',
+    openTill: '11:00 PM',
+    avgCost: '₹180 - ₹350',
+    insiderTip: 'GTB Nagar Metro Gate 4. Cafes here offer student combo meals, great cold brew, and quiet study corners with free Wi-Fi.',
+    lat: 28.6942,
+    lng: 77.2064,
+    crowdVibe: 'Undergrad study groups, live indie music, quirky aesthetics'
+  },
+  {
+    id: 'vibe-9',
+    name: 'Dilli Haat INA Regional Food Courtyard',
+    tag: 'heritage_raw',
+    vibeScore: 97,
+    neighborhood: 'South Delhi (INA)',
+    openTill: '10:00 PM',
+    avgCost: '₹200 - ₹400',
+    insiderTip: 'Direct entry from INA Metro Gate 5. Try the momos and thukpa at Sikkim Stall or the fish curry thali at Bengal and Odisha stalls.',
+    lat: 28.5732,
+    lng: 77.2081,
+    crowdVibe: 'Artisan craft village, pan-Indian authentic regional cuisines'
+  },
+  {
+    id: 'vibe-10',
+    name: 'Aerocity Worldmark Transit Walk',
+    tag: 'aesthetic_chill',
+    vibeScore: 92,
+    neighborhood: 'Airport / Aerocity',
+    openTill: '2:00 AM',
+    avgCost: '₹400 - ₹900',
+    insiderTip: 'Only 1 stop from IGI Terminal 3 via Airport Express Metro. Safe, pedestrianized luxury plazas with late-night coffee shops.',
+    lat: 28.5502,
+    lng: 77.1215,
+    crowdVibe: 'Airport transit flyers, clean European-style open walkways'
   }
 ];

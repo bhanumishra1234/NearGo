@@ -97,21 +97,55 @@ export const CITY_TARIFFS = {
 };
 
 // Popular curated landmarks with exact coordinates
+// Popular curated landmarks with exact coordinates across all Delhi NCR zones
 export const POPULAR_LANDMARKS = [
+  // South Delhi Hubs
   { id: 'iiitd', name: 'Okhla Phase 3 (South Delhi)', lat: 28.5459, lng: 77.2732, area: 'South Delhi' },
-  { id: 'chandni-chowk', name: 'Chandni Chowk Market', lat: 28.6562, lng: 77.2309, area: 'Old Delhi' },
   { id: 'govindpuri', name: 'Govindpuri Metro Station', lat: 28.5283, lng: 77.2625, area: 'South Delhi' },
   { id: 'nehru-place', name: 'Nehru Place Tech Hub', lat: 28.5494, lng: 77.2528, area: 'South Delhi' },
-  { id: 'cp', name: 'Connaught Place (Inner Circle)', lat: 28.6315, lng: 77.2167, area: 'Central Delhi' },
-  { id: 'majnu-ka-tilla', name: 'Majnu Ka Tilla (Tibetan Colony)', lat: 28.7032, lng: 77.2289, area: 'North Delhi' },
+  { id: 'moolchand', name: 'Moolchand Paratha Corner', lat: 28.5670, lng: 77.2389, area: 'South Delhi' },
   { id: 'hauz-khas', name: 'Hauz Khas Village & Fort', lat: 28.5535, lng: 77.1945, area: 'South Delhi' },
   { id: 'sarojini', name: 'Sarojini Nagar Market', lat: 28.5772, lng: 77.1983, area: 'South Delhi' },
-  { id: 'ndls', name: 'New Delhi Railway Station (Paharganj side)', lat: 28.6429, lng: 77.2195, area: 'Central Delhi' },
-  { id: 'nizamuddin', name: 'Hazrat Nizamuddin Dargah', lat: 28.5888, lng: 77.2435, area: 'South Delhi' },
+  { id: 'lajpat-nagar', name: 'Lajpat Nagar Central Market', lat: 28.5677, lng: 77.2433, area: 'South Delhi' },
+  { id: 'gk1', name: 'Greater Kailash 1 (M-Block Market)', lat: 28.5540, lng: 77.2415, area: 'South Delhi' },
+  { id: 'saket', name: 'Select Citywalk & Saket District Centre', lat: 28.5284, lng: 77.2185, area: 'South Delhi' },
+  { id: 'dilli-haat', name: 'Dilli Haat & INA Market', lat: 28.5732, lng: 77.2081, area: 'South Delhi' },
+  { id: 'lotus-temple', name: 'Lotus Temple & Kalkaji Mandir', lat: 28.5535, lng: 77.2588, area: 'South Delhi' },
+  { id: 'nizamuddin', name: 'Hazrat Nizamuddin Dargah & Station', lat: 28.5888, lng: 77.2435, area: 'South Delhi' },
+
+  // Central Delhi Hubs
+  { id: 'cp', name: 'Connaught Place (Inner Circle & Rajiv Chowk)', lat: 28.6315, lng: 77.2167, area: 'Central Delhi' },
   { id: 'india-gate', name: 'India Gate & Kartavya Path', lat: 28.6129, lng: 77.2295, area: 'Central Delhi' },
-  { id: 'chawri-bazar', name: 'Chawri Bazar Metro / Jama Masjid', lat: 28.6496, lng: 77.2268, area: 'Old Delhi' },
-  { id: 'moolchand', name: 'Moolchand Paratha Corner', lat: 28.5670, lng: 77.2389, area: 'South Delhi' },
+  { id: 'bangla-sahib', name: 'Gurudwara Bangla Sahib', lat: 28.6263, lng: 77.2091, area: 'Central Delhi' },
+  { id: 'khan-market', name: 'Khan Market', lat: 28.6003, lng: 77.2270, area: 'Central Delhi' },
+  { id: 'ndls', name: 'New Delhi Railway Station (Paharganj side)', lat: 28.6429, lng: 77.2195, area: 'Central Delhi' },
+
+  // Old Delhi & North Delhi Hubs
+  { id: 'chandni-chowk', name: 'Chandni Chowk Market & Red Fort', lat: 28.6562, lng: 77.2309, area: 'Old Delhi' },
+  { id: 'chawri-bazar', name: 'Chawri Bazar / Jama Masjid Gate 3', lat: 28.6496, lng: 77.2268, area: 'Old Delhi' },
   { id: 'daryaganj', name: 'Daryaganj Mahila Haat (Book Market)', lat: 28.6475, lng: 77.2405, area: 'Old Delhi' },
+  { id: 'majnu-ka-tilla', name: 'Majnu Ka Tilla (Tibetan Colony & Cafes)', lat: 28.7032, lng: 77.2289, area: 'North Delhi' },
+  { id: 'du-north-campus', name: 'DU North Campus (Hudson Lane / Vishwavidyalaya)', lat: 28.6942, lng: 77.2064, area: 'North Delhi' },
+
+  // West Delhi & Airport Hubs
+  { id: 'aerocity', name: 'Aerocity Worldmark & Transit Hub', lat: 28.5502, lng: 77.1215, area: 'Airport & Aerocity' },
+  { id: 't3-airport', name: 'IGI Airport Terminal 3', lat: 28.5562, lng: 77.0999, area: 'Airport & Aerocity' },
+  { id: 'rajouri-garden', name: 'Rajouri Garden Main Market', lat: 28.6492, lng: 77.1228, area: 'West Delhi' },
+  { id: 'dwarka-sec21', name: 'Dwarka Sector 21 Metro Interchange', lat: 28.5523, lng: 77.0583, area: 'West Delhi' },
+
+  // Gurgaon / Gurugram Hubs
+  { id: 'cyber-hub', name: 'DLF CyberHub & Cyber City (Rapid Metro)', lat: 28.4950, lng: 77.0895, area: 'Gurgaon' },
+  { id: 'sec29-gurgaon', name: 'Sector 29 Leisure Valley & Food District', lat: 28.4682, lng: 77.0632, area: 'Gurgaon' },
+  { id: 'ambience-gurgaon', name: 'Ambience Mall Gurugram (NH-48)', lat: 28.5042, lng: 77.0968, area: 'Gurgaon' },
+
+  // Noida & Greater Noida Hubs
+  { id: 'noida-sec18', name: 'Noida Sector 18 & Atta Market', lat: 28.5708, lng: 77.3260, area: 'Noida' },
+  { id: 'botanical-garden', name: 'Botanical Garden Metro Interchange', lat: 28.5644, lng: 77.3342, area: 'Noida' },
+  { id: 'noida-sec62', name: 'Noida Electronic City (Sector 62)', lat: 28.6280, lng: 77.3649, area: 'Noida' },
+
+  // East Delhi Hubs
+  { id: 'akshardham', name: 'Akshardham Temple', lat: 28.6127, lng: 77.2773, area: 'East Delhi' },
+  { id: 'anand-vihar', name: 'Anand Vihar ISBT & Railway Terminal', lat: 28.6469, lng: 77.3160, area: 'East Delhi' }
 ];
 
 // Great-circle Haversine distance with road detour multiplier
