@@ -23,6 +23,20 @@ import {
   calculateRouteFare,
   evaluateDriverQuote
 } from '../data/tariffs.js';
+import { NCR_METRO_STATIONS } from '../data/metroData.js';
+
+// Combined destinations registry: Landmarks + All NCR Metro Stations
+const ALL_DESTINATIONS = [
+  ...POPULAR_LANDMARKS,
+  ...NCR_METRO_STATIONS.map((m) => ({
+    id: m.id,
+    name: `🚇 ${m.name} (${m.network})`,
+    lat: m.lat,
+    lng: m.lng,
+    area: m.zone,
+    isMetro: true,
+  })),
+];
 
 export default function FairPriceEngine({ onClose }) {
   const [cityKey, setCityKey] = useState('delhi');
@@ -34,9 +48,9 @@ export default function FairPriceEngine({ onClose }) {
   const [driverQuoteInput, setDriverQuoteInput] = useState('500');
   const [auditResult, setAuditResult] = useState(null);
 
-  // Landmark objects
-  const originLandmark = POPULAR_LANDMARKS.find((l) => l.id === originId) || POPULAR_LANDMARKS[0];
-  const destLandmark = POPULAR_LANDMARKS.find((l) => l.id === destId) || POPULAR_LANDMARKS[1];
+  // Location objects (Selected from Landmarks or Metro Stations)
+  const originLandmark = ALL_DESTINATIONS.find((l) => l.id === originId) || ALL_DESTINATIONS[0];
+  const destLandmark = ALL_DESTINATIONS.find((l) => l.id === destId) || ALL_DESTINATIONS[1];
 
   // Calculated distance in KM
   const computedDistance = useMemo(() => {
@@ -195,18 +209,41 @@ export default function FairPriceEngine({ onClose }) {
                 }}
                 className="w-full bg-white border border-[#E8E5DF] rounded-xl px-3 py-2 text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-terracotta-400"
               >
-                {POPULAR_LANDMARKS.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name} ({l.area})
-                  </option>
-                ))}
+                <optgroup label="📍 Key Landmarks & Cultural Spots">
+                  {POPULAR_LANDMARKS.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name} ({l.area})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="🚇 Delhi Metro (DMRC Stations)">
+                  {NCR_METRO_STATIONS.filter((s) => s.network === 'DMRC').map((s) => (
+                    <option key={s.id} value={s.id}>
+                      🚇 {s.name} ({s.zone})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="🚇 Noida Metro (NMRC Aqua Line)">
+                  {NCR_METRO_STATIONS.filter((s) => s.network === 'NMRC').map((s) => (
+                    <option key={s.id} value={s.id}>
+                      🚇 {s.name} ({s.zone})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="🚇 Rapid Metro Gurugram">
+                  {NCR_METRO_STATIONS.filter((s) => s.network === 'Rapid Metro').map((s) => (
+                    <option key={s.id} value={s.id}>
+                      🚇 {s.name} ({s.zone})
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 
             {/* Destination Landmark */}
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1">
-                Destination Landmark
+                Destination Landmark / Metro Station
               </label>
               <select
                 value={destId}
@@ -217,11 +254,34 @@ export default function FairPriceEngine({ onClose }) {
                 }}
                 className="w-full bg-white border border-[#E8E5DF] rounded-xl px-3 py-2 text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-terracotta-400"
               >
-                {POPULAR_LANDMARKS.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name} ({l.area})
-                  </option>
-                ))}
+                <optgroup label="📍 Key Landmarks & Cultural Spots">
+                  {POPULAR_LANDMARKS.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name} ({l.area})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="🚇 Delhi Metro (DMRC Stations)">
+                  {NCR_METRO_STATIONS.filter((s) => s.network === 'DMRC').map((s) => (
+                    <option key={s.id} value={s.id}>
+                      🚇 {s.name} ({s.zone})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="🚇 Noida Metro (NMRC Aqua Line)">
+                  {NCR_METRO_STATIONS.filter((s) => s.network === 'NMRC').map((s) => (
+                    <option key={s.id} value={s.id}>
+                      🚇 {s.name} ({s.zone})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="🚇 Rapid Metro Gurugram">
+                  {NCR_METRO_STATIONS.filter((s) => s.network === 'Rapid Metro').map((s) => (
+                    <option key={s.id} value={s.id}>
+                      🚇 {s.name} ({s.zone})
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </div>
           </div>

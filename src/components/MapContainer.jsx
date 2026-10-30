@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { MapPin, Navigation, Filter, CheckCircle2, Sparkles, X, Compass } from 'lucide-react';
+import { MapPin, Navigation, Filter, CheckCircle2, Sparkles, X, Compass, Train } from 'lucide-react';
+import { NCR_METRO_STATIONS, METRO_LINES } from '../data/metroData.js';
 
 export default function MapContainer({
   questions = [],
@@ -195,7 +196,54 @@ export default function MapContainer({
       });
     }
 
-    // 3. Handle Highlighted Location Pin Flying & Popup Opening
+    // 3. NCR Metro Stations (Delhi Metro, Noida Metro Aqua Line, Rapid Metro Gurugram)
+    if (filterType === 'all' || filterType === 'metro') {
+      NCR_METRO_STATIONS.forEach((station) => {
+        const lineMeta = METRO_LINES[station.line] || { color: '#0284C7', name: station.line };
+        const isInterchange = station.isInterchange;
+        
+        const metroIcon = L.divIcon({
+          className: 'custom-metro-icon',
+          html: `
+            <div class="relative flex items-center justify-center cursor-pointer group" title="${station.name} (${station.network})">
+              <div class="w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center transition-transform hover:scale-125" style="border: 2.5px solid ${lineMeta.color};">
+                <span class="text-[9px] font-black" style="color: ${lineMeta.color};">M</span>
+              </div>
+              ${isInterchange ? `<div class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 border border-white" title="Interchange Station"></div>` : ''}
+            </div>
+          `,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        });
+
+        const marker = L.marker([station.lat, station.lng], { icon: metroIcon }).addTo(markersLayer.current);
+
+        marker.bindPopup(`
+          <div style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; padding:4px; min-width:210px;">
+            <div style="display:flex; align-items:center; gap:5px; margin-bottom:4px;">
+              <span style="background:${lineMeta.color}; color:#FFFFFF; font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; text-transform:uppercase;">
+                ${station.network}
+              </span>
+              ${isInterchange ? `<span style="background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; font-size:9px; font-weight:700; padding:1px 5px; border-radius:4px;">Interchange</span>` : ''}
+            </div>
+            <div style="font-weight:800; font-size:14px; color:#1C1917; margin-bottom:2px;">${station.name}</div>
+            <div style="font-size:11px; color:#6B7280; margin-bottom:6px;">📍 ${station.zone} • ${lineMeta.name}</div>
+            <div style="font-size:11px; padding:6px 8px; border-radius:6px; background:#F8FAFC; border:1px solid #E2E8F0; color:#334155; line-height:1.3;">
+              🚆 <strong>Terminals:</strong> ${lineMeta.terminals}
+            </div>
+          </div>
+        `);
+
+        markersRegistry.current.push({
+          lat: station.lat,
+          lng: station.lng,
+          name: station.name,
+          marker,
+        });
+      });
+    }
+
+    // 4. Handle Highlighted Location Pin Flying & Popup Opening
     if (highlightedPin && highlightedPin.lat && highlightedPin.lng) {
       const targetLat = highlightedPin.lat;
       const targetLng = highlightedPin.lng;
@@ -307,6 +355,15 @@ export default function MapContainer({
           >
             💎 Suggested Spots
           </button>
+          <button
+            onClick={() => setFilterType('metro')}
+            className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1 ${
+              filterType === 'metro' ? 'bg-blue-600 text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <span>🚇 Metro</span>
+            <span className="text-[9px] opacity-80">({NCR_METRO_STATIONS.length})</span>
+          </button>
         </div>
       </div>
 
@@ -347,6 +404,10 @@ export default function MapContainer({
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
           <span>Suggested Local Spots</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+          <span>NCR Metro Stations</span>
         </div>
         <div className="hidden sm:flex items-center gap-1.5 text-stone-400">
           <CheckCircle2 className="w-3.5 h-3.5 text-stone-500" />

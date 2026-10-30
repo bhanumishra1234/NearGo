@@ -12,6 +12,7 @@ import {
   evaluateDriverQuote
 } from './src/data/tariffs.js';
 import { VIBE_CATEGORIES, INDIC_SLANG_DICTIONARY, VIBE_CURATED_SPOTS } from './src/data/vibeData.js';
+import { NCR_METRO_STATIONS, METRO_LINES, getStationsByLine, searchMetroStations } from './src/data/metroData.js';
 import { runScheduledFareSync } from './scripts/cron-job.js';
 
 import path from 'path';
@@ -45,6 +46,36 @@ app.get('/api/health', (req, res) => {
 // 2. Landmarks list for quick route selection
 app.get('/api/landmarks', (req, res) => {
   res.json({ landmarks: POPULAR_LANDMARKS });
+});
+
+// 2b. NCR Metro Stations (Delhi Metro, Noida Metro, Rapid Metro Gurugram)
+app.get('/api/metro-stations', (req, res) => {
+  const { line, search, network } = req.query;
+  let stations = [...NCR_METRO_STATIONS];
+
+  if (line && line !== 'all') {
+    stations = stations.filter(s => s.line === line || (s.interchangeLines && s.interchangeLines.includes(line)));
+  }
+  if (network && network !== 'all') {
+    stations = stations.filter(s => s.network.toLowerCase() === network.toLowerCase());
+  }
+  if (search) {
+    const q = search.toLowerCase();
+    stations = stations.filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      s.zone.toLowerCase().includes(q)
+    );
+  }
+
+  res.json({
+    count: stations.length,
+    networks: ['DMRC', 'NMRC (Aqua Line)', 'Rapid Metro Gurugram'],
+    stations,
+  });
+});
+
+app.get('/api/metro-lines', (req, res) => {
+  res.json({ lines: METRO_LINES });
 });
 
 // 3. Get Questions (with filtering & search)
