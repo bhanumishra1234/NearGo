@@ -1,0 +1,26 @@
+services:
+  # 1. NearGo Fullstack Web Service on Render
+  - type: web
+    name: neargo-app
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+
+  # 2. NearGo Native Scheduled Cron Job on Render
+  - type: cron
+    name: neargo-fare-sync-cron
+    runtime: node
+    plan: free
+    schedule: "0 0 * * *" # Runs daily at midnight UTC
+    buildCommand: npm install
+    startCommand: npm run cron
+    envVars:
+      - key: NODE_ENV
+        value: production
