@@ -15,6 +15,7 @@ import { VIBE_CATEGORIES, INDIC_SLANG_DICTIONARY, VIBE_CURATED_SPOTS } from './s
 import { runScheduledFareSync } from './scripts/cron-job.js';
 
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -316,14 +317,31 @@ app.all('/api/cron/sync-fares', async (req, res) => {
 
 // Serve built frontend assets if dist exists
 const distPath = path.join(__dirname, 'dist');
-app.use(express.static(distPath));
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
 
-// Fallback to index.html for client-side routing
+// Fallback for non-API routes
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
     return next();
   }
-  res.sendFile(path.join(distPath, 'index.html'));
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.json({
+    app: 'NearGo REST API Engine',
+    status: 'online',
+    frontend: 'https://neargo-sandy.vercel.app',
+    endpoints: {
+      health: '/api/health',
+      questions: '/api/questions',
+      landmarks: '/api/landmarks',
+      fairPrice: '/api/fare-check',
+      cron: '/api/cron/sync-fares'
+    }
+  });
 });
 
 // Periodic in-process fallback cron timer (every 6 hours)
