@@ -17,6 +17,7 @@ import {
   Tag
 } from 'lucide-react';
 import { VIBE_CATEGORIES } from '../data/vibeData.js';
+import PhotoGallery from './PhotoGallery.jsx';
 
 export default function QuestionsFeed({
   questions = [],
@@ -214,6 +215,13 @@ export default function QuestionsFeed({
                   {q.body}
                 </p>
               </div>
+
+              {/* Attached Photos Gallery on Feed */}
+              {q.photos && q.photos.length > 0 && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <PhotoGallery photos={q.photos} title={q.title} />
+                </div>
+              )}
 
               {/* Tags */}
               {q.tags && q.tags.length > 0 && (

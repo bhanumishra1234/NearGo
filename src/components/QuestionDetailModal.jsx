@@ -12,6 +12,8 @@ import {
   Compass
 } from 'lucide-react';
 import { POPULAR_LANDMARKS } from '../data/tariffs.js';
+import PhotoGallery from './PhotoGallery.jsx';
+import PhotoUploader from './PhotoUploader.jsx';
 
 export default function QuestionDetailModal({
   question,
@@ -28,6 +30,7 @@ export default function QuestionDetailModal({
   const [selectedLandmarkId, setSelectedLandmarkId] = useState('moolchand');
   const [customSpotName, setCustomSpotName] = useState('');
   const [insiderTip, setInsiderTip] = useState('');
+  const [answerPhotos, setAnswerPhotos] = useState([]);
 
   if (!question) return null;
 
@@ -57,11 +60,13 @@ export default function QuestionDetailModal({
       badge: authorBadge,
       pin,
       insiderTip: insiderTip.trim() || null,
+      photos: answerPhotos,
     });
 
     setAnswerText('');
     setCustomSpotName('');
     setInsiderTip('');
+    setAnswerPhotos([]);
   };
 
   return (
@@ -122,6 +127,9 @@ export default function QuestionDetailModal({
             <p className="text-sm text-stone-700 leading-relaxed bg-[#FAF8F5] p-4 rounded-xl border border-[#E8E5DF]">
               {question.body}
             </p>
+
+            {/* Question Attached Photos Gallery */}
+            <PhotoGallery photos={question.photos} title={question.title} />
 
             {/* Embedded Fair Fare Protection Card */}
             {question.fareCheck && (
@@ -213,6 +221,9 @@ export default function QuestionDetailModal({
                   <p className="text-xs sm:text-sm text-stone-800 leading-relaxed">
                     {ans.body}
                   </p>
+
+                  {/* Suggestion Attached Photos */}
+                  <PhotoGallery photos={ans.photos} title={`Photo suggestion by ${ans.author.name}`} />
 
                   {/* PROMINENT SUGGESTED LOCATION BUTTON (Interactive Map Pin) */}
                   {ans.pin && (
@@ -368,6 +379,14 @@ export default function QuestionDetailModal({
                 value={insiderTip}
                 onChange={(e) => setInsiderTip(e.target.value)}
                 className="w-full bg-[#FAF8F5] border border-[#E8E5DF] rounded-xl px-3 py-2 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:border-terracotta-400"
+              />
+
+              {/* Attach Photos with Suggestion */}
+              <PhotoUploader
+                photos={answerPhotos}
+                onChange={setAnswerPhotos}
+                label="Attach Photos with your Suggestion (Food, Stall, Menu, Bill...)"
+                maxPhotos={4}
               />
 
               <div className="flex justify-end pt-1">

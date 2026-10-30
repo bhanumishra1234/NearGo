@@ -25,6 +25,9 @@ export const INITIAL_QUESTIONS = [
     createdAt: '18 minutes ago',
     upvotes: 42,
     userUpvoted: false,
+    photos: [
+      'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?auto=format&fit=crop&w=800&q=80'
+    ],
     fareCheck: {
       origin: 'Okhla Phase 3 (South Delhi)',
       destination: 'Chandni Chowk (Old Delhi)',
@@ -78,6 +81,9 @@ export const INITIAL_QUESTIONS = [
           type: 'food'
         },
         insiderTip: 'Cycle rickshaws from metro to Jama Masjid should be ₹20-₹30 per head max. Never pay ₹100.',
+        photos: [
+          'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80'
+        ],
         upvotes: 21,
         userUpvoted: false,
         createdAt: '6 minutes ago',
@@ -138,6 +144,9 @@ export const INITIAL_QUESTIONS = [
           type: 'food'
         },
         insiderTip: 'Auto from Okhla takes 12 mins at night. Fair fare with night surcharge is ₹85. Do not pay ₹200.',
+        photos: [
+          'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=80'
+        ],
         upvotes: 27,
         userUpvoted: false,
         createdAt: '45 minutes ago',
@@ -216,6 +225,9 @@ export const INITIAL_QUESTIONS = [
     createdAt: '5 hours ago',
     upvotes: 54,
     userUpvoted: false,
+    photos: [
+      'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80'
+    ],
     fareCheck: null,
     answers: [
       {
@@ -285,6 +297,9 @@ export const INITIAL_QUESTIONS = [
           type: 'hidden_gem'
         },
         insiderTip: 'Nearest metro is Qutub Minar (Yellow line). Exit gate 2 and walk 400m into the park. Pure peace.',
+        photos: [
+          'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=800&q=80'
+        ],
         upvotes: 52,
         userUpvoted: false,
         createdAt: '6 hours ago',

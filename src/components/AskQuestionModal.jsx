@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { HelpCircle, ShieldCheck, MapPin, Sparkles, Navigation, Send, X } from 'lucide-react';
+import { HelpCircle, ShieldCheck, MapPin, Sparkles, Navigation, Send, X, Camera } from 'lucide-react';
 import { POPULAR_LANDMARKS } from '../data/tariffs.js';
 import { VIBE_CATEGORIES } from '../data/vibeData.js';
+import PhotoUploader from './PhotoUploader.jsx';
 
 export default function AskQuestionModal({ onClose, onAddQuestion }) {
   const [title, setTitle] = useState('');
@@ -13,6 +14,7 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
   const [requestFareCheck, setRequestFareCheck] = useState(true);
   const [fareOrigin, setFareOrigin] = useState('Okhla Phase 3 (South Delhi)');
   const [fareDestination, setFareDestination] = useState('Chandni Chowk Market');
+  const [photos, setPhotos] = useState([]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -45,6 +47,7 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
       requestFareCheck,
       fareOrigin,
       fareDestination,
+      photos,
     });
 
     onClose();
@@ -115,6 +118,14 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
               className="w-full bg-[#FAF8F5] border border-[#E8E5DF] rounded-xl p-3 text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-terracotta-400"
             />
           </div>
+
+          {/* Attach Photos Component */}
+          <PhotoUploader
+            photos={photos}
+            onChange={setPhotos}
+            label="Attach Photos (Auto meter, street, quote receipt...)"
+            maxPhotos={4}
+          />
 
           {/* Category & Vibe Selectors */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

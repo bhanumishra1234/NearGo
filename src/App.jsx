@@ -193,6 +193,7 @@ export default function App() {
       upvotes: 1,
       userUpvoted: true,
       fareCheck,
+      photos: questionData.photos || [],
       answers: [],
     };
 
@@ -201,7 +202,7 @@ export default function App() {
     fetch('/api/questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(questionData),
+      body: JSON.stringify({ ...questionData, photos: questionData.photos || [] }),
     }).catch(() => {});
   };
 
@@ -219,6 +220,7 @@ export default function App() {
       body: answerData.body,
       pin: answerData.pin,
       insiderTip: answerData.insiderTip,
+      photos: answerData.photos || [],
       upvotes: 1,
       userUpvoted: true,
       createdAt: 'Just now',

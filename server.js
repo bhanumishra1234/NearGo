@@ -181,6 +181,7 @@ app.post('/api/questions', (req, res) => {
     upvotes: 1,
     userUpvoted: true,
     fareCheck: computedFareCheck,
+    photos: req.body.photos || [],
     answers: [],
   };
 
@@ -235,6 +236,7 @@ app.post('/api/questions/:id/answers', (req, res) => {
     body,
     pin,
     insiderTip: insiderTip || null,
+    photos: req.body.photos || [],
     upvotes: 1,
     userUpvoted: true,
     createdAt: 'Just now',
