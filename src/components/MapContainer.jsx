@@ -10,6 +10,7 @@ export default function MapContainer({
   onClearHighlight = null,
   isPinningMode = false,
   onMapClickPin = null,
+  minimal = false,
 }) {
   const mapRef = useRef(null);
   const leafletMap = useRef(null);
@@ -313,66 +314,68 @@ export default function MapContainer({
   };
 
   return (
-    <div className="relative w-full h-full min-h-[480px] flex flex-col bg-[#F4F1EA] rounded-2xl overflow-hidden border border-[#E8E5DF] shadow-sm">
-      {/* Top Floating Control Bar */}
-      <div className="absolute top-3 left-3 right-3 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-        {/* Preset Center Navigation Chips */}
-        <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-[#E8E5DF] shadow-md pointer-events-auto overflow-x-auto max-w-full">
-          <Navigation className="w-3.5 h-3.5 text-[#D9532F] ml-1 shrink-0" />
-          <span className="text-[11px] font-bold text-stone-500 hidden sm:inline mr-1">Quick Jump:</span>
-          {Object.entries(PRESET_CENTERS).map(([key, item]) => (
+    <div className={`relative w-full h-full flex flex-col bg-[#F4F1EA] rounded-2xl overflow-hidden border border-[#E8E5DF] shadow-sm ${minimal ? 'min-h-[140px]' : 'min-h-[480px]'}`}>
+      {/* Top Floating Control Bar - hidden if minimal */}
+      {!minimal && (
+        <div className="absolute top-3 left-3 right-3 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+          {/* Preset Center Navigation Chips */}
+          <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-[#E8E5DF] shadow-md pointer-events-auto overflow-x-auto max-w-full">
+            <Navigation className="w-3.5 h-3.5 text-[#D9532F] ml-1 shrink-0" />
+            <span className="text-[11px] font-bold text-stone-500 hidden sm:inline mr-1">Quick Jump:</span>
+            {Object.entries(PRESET_CENTERS).map(([key, item]) => (
+              <button
+                key={key}
+                onClick={() => handleCenterSelect(key)}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                  activeCenter === key
+                    ? 'bg-[#D9532F] text-white shadow-xs'
+                    : 'text-stone-700 hover:bg-stone-100'
+                }`}
+              >
+                {item.name.split(' (')[0]}
+              </button>
+            ))}
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex items-center gap-1 bg-white/95 backdrop-blur-md p-1 rounded-full border border-[#E8E5DF] shadow-md pointer-events-auto">
+            <Filter className="w-3 h-3 text-stone-400 ml-1.5 mr-0.5" />
             <button
-              key={key}
-              onClick={() => handleCenterSelect(key)}
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
-                activeCenter === key
-                  ? 'bg-[#D9532F] text-white shadow-xs'
-                  : 'text-stone-700 hover:bg-stone-100'
+              onClick={() => setFilterType('all')}
+              className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
+                filterType === 'all' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              {item.name.split(' (')[0]}
+              All Pins
             </button>
-          ))}
+            <button
+              onClick={() => setFilterType('questions')}
+              className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
+                filterType === 'questions' ? 'bg-terracotta-50 text-[#D9532F]' : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              ❓ Questions
+            </button>
+            <button
+              onClick={() => setFilterType('gems')}
+              className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
+                filterType === 'gems' ? 'bg-emerald-50 text-emerald-700' : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              💎 Suggested Spots
+            </button>
+            <button
+              onClick={() => setFilterType('metro')}
+              className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1 ${
+                filterType === 'metro' ? 'bg-blue-600 text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              <span>🚇 Metro</span>
+              <span className="text-[9px] opacity-80">({NCR_METRO_STATIONS.length})</span>
+            </button>
+          </div>
         </div>
-
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1 bg-white/95 backdrop-blur-md p-1 rounded-full border border-[#E8E5DF] shadow-md pointer-events-auto">
-          <Filter className="w-3 h-3 text-stone-400 ml-1.5 mr-0.5" />
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
-              filterType === 'all' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            All Pins
-          </button>
-          <button
-            onClick={() => setFilterType('questions')}
-            className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
-              filterType === 'questions' ? 'bg-terracotta-50 text-[#D9532F]' : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            ❓ Questions
-          </button>
-          <button
-            onClick={() => setFilterType('gems')}
-            className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
-              filterType === 'gems' ? 'bg-emerald-50 text-emerald-700' : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            💎 Suggested Spots
-          </button>
-          <button
-            onClick={() => setFilterType('metro')}
-            className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1 ${
-              filterType === 'metro' ? 'bg-blue-600 text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <span>🚇 Metro</span>
-            <span className="text-[9px] opacity-80">({NCR_METRO_STATIONS.length})</span>
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Floating Active Highlighted Location Toast */}
       {highlightedPin && (
@@ -402,29 +405,31 @@ export default function MapContainer({
       {/* Map DOM Element */}
       <div ref={mapRef} className="w-full h-full flex-1" />
 
-      {/* Bottom Map Legend */}
-      <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8E5DF] shadow-md flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-stone-700 font-medium">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#D9532F]"></span>
-          <span>Traveler Questions</span>
+      {/* Bottom Map Legend - hidden if minimal */}
+      {!minimal && (
+        <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8E5DF] shadow-md flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-stone-700 font-medium">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#D9532F]"></span>
+            <span>Traveler Questions</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+            <span>Suggested Spots</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+            <span>Unofficial Gems (✨)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+            <span>NCR Metro</span>
+          </div>
+          <div className="hidden md:flex items-center gap-1.5 text-stone-400">
+            <CheckCircle2 className="w-3.5 h-3.5 text-stone-500" />
+            <span>OpenStreetMap Live</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-          <span>Suggested Spots</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-          <span>Unofficial Gems (✨)</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-          <span>NCR Metro</span>
-        </div>
-        <div className="hidden md:flex items-center gap-1.5 text-stone-400">
-          <CheckCircle2 className="w-3.5 h-3.5 text-stone-500" />
-          <span>OpenStreetMap Live</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

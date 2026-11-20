@@ -297,90 +297,90 @@ export default function App() {
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-6 w-full flex-1">
         {activeTab === 'feed' ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* 1. Left Sidebar: Reddit/Quora Spaces & Navigation (3 cols) */}
+            {/* 1. Left Sidebar: Navigation & Spaces (3 cols) */}
             <aside className={`lg:col-span-3 ${sidebarOpen ? 'block' : 'hidden lg:block'}`}>
-              <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-hidden space-y-4">
-              {/* Primary Feed Navigation */}
-              <div className="bg-white rounded-2xl border border-[#E8E5DF] p-3 shadow-xs">
-                <div className="space-y-1 text-xs sm:text-sm font-semibold">
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSelectedVibe('all');
-                      setActiveTab('feed');
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-stone-100 text-stone-900 transition-colors"
-                  >
-                    <Home className="w-4 h-4 text-[#D9532F]" />
-                    <span>Home / All City Feed</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('map')}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors"
-                  >
-                    <Compass className="w-4 h-4 text-emerald-600" />
-                    <span>Explore Spatial Map</span>
-                  </button>
-
-                  <button
-                    onClick={() => setIsFareModalOpen(true)}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors"
-                  >
-                    <ShieldCheck className="w-4 h-4 text-amber-600" />
-                    <span>Fair Fare Calculator</span>
-                  </button>
-
-                  <button
-                    onClick={() => setIsVibeModalOpen(true)}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors"
-                  >
-                    <Sparkles className="w-4 h-4 text-[#B57850]" />
-                    <span>Indic Street Slang</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Communities / Spaces (Reference Image 1 Reddit style) */}
-              <div className="bg-white rounded-2xl border border-[#E8E5DF] p-3.5 shadow-xs space-y-2.5">
-                <div className="text-[11px] font-extrabold text-stone-400 uppercase tracking-wider px-2">
-                  City Spaces & Topics
-                </div>
-                <div className="space-y-1">
-                  {COMMUNITIES.map((c) => (
+              <div className="sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar space-y-3 pr-1">
+                {/* Primary Feed Navigation */}
+                <div className="bg-white rounded-2xl border border-[#E8E5DF] p-2.5 shadow-2xs">
+                  <div className="space-y-0.5 text-xs font-semibold">
                     <button
-                      key={c.id}
-                      onClick={() => setSearchQuery(c.name.split(' ')[0])}
-                      className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs hover:bg-[#FAF8F5] transition-colors group text-left"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedVibe('all');
+                        setActiveTab('feed');
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-stone-100 text-stone-900 transition-colors"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="text-base">{c.icon}</span>
-                        <div className="truncate">
-                          <div className="font-bold text-stone-800 group-hover:text-[#D9532F] truncate">
-                            {c.name}
-                          </div>
-                          <div className="text-[10px] text-stone-400">{c.members}</div>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-stone-300 group-hover:text-stone-600 shrink-0" />
+                      <Home className="w-4 h-4 text-[#D9532F]" />
+                      <span>All City Feed</span>
                     </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* City Gazette Notice Card */}
-              <div className="bg-[#FAF8F5] rounded-2xl border border-[#E8E5DF] p-3.5 shadow-xs text-xs space-y-2">
-                <div className="flex items-center gap-2 text-[#D9532F] font-bold">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Delhi Gazette Meter Notice</span>
+                    <button
+                      onClick={() => setActiveTab('map')}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors"
+                    >
+                      <Compass className="w-4 h-4 text-emerald-600" />
+                      <span>Explore Spatial Map</span>
+                    </button>
+
+                    <button
+                      onClick={() => setIsFareModalOpen(true)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-amber-600" />
+                      <span>Fair Fare Calculator</span>
+                    </button>
+
+                    <button
+                      onClick={() => setIsVibeModalOpen(true)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors"
+                    >
+                      <Sparkles className="w-4 h-4 text-[#B57850]" />
+                      <span>Indic Street Slang</span>
+                    </button>
+                  </div>
                 </div>
-                <p className="text-[11px] text-stone-600 leading-relaxed">
-                  Auto drivers in Delhi NCR are legally required to start the electronic meter (₹30 first 1.5 km, ₹11/km). Night tariff applies 11 PM – 5 AM (+25%).
-                </p>
-                <div className="text-[10px] text-stone-400 pt-1 border-t border-stone-200">
-                  Traffic Police Helpline: 1095
+
+                {/* Communities / Spaces */}
+                <div className="bg-white rounded-2xl border border-[#E8E5DF] p-3 shadow-2xs space-y-2">
+                  <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider px-1">
+                    City Spaces & Topics
+                  </div>
+                  <div className="space-y-0.5">
+                    {COMMUNITIES.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => setSearchQuery(c.name.split(' ')[0])}
+                        className="w-full flex items-center justify-between px-2 py-1.5 rounded-xl text-xs hover:bg-[#FAF8F5] transition-colors group text-left"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-sm">{c.icon}</span>
+                          <div className="truncate">
+                            <div className="font-semibold text-stone-800 group-hover:text-[#D9532F] truncate text-[11px]">
+                              {c.name}
+                            </div>
+                            <div className="text-[9px] text-stone-400">{c.members}</div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-3 h-3 text-stone-300 group-hover:text-stone-600 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+
+                {/* City Gazette Notice Card */}
+                <div className="bg-[#FAF8F5] rounded-2xl border border-[#E8E5DF] p-3 shadow-2xs text-xs space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[#D9532F] font-bold text-[11px]">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Delhi Gazette Meter Notice</span>
+                  </div>
+                  <p className="text-[10px] text-stone-600 leading-relaxed">
+                    Auto drivers in Delhi NCR are legally required to start the electronic meter (₹30 first 1.5 km, ₹11/km). Night tariff applies 11 PM – 5 AM (+25%).
+                  </p>
+                  <div className="text-[9px] text-stone-400 pt-1 border-t border-stone-200">
+                    Traffic Police Helpline: 1095
+                  </div>
+                </div>
               </div>
             </aside>
 
@@ -419,90 +419,91 @@ export default function App() {
 
             {/* 3. Right Sidebar: Mini-Map, Quick Scam Auditor, Slang (3 cols) */}
             <aside className="hidden lg:block lg:col-span-3">
-              <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-hidden space-y-4">
+              <div className="sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar space-y-3 pr-1">
                 {/* Interactive Map Preview Card */}
-                <div className="bg-white border border-[#E8E5DF] rounded-2xl p-3.5 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Compass className="w-4 h-4 text-[#D9532F]" />
-                      <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                <div className="bg-white border border-[#E8E5DF] rounded-2xl p-2.5 shadow-2xs space-y-2">
+                  <div className="flex items-center justify-between px-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <Compass className="w-3.5 h-3.5 text-[#D9532F]" />
+                      <h3 className="text-[11px] font-bold text-stone-900 uppercase tracking-wider">
                         Live Spatial Map
                       </h3>
                     </div>
                     <button
                       onClick={() => setActiveTab('map')}
-                      className="text-xs text-[#D9532F] hover:underline font-bold"
+                      className="text-[11px] text-[#D9532F] hover:underline font-bold"
                     >
                       Expand ➔
                     </button>
                   </div>
 
-                  <div className="h-[220px] rounded-xl overflow-hidden border border-[#E8E5DF]">
+                  <div className="h-[140px] rounded-xl overflow-hidden border border-[#E8E5DF]">
                     <MapContainer
                       questions={questions}
                       onSelectQuestion={(q) => setSelectedQuestion(q)}
                       highlightedPin={highlightedPin}
+                      minimal={true}
                     />
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-stone-500 font-medium pt-1">
+                  <div className="flex items-center justify-between text-[10px] text-stone-500 font-medium px-0.5">
                     <span>Updates dynamically</span>
                     <span className="font-mono text-emerald-700 font-bold">{totalPinsCount} Pinned Spots</span>
                   </div>
                 </div>
 
                 {/* Quick Fair Fare Calculator Card */}
-                <div className="bg-white border border-terracotta-200 rounded-2xl p-4 shadow-sm space-y-3">
+                <div className="bg-white border border-terracotta-200 rounded-2xl p-3 shadow-2xs space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#D9532F]">
-                      <ShieldCheck className="w-4 h-4" />
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#D9532F]">
+                      <ShieldCheck className="w-3.5 h-3.5" />
                       <span>Fair Price Protection</span>
                     </div>
-                    <span className="text-[10px] bg-terracotta-50 text-[#D9532F] px-2 py-0.5 rounded-full font-bold">
+                    <span className="text-[9px] bg-terracotta-50 text-[#D9532F] px-1.5 py-0.5 rounded-full font-bold">
                       Delhi Meter
                     </span>
                   </div>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    Heading out? Calculate official auto meter rates, compare with cabs, or audit an auto driver quote in seconds.
+                  <p className="text-[11px] text-stone-600 leading-snug">
+                    Calculate official auto meter rates, compare with cabs, or audit an auto driver quote in seconds.
                   </p>
                   <button
                     onClick={() => setIsFareModalOpen(true)}
-                    className="w-full py-2 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-xs"
+                    className="w-full py-1.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                   >
-                    <Navigation className="w-3.5 h-3.5" />
+                    <Navigation className="w-3 h-3" />
                     <span>Open Fare & Scam Checker</span>
                   </button>
                 </div>
 
                 {/* Street Slang Quick Pill (Indic Lexicon) */}
-                <div className="bg-[#FAF8F5] border border-[#E8E5DF] rounded-2xl p-3.5 shadow-sm space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-stone-800 flex items-center gap-1.5">
+                <div className="bg-[#FAF8F5] border border-[#E8E5DF] rounded-2xl p-2.5 shadow-2xs space-y-1.5">
+                  <div className="flex items-center justify-between text-xs px-0.5">
+                    <span className="font-bold text-stone-800 text-[11px] flex items-center gap-1">
                       <span>🗣️</span>
                       <span>Slang of the Day</span>
                     </span>
                     <button
                       onClick={() => setIsVibeModalOpen(true)}
-                      className="text-[11px] text-[#D9532F] hover:underline font-semibold"
+                      className="text-[10px] text-[#D9532F] hover:underline font-semibold"
                     >
                       View All
                     </button>
                   </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-stone-200">
+                  <div className="bg-white p-2 rounded-xl border border-stone-200">
                     <div className="font-bold text-xs text-stone-900">"Meter se chalo bhaiya"</div>
-                    <div className="text-[10px] text-stone-500 mt-0.5">
+                    <div className="text-[10px] text-stone-500 mt-0.5 leading-tight">
                       Say this when an auto quotes a random price. Legally obligates meter run in Delhi.
                     </div>
                   </div>
                 </div>
 
-                {/* About NearGo Card (Reddit Right-Rail style) */}
-                <div className="bg-white border border-[#E8E5DF] rounded-2xl p-3.5 shadow-xs text-xs space-y-2">
+                {/* About NearGo Card */}
+                <div className="bg-white border border-[#E8E5DF] rounded-2xl p-2.5 shadow-2xs text-[10px] space-y-1">
                   <div className="font-bold text-stone-900">About NearGo</div>
-                  <p className="text-stone-500 text-[11px] leading-relaxed">
-                    NearGo connects travelers with authentic local residents, pinned spots on interactive maps, and real-time municipal fair transit rates. No tourist gouging, zero sponsored clutter.
+                  <p className="text-stone-500 text-[10px] leading-relaxed">
+                    Connects travelers with verified local residents, pinned spots on interactive maps, and municipal transit tariff intelligence.
                   </p>
-                  <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[10px] text-stone-400">
+                  <div className="pt-1.5 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400">
                     <span>Delhi • Mumbai • Bengaluru</span>
                     <span>© 2026 NearGo</span>
                   </div>
