@@ -297,7 +297,8 @@ export default function App() {
         {activeTab === 'feed' ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* 1. Left Sidebar: Reddit/Quora Spaces & Navigation (3 cols) */}
-            <aside className={`lg:col-span-3 ${sidebarOpen ? 'block' : 'hidden lg:block'} space-y-4`}>
+            <aside className={`lg:col-span-3 ${sidebarOpen ? 'block' : 'hidden lg:block'}`}>
+              <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-hidden space-y-4">
               {/* Primary Feed Navigation */}
               <div className="bg-white rounded-2xl border border-[#E8E5DF] p-3 shadow-xs">
                 <div className="space-y-1 text-xs sm:text-sm font-semibold">
@@ -379,6 +380,7 @@ export default function App() {
                   Traffic Police Helpline: 1095
                 </div>
               </div>
+              </div>
             </aside>
 
             {/* 2. Center Column: Community Feed & Discussions (6 cols) */}
@@ -415,8 +417,8 @@ export default function App() {
             </main>
 
             {/* 3. Right Sidebar: Mini-Map, Quick Scam Auditor, Slang (3 cols) */}
-            <aside className="hidden lg:block lg:col-span-3 space-y-4">
-              <div className="sticky top-20 space-y-4">
+            <aside className="hidden lg:block lg:col-span-3">
+              <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-hidden space-y-4">
                 {/* Interactive Map Preview Card */}
                 <div className="bg-white border border-[#E8E5DF] rounded-2xl p-3.5 shadow-sm space-y-3">
                   <div className="flex items-center justify-between">
