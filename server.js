@@ -1,18 +1,19 @@
-// NearGo REST API Server (Node.js + Express)
+// NearGo REST API Server (Node.js + Express + Supabase)
 // Powers live question persistence, map pin GeoJSON queries, and fair price benchmarking
 
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { INITIAL_QUESTIONS } from './src/data/seedData.js';
+import { createClient } from '@supabase/supabase-js';
+
 import {
-  CITY_TARIFFS,
   POPULAR_LANDMARKS,
   calculateDistance,
   calculateRouteFare,
   evaluateDriverQuote
 } from './src/data/tariffs.js';
 import { VIBE_CATEGORIES, INDIC_SLANG_DICTIONARY, VIBE_CURATED_SPOTS } from './src/data/vibeData.js';
-import { NCR_METRO_STATIONS, METRO_LINES, getStationsByLine, searchMetroStations } from './src/data/metroData.js';
+import { NCR_METRO_STATIONS, METRO_LINES } from './src/data/metroData.js';
 import { runScheduledFareSync } from './scripts/cron-job.js';
 
 import path from 'path';
@@ -28,365 +29,246 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
-// In-memory persistent state (seeded with authentic local data)
-let questions = JSON.parse(JSON.stringify(INITIAL_QUESTIONS));
+// ── Supabase Client ──────────────────────────────────────────────────────────
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
-// 1. Health & status endpoint
-app.get('/api/health', (req, res) => {
+// Helper: map DB row → frontend shape
+function mapQuestion(q) {
+  return {
+    id: q.id,
+    community: q.community,
+    title: q.title,
+    body: q.body,
+    city: q.city,
+    locationName: q.location_name,
+    lat: q.lat,
+    lng: q.lng,
+    category: q.category,
+    vibeCategory: q.vibe_category,
+    tags: q.tags || [],
+    author: {
+      name: q.author_name,
+      badge: q.author_badge,
+      badgeColor: q.author_badge_color,
+      isVerified: q.author_verified,
+      reputation: q.author_reputation,
+    },
+    upvotes: q.upvotes,
+    photos: q.photos || [],
+    fareCheck: q.fare_check || null,
+    createdAt: q.created_at,
+    answers: (q.answers || []).map(mapAnswer),
+  };
+}
+
+function mapAnswer(a) {
+  return {
+    id: a.id,
+    body: a.body,
+    insiderTip: a.insider_tip,
+    photos: a.photos || [],
+    upvotes: a.upvotes,
+    pin: (a.pin_lat && a.pin_lng)
+      ? { lat: a.pin_lat, lng: a.pin_lng, name: a.pin_name, neighborhood: a.pin_neighborhood, type: a.pin_type }
+      : null,
+    author: {
+      name: a.author_name,
+      badge: a.author_badge,
+      badgeColor: a.author_badge_color,
+      isVerified: a.author_verified,
+      reputation: a.author_reputation,
+    },
+    createdAt: a.created_at,
+  };
+}
+
+// ── 1. Health ────────────────────────────────────────────────────────────────
+app.get('/api/health', async (req, res) => {
+  const { count } = await supabase.from('questions').select('*', { count: 'exact', head: true });
   res.json({
     status: 'online',
     app: 'NearGo',
-    edition: 'Community City Edition',
-    engine: 'NearGo Municipal Tariff & Aggregator Fair Price Intelligence',
-    activeQuestionsCount: questions.length,
-    activePinsCount: questions.reduce((acc, q) => acc + 1 + q.answers.filter(a => a.pin).length, 0),
+    edition: 'Community City Edition (Supabase)',
+    activeQuestionsCount: count || 0,
   });
 });
 
-// 2. Landmarks list for quick route selection
+// ── 2. Landmarks ─────────────────────────────────────────────────────────────
 app.get('/api/landmarks', (req, res) => {
   res.json({ landmarks: POPULAR_LANDMARKS });
 });
 
-// 2b. NCR Metro Stations (Delhi Metro, Noida Metro, Rapid Metro Gurugram)
+// ── 2b. Metro Stations ───────────────────────────────────────────────────────
 app.get('/api/metro-stations', (req, res) => {
   const { line, search, network } = req.query;
   let stations = [...NCR_METRO_STATIONS];
-
-  if (line && line !== 'all') {
-    stations = stations.filter(s => s.line === line || (s.interchangeLines && s.interchangeLines.includes(line)));
-  }
-  if (network && network !== 'all') {
-    stations = stations.filter(s => s.network.toLowerCase() === network.toLowerCase());
-  }
-  if (search) {
-    const q = search.toLowerCase();
-    stations = stations.filter(s =>
-      s.name.toLowerCase().includes(q) ||
-      s.zone.toLowerCase().includes(q)
-    );
-  }
-
-  res.json({
-    count: stations.length,
-    networks: ['DMRC', 'NMRC (Aqua Line)', 'Rapid Metro Gurugram'],
-    stations,
-  });
+  if (line && line !== 'all') stations = stations.filter(s => s.line === line || s.interchangeLines?.includes(line));
+  if (network && network !== 'all') stations = stations.filter(s => s.network.toLowerCase() === network.toLowerCase());
+  if (search) { const q = search.toLowerCase(); stations = stations.filter(s => s.name.toLowerCase().includes(q) || s.zone.toLowerCase().includes(q)); }
+  res.json({ count: stations.length, networks: ['DMRC', 'NMRC (Aqua Line)', 'Rapid Metro Gurugram'], stations });
 });
 
-app.get('/api/metro-lines', (req, res) => {
-  res.json({ lines: METRO_LINES });
-});
+app.get('/api/metro-lines', (req, res) => res.json({ lines: METRO_LINES }));
 
-// 3. Get Questions (with filtering & search)
-app.get('/api/questions', (req, res) => {
+// ── 3. Get Questions ─────────────────────────────────────────────────────────
+app.get('/api/questions', async (req, res) => {
   const { city, vibe, category, search, hasFare } = req.query;
-  let filtered = [...questions];
 
-  if (city) {
-    filtered = filtered.filter(q => q.city.toLowerCase().includes(city.toLowerCase()));
-  }
-  if (vibe && vibe !== 'all') {
-    filtered = filtered.filter(q => q.vibeCategory === vibe);
-  }
-  if (category && category !== 'all') {
-    filtered = filtered.filter(q => q.category === category);
-  }
-  if (hasFare === 'true') {
-    filtered = filtered.filter(q => Boolean(q.fareCheck));
-  }
+  let query = supabase
+    .from('questions')
+    .select('*, answers(*)')
+    .order('created_at', { ascending: false });
+
+  if (city)                query = query.ilike('city', `%${city}%`);
+  if (vibe && vibe !== 'all') query = query.eq('vibe_category', vibe);
+  if (category && category !== 'all') query = query.eq('category', category);
+  if (hasFare === 'true') query = query.not('fare_check', 'is', null);
   if (search) {
-    const s = search.toLowerCase();
-    filtered = filtered.filter(
-      q =>
-        q.title.toLowerCase().includes(s) ||
-        q.body.toLowerCase().includes(s) ||
-        q.locationName.toLowerCase().includes(s) ||
-        q.tags.some(t => t.toLowerCase().includes(s))
-    );
+    query = query.or(`title.ilike.%${search}%,body.ilike.%${search}%,location_name.ilike.%${search}%`);
   }
 
-  res.json({ count: filtered.length, questions: filtered });
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ count: data.length, questions: data.map(mapQuestion) });
 });
 
-// 4. Create a new traveler question
-app.post('/api/questions', (req, res) => {
+// ── 4. Create Question ───────────────────────────────────────────────────────
+app.post('/api/questions', async (req, res) => {
   const {
-    title,
-    body,
-    locationName,
-    city = 'Delhi NCR',
-    lat,
-    lng,
-    category = 'general',
-    vibeCategory = 'student_budget',
-    tags = [],
-    authorName = 'Anonymous Traveler',
-    requestFareCheck = false,
-    fareOrigin,
-    fareDestination,
+    title, body, locationName, city = 'Delhi NCR',
+    lat, lng, category = 'general', vibeCategory = 'student_budget',
+    tags = [], authorName = 'Anonymous Traveler', community = 'c/DelhiLocal',
+    requestFareCheck = false, fareOrigin, fareDestination, photos = [],
   } = req.body;
 
-  if (!title || !body) {
-    return res.status(400).json({ error: 'Title and question body are required' });
-  }
+  if (!title || !body) return res.status(400).json({ error: 'Title and body are required' });
 
-  let computedFareCheck = null;
+  let fareCheck = null;
   if (requestFareCheck && fareOrigin && fareDestination) {
-    // Lookup landmarks or calculate distance
     const origL = POPULAR_LANDMARKS.find(l => l.name.toLowerCase().includes(fareOrigin.toLowerCase()));
     const destL = POPULAR_LANDMARKS.find(l => l.name.toLowerCase().includes(fareDestination.toLowerCase()));
-
-    const oLat = origL ? origL.lat : (lat || 28.5459);
-    const oLng = origL ? origL.lng : (lng || 77.2732);
-    const dLat = destL ? destL.lat : 28.6562;
-    const dLng = destL ? destL.lng : 77.2309;
-
+    const oLat = origL?.lat || lat || 28.5459, oLng = origL?.lng || lng || 77.2732;
+    const dLat = destL?.lat || 28.6562, dLng = destL?.lng || 77.2309;
     const distance = calculateDistance(oLat, oLng, dLat, dLng);
-    const fareResult = calculateRouteFare({ cityKey: 'delhi', distanceKm: distance });
-
-    computedFareCheck = {
-      origin: fareOrigin,
-      destination: fareDestination,
-      distanceKm: distance,
-      durationMin: fareResult.durationMin,
-      officialAutoMeter: `₹${fareResult.auto.min} - ₹${fareResult.auto.max}`,
-      cabEstimate: `₹${fareResult.cabs.mini.min} - ₹${fareResult.cabs.mini.max}`,
-      metroRoute: `Direct metro network corridor (${distance} km transit)`,
-      metroFare: `₹${fareResult.metro.tokenFare} Token / ₹${fareResult.metro.smartCardFare} Card`,
-      metroDuration: `${fareResult.metro.estimatedTimeMin} mins`,
-      scamWarning: `Always verify against municipal meter fare: ₹${fareResult.auto.exactMeter}. Avoid paying unmetered tourist surge.`,
+    const fare = calculateRouteFare({ cityKey: 'delhi', distanceKm: distance });
+    fareCheck = {
+      origin: fareOrigin, destination: fareDestination, distanceKm: distance,
+      officialAutoMeter: `₹${fare.auto.min} - ₹${fare.auto.max}`,
+      cabEstimate: `₹${fare.cabs.mini.min} - ₹${fare.cabs.mini.max}`,
+      metroFare: `₹${fare.metro.tokenFare} Token`,
+      scamWarning: `Official meter: ₹${fare.auto.exactMeter}. Avoid unmetered tourist surge.`,
     };
   }
 
-  const newQuestion = {
-    id: `q-${Date.now()}`,
-    title,
-    body,
-    author: {
-      name: authorName,
-      badge: 'Curious Traveler',
-      badgeColor: 'amber',
-      isVerified: false,
-      reputation: 10,
-    },
-    city,
-    locationName: locationName || 'Delhi NCR',
-    lat: lat || 28.5459,
-    lng: lng || 77.2732,
-    category,
-    vibeCategory,
-    tags: tags.length ? tags : ['#TravelHelp', '#LocalAdvice'],
-    createdAt: 'Just now',
-    upvotes: 1,
-    userUpvoted: true,
-    fareCheck: computedFareCheck,
-    photos: req.body.photos || [],
-    answers: [],
-  };
+  const { data, error } = await supabase.from('questions').insert({
+    title, body, community,
+    city, location_name: locationName || city,
+    lat: lat || 28.5459, lng: lng || 77.2732,
+    category, vibe_category: vibeCategory,
+    tags: tags.length ? tags : ['#TravelHelp'],
+    author_name: authorName,
+    photos, fare_check: fareCheck,
+  }).select().single();
 
-  questions.unshift(newQuestion);
-  res.status(201).json({ success: true, question: newQuestion });
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json({ success: true, question: mapQuestion({ ...data, answers: [] }) });
 });
 
-// 5. Post a verified local answer to a question
-app.post('/api/questions/:id/answers', (req, res) => {
+// ── 5. Post Answer ───────────────────────────────────────────────────────────
+app.post('/api/questions/:id/answers', async (req, res) => {
   const { id } = req.params;
-  const {
-    body,
-    authorName = 'Delhi Local Guide',
-    badge = 'Verified Local',
-    pinName,
-    pinLat,
-    pinLng,
-    neighborhood,
-    pinType = 'gem',
-    insiderTip,
-  } = req.body;
+  const { body, authorName = 'Delhi Local Guide', badge = 'Verified Local',
+    pinLat, pinLng, pinName, neighborhood, pinType = 'gem', insiderTip, photos = [] } = req.body;
 
-  const question = questions.find(q => q.id === id);
-  if (!question) {
-    return res.status(404).json({ error: 'Question not found' });
-  }
+  if (!body) return res.status(400).json({ error: 'Answer body required' });
 
-  if (!body) {
-    return res.status(400).json({ error: 'Answer content is required' });
-  }
+  const { data, error } = await supabase.from('answers').insert({
+    question_id: id,
+    body, insider_tip: insiderTip || null, photos,
+    pin_lat: pinLat || null, pin_lng: pinLng || null,
+    pin_name: pinName || null, pin_neighborhood: neighborhood || null, pin_type: pinType,
+    author_name: authorName, author_badge: badge,
+  }).select().single();
 
-  let pin = req.body.pin || null;
-  if (!pin && pinLat && pinLng && pinName) {
-    pin = {
-      lat: parseFloat(pinLat),
-      lng: parseFloat(pinLng),
-      name: pinName,
-      neighborhood: neighborhood || question.locationName,
-      type: pinType,
-    };
-  }
-
-  const newAnswer = {
-    id: `ans-${Date.now()}`,
-    author: {
-      name: authorName,
-      badge: badge || 'Helpful Local',
-      badgeColor: 'emerald',
-      isVerified: true,
-      reputation: 150,
-    },
-    body,
-    pin,
-    insiderTip: insiderTip || null,
-    photos: req.body.photos || [],
-    upvotes: 1,
-    userUpvoted: true,
-    createdAt: 'Just now',
-  };
-
-  question.answers.push(newAnswer);
-  res.status(201).json({ success: true, answer: newAnswer, question });
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json({ success: true, answer: mapAnswer(data) });
 });
 
-// 6. Upvote Question
-app.post('/api/questions/:id/upvote', (req, res) => {
+// ── 6. Upvote Question ───────────────────────────────────────────────────────
+app.post('/api/questions/:id/upvote', async (req, res) => {
   const { id } = req.params;
-  const question = questions.find(q => q.id === id);
-  if (!question) {
-    return res.status(404).json({ error: 'Question not found' });
-  }
-
-  question.userUpvoted = !question.userUpvoted;
-  question.upvotes += question.userUpvoted ? 1 : -1;
-  res.json({ success: true, upvotes: question.upvotes, userUpvoted: question.userUpvoted });
+  const { data: q } = await supabase.from('questions').select('upvotes').eq('id', id).single();
+  if (!q) return res.status(404).json({ error: 'Not found' });
+  const { data } = await supabase.from('questions').update({ upvotes: q.upvotes + 1 }).eq('id', id).select().single();
+  res.json({ success: true, upvotes: data.upvotes });
 });
 
-// 7. Upvote Answer
-app.post('/api/questions/:qId/answers/:ansId/upvote', (req, res) => {
-  const { qId, ansId } = req.params;
-  const question = questions.find(q => q.id === qId);
-  if (!question) return res.status(404).json({ error: 'Question not found' });
-
-  const answer = question.answers.find(a => a.id === ansId);
-  if (!answer) return res.status(404).json({ error: 'Answer not found' });
-
-  answer.userUpvoted = !answer.userUpvoted;
-  answer.upvotes += answer.userUpvoted ? 1 : -1;
-  res.json({ success: true, upvotes: answer.upvotes, userUpvoted: answer.userUpvoted });
+// ── 7. Upvote Answer ─────────────────────────────────────────────────────────
+app.post('/api/questions/:qId/answers/:ansId/upvote', async (req, res) => {
+  const { ansId } = req.params;
+  const { data: a } = await supabase.from('answers').select('upvotes').eq('id', ansId).single();
+  if (!a) return res.status(404).json({ error: 'Not found' });
+  const { data } = await supabase.from('answers').update({ upvotes: a.upvotes + 1 }).eq('id', ansId).select().single();
+  res.json({ success: true, upvotes: data.upvotes });
 });
 
-// 8. Fair Price Engine Route Fare Calculation
+// ── 8. Fair Price Calculate ──────────────────────────────────────────────────
 app.post('/api/fares/calculate', (req, res) => {
-  const {
-    cityKey = 'delhi',
-    origin,
-    destination,
-    originCoords,
-    destCoords,
-    isNight = false,
-    luggageCount = 0,
-    trafficMultiplier = 1.0,
-  } = req.body;
-
+  const { cityKey = 'delhi', origin, destination, originCoords, destCoords, isNight = false, luggageCount = 0 } = req.body;
   let distanceKm = 10;
-  if (originCoords && destCoords) {
-    distanceKm = calculateDistance(originCoords.lat, originCoords.lng, destCoords.lat, destCoords.lng);
-  } else if (origin && destination) {
-    const origL = POPULAR_LANDMARKS.find(l => l.name.toLowerCase().includes(origin.toLowerCase()) || l.id === origin);
-    const destL = POPULAR_LANDMARKS.find(l => l.name.toLowerCase().includes(destination.toLowerCase()) || l.id === destination);
-    if (origL && destL) {
-      distanceKm = calculateDistance(origL.lat, origL.lng, destL.lat, destL.lng);
-    }
+  if (originCoords && destCoords) distanceKm = calculateDistance(originCoords.lat, originCoords.lng, destCoords.lat, destCoords.lng);
+  else if (origin && destination) {
+    const oL = POPULAR_LANDMARKS.find(l => l.name.toLowerCase().includes(origin.toLowerCase()));
+    const dL = POPULAR_LANDMARKS.find(l => l.name.toLowerCase().includes(destination.toLowerCase()));
+    if (oL && dL) distanceKm = calculateDistance(oL.lat, oL.lng, dL.lat, dL.lng);
   }
-
-  const result = calculateRouteFare({
-    cityKey,
-    distanceKm,
-    isNight,
-    luggageCount,
-    trafficMultiplier,
-  });
-
+  const result = calculateRouteFare({ cityKey, distanceKm, isNight, luggageCount });
   res.json({ success: true, result, origin, destination });
 });
 
-// 9. Scam / Price Gouge Detector
+// ── 9. Scam Check ────────────────────────────────────────────────────────────
 app.post('/api/fares/scam-check', (req, res) => {
   const { quotedPrice, distanceKm, cityKey = 'delhi', isNight = false } = req.body;
-  if (!quotedPrice || !distanceKm) {
-    return res.status(400).json({ error: 'Quoted price and distanceKm are required' });
-  }
-
+  if (!quotedPrice || !distanceKm) return res.status(400).json({ error: 'quotedPrice and distanceKm required' });
   const fairEstimate = calculateRouteFare({ cityKey, distanceKm: parseFloat(distanceKm), isNight });
   const evaluation = evaluateDriverQuote(parseFloat(quotedPrice), fairEstimate);
-
-  res.json({
-    success: true,
-    evaluation,
-    fairEstimate,
-  });
+  res.json({ success: true, evaluation, fairEstimate });
 });
 
-// 10. Vibe Engine & Slang Dictionary
+// ── 10. Vibe Engine ──────────────────────────────────────────────────────────
 app.get('/api/vibe/curated', (req, res) => {
-  res.json({
-    categories: VIBE_CATEGORIES,
-    dictionary: INDIC_SLANG_DICTIONARY,
-    curatedSpots: VIBE_CURATED_SPOTS,
-  });
+  res.json({ categories: VIBE_CATEGORIES, dictionary: INDIC_SLANG_DICTIONARY, curatedSpots: VIBE_CURATED_SPOTS });
 });
 
-// 11. Scheduled Cron Job Endpoint (Vercel Cron & Webhook Trigger)
+// ── 11. Cron ─────────────────────────────────────────────────────────────────
 app.all('/api/cron/sync-fares', async (req, res) => {
   try {
     const report = await runScheduledFareSync();
-    res.json({
-      success: true,
-      trigger: req.headers['x-vercel-cron'] ? 'vercel-cron' : 'webhook-or-client',
-      report,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.json({ success: true, report });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Serve built frontend assets if dist exists
+// ── Serve built frontend ──────────────────────────────────────────────────────
 const distPath = path.join(__dirname, 'dist');
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath));
-}
+if (fs.existsSync(distPath)) app.use(express.static(distPath));
 
-// Fallback for non-API routes
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) {
-    return next();
-  }
+  if (req.path.startsWith('/api')) return next();
   const indexPath = path.join(distPath, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    return res.sendFile(indexPath);
-  }
-  res.json({
-    app: 'NearGo REST API Engine',
-    status: 'online',
-    frontend: 'https://neargo-sandy.vercel.app',
-    endpoints: {
-      health: '/api/health',
-      questions: '/api/questions',
-      landmarks: '/api/landmarks',
-      fairPrice: '/api/fare-check',
-      cron: '/api/cron/sync-fares'
-    }
-  });
+  if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
+  res.json({ app: 'NearGo REST API (Supabase Edition)', status: 'online' });
 });
-
-// Periodic in-process fallback cron timer (every 6 hours)
-const SIX_HOURS = 6 * 60 * 60 * 1000;
-setInterval(() => {
-  runScheduledFareSync().catch((err) => console.error('[In-process Cron Error]', err));
-}, SIX_HOURS);
 
 if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
-    console.log(`[NearGo Backend] Running on http://localhost:${PORT}`);
-    console.log(`[NearGo Backend] Ready with ${questions.length} initial questions & fair price engine.`);
+    console.log(`[NearGo] Running on http://localhost:${PORT}`);
+    console.log(`[NearGo] Supabase: ${process.env.SUPABASE_URL ? '✓ Connected' : '✗ SUPABASE_URL missing'}`);
   });
 }
 
