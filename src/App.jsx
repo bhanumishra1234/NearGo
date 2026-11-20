@@ -7,6 +7,8 @@ import FairPriceEngine from './components/FairPriceEngine.jsx';
 import QuestionDetailModal from './components/QuestionDetailModal.jsx';
 import AskQuestionModal from './components/AskQuestionModal.jsx';
 import VibeEngineModal from './components/VibeEngineModal.jsx';
+import AuthModal from './components/AuthModal.jsx';
+import { useAuth } from './context/AuthContext.jsx';
 import { INITIAL_QUESTIONS } from './data/seedData.js';
 import { calculateDistance, calculateRouteFare } from './data/tariffs.js';
 import {
@@ -42,6 +44,10 @@ export default function App() {
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
   const [isFareModalOpen, setIsFareModalOpen] = useState(false);
   const [isVibeModalOpen, setIsVibeModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+
+  const { user } = useAuth();
 
   // Sync with backend API if running
   useEffect(() => {
@@ -176,11 +182,11 @@ export default function App() {
       title: questionData.title,
       body: questionData.body,
       author: {
-        name: questionData.authorName || 'Traveler',
-        badge: 'Curious Traveler',
-        badgeColor: 'amber',
-        isVerified: false,
-        reputation: 12,
+        name: questionData.authorName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Traveler',
+        badge: user ? 'Verified Local' : 'Curious Traveler',
+        badgeColor: user ? 'emerald' : 'amber',
+        isVerified: !!user,
+        reputation: user ? 85 : 12,
       },
       city: selectedCity,
       locationName: questionData.locationName,
@@ -211,11 +217,11 @@ export default function App() {
     const newAnswer = {
       id: `ans-${Date.now()}`,
       author: {
-        name: answerData.authorName,
-        badge: answerData.badge || 'Verified Local',
+        name: answerData.authorName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Local Guide',
+        badge: answerData.badge || (user ? 'Verified Local' : 'Local Contributor'),
         badgeColor: 'emerald',
         isVerified: true,
-        reputation: 160,
+        reputation: user ? 180 : 160,
       },
       body: answerData.body,
       pin: answerData.pin,
@@ -277,6 +283,10 @@ export default function App() {
         onOpenAskModal={() => setIsAskModalOpen(true)}
         onOpenFareModal={() => setIsFareModalOpen(true)}
         onOpenVibeModal={() => setIsVibeModalOpen(true)}
+        onOpenAuthModal={(mode) => {
+          setAuthMode(mode || 'login');
+          setIsAuthModalOpen(true);
+        }}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         sidebarOpen={sidebarOpen}
@@ -593,6 +603,13 @@ export default function App() {
           onHighlightOnMap={handleHighlightOnMap}
         />
       )}
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authMode}
+      />
     </div>
   );
 }
