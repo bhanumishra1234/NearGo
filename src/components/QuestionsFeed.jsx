@@ -96,18 +96,18 @@ export default function QuestionsFeed({
         </div>
       </div>
 
-      {/* 2. Category & Vibe Filter Navigation */}
-      <div className="bg-white rounded-2xl border border-[#E8E5DF] p-3 shadow-sm space-y-2.5">
-        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <div className="flex items-center gap-1.5">
+      {/* 2. Category & Vibe Filter Navigation (Minimal & Clean) */}
+      <div className="bg-white rounded-2xl border border-[#E8E5DF] p-3 shadow-2xs space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
                   activeCategory === cat.id
-                    ? 'bg-[#1C1917] text-white shadow-sm'
-                    : 'bg-[#F4F1EA] text-stone-700 hover:bg-[#ECE7DC] border border-transparent'
+                    ? 'bg-[#1C1917] text-white shadow-xs'
+                    : 'bg-[#F4F1EA] text-stone-700 hover:bg-[#ECE7DC]'
                 }`}
               >
                 <span>{cat.icon}</span>
@@ -119,30 +119,30 @@ export default function QuestionsFeed({
           {/* Toggle for Fair Price Protected */}
           <button
             onClick={() => setOnlyFareQuestions(!onlyFareQuestions)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border flex items-center gap-1.5 transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border flex items-center gap-1.5 transition-colors shrink-0 ml-1 ${
               onlyFareQuestions
                 ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F]'
                 : 'bg-white border-stone-200 text-stone-600 hover:text-stone-900 hover:border-stone-300'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5 text-[#D9532F]" />
-            <span>Fair Price Checked ({questions.filter((q) => q.fareCheck).length})</span>
+            <span>Fair Price ({questions.filter((q) => q.fareCheck).length})</span>
           </button>
         </div>
 
         {/* Vibe Chips Sub-row */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pt-1 border-t border-stone-100 scrollbar-none text-xs">
-          <span className="text-[11px] font-bold text-stone-400 shrink-0 uppercase tracking-wider pl-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-stone-100/80 text-xs py-0.5">
+          <span className="text-[10px] font-bold text-stone-400 shrink-0 uppercase tracking-wider pl-1">
             Vibe:
           </span>
           {VIBE_CATEGORIES.map((v) => (
             <button
               key={v.id}
               onClick={() => setSelectedVibe(v.id)}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1 shrink-0 ${
                 selectedVibe === v.id
-                  ? 'bg-clay-200 text-stone-900 font-bold border border-clay-300'
-                  : 'bg-[#FAF8F5] text-stone-600 hover:bg-stone-100 border border-stone-200'
+                  ? 'bg-stone-200 text-stone-900 font-bold border border-stone-300'
+                  : 'bg-[#FAF8F5] text-stone-600 hover:bg-stone-100 border border-stone-200/80'
               }`}
             >
               <span>{v.icon}</span>
