@@ -34,11 +34,11 @@ export default function QuestionsFeed({
   const [copiedId, setCopiedId] = useState(null);
 
   const CATEGORIES = [
-    { id: 'all', label: 'All Discussions', icon: '🔥' },
-    { id: 'transport', label: 'Transit & Fares', icon: '🛺' },
-    { id: 'food', label: 'Street Food', icon: '🥟' },
-    { id: 'hidden_gems', label: 'Secret Spots', icon: '💎' },
-    { id: 'shopping', label: 'Flea Markets', icon: '🛍️' },
+    { id: 'all', label: 'All Discussions' },
+    { id: 'transport', label: 'Transit & Fares' },
+    { id: 'food', label: 'Street Food' },
+    { id: 'hidden_gems', label: 'Secret Spots' },
+    { id: 'shopping', label: 'Flea Markets' },
   ];
 
   const filteredQuestions = questions.filter((q) => {
@@ -104,13 +104,12 @@ export default function QuestionsFeed({
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
                   activeCategory === cat.id
                     ? 'bg-[#1C1917] text-white shadow-xs'
                     : 'bg-[#F4F1EA] text-stone-700 hover:bg-[#ECE7DC]'
                 }`}
               >
-                <span>{cat.icon}</span>
                 <span>{cat.label}</span>
               </button>
             ))}
@@ -139,13 +138,12 @@ export default function QuestionsFeed({
             <button
               key={v.id}
               onClick={() => setSelectedVibe(v.id)}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1 shrink-0 ${
+              className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0 ${
                 selectedVibe === v.id
                   ? 'bg-stone-200 text-stone-900 font-bold border border-stone-300'
                   : 'bg-[#FAF8F5] text-stone-600 hover:bg-stone-100 border border-stone-200/80'
               }`}
             >
-              <span>{v.icon}</span>
               <span>{v.label}</span>
             </button>
           ))}
