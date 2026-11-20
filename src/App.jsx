@@ -293,15 +293,6 @@ export default function App() {
         setSidebarOpen={setSidebarOpen}
       />
 
-      {/* Optional Clean Welcome Header */}
-      {showBanner && (
-        <StatsHeader
-          onOpenFareModal={() => setIsFareModalOpen(true)}
-          onOpenVibeModal={() => setIsVibeModalOpen(true)}
-          onDismiss={() => setShowBanner(false)}
-        />
-      )}
-
       {/* Main Reddit/Quora 3-Column Layout */}
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-6 w-full flex-1">
         {activeTab === 'feed' ? (
