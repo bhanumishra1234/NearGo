@@ -83,7 +83,7 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-[#E8E5DF] flex items-center justify-between bg-[#FAF8F5]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-[#D9532F] text-white font-bold flex items-center justify-center text-sm shadow-md shadow-terracotta-500/20">
+            <div className="w-9 h-9 rounded-full bg-[#7C3AED] text-white font-bold flex items-center justify-center text-sm shadow-md shadow-violet-500/20">
               <HelpCircle className="w-5 h-5" />
             </div>
             <div>
@@ -116,7 +116,7 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
           {/* Question Title */}
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1">
-              Question Title <span className="text-[#D9532F]">*</span>
+              Question Title <span className="text-[#7C3AED]">*</span>
             </label>
             <input
               type="text"
@@ -131,7 +131,7 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
           {/* Question Context */}
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1">
-              Details & Context <span className="text-[#D9532F]">*</span>
+              Details & Context <span className="text-[#7C3AED]">*</span>
             </label>
             <textarea
               rows={3}
@@ -190,7 +190,7 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
           <div className="space-y-2 bg-[#FAF8F5] p-3 rounded-xl border border-stone-200">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-[#D9532F]" />
+                <MapPin className="w-4 h-4 text-[#7C3AED]" />
                 <span>Question Location (On-Map Pin)</span>
               </label>
               <span className="text-[10px] text-stone-500 font-medium">Pinpoint any spot or alley</span>
@@ -202,7 +202,7 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
                 onClick={() => setLocationMode('landmark')}
                 className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                   locationMode === 'landmark'
-                    ? 'bg-white text-[#D9532F] shadow-xs'
+                    ? 'bg-white text-[#7C3AED] shadow-xs'
                     : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
@@ -214,11 +214,11 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
                 onClick={() => setLocationMode('map')}
                 className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                   locationMode === 'map'
-                    ? 'bg-white text-[#D9532F] shadow-xs'
+                    ? 'bg-white text-[#7C3AED] shadow-xs'
                     : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
-                <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
+                <MapPin className="w-3.5 h-3.5 text-[#7C3AED]" />
                 <span>📍 Pinpoint on Map (Custom Spot)</span>
               </button>
             </div>
@@ -256,10 +256,10 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
                 type="checkbox"
                 checked={requestFareCheck}
                 onChange={(e) => setRequestFareCheck(e.target.checked)}
-                className="rounded accent-[#D9532F]"
+                className="rounded accent-[#7C3AED]"
               />
-              <span className="text-xs font-bold text-[#D9532F] flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#D9532F]" />
+              <span className="text-xs font-bold text-[#7C3AED] flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#7C3AED]" />
                 <span>Attach Live Fair Price Protection Card</span>
               </span>
             </label>
@@ -302,7 +302,7 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-md shadow-terracotta-500/20 flex items-center gap-2 transition-all hover:scale-[1.02]"
+              className="px-5 py-2.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xs shadow-md shadow-violet-500/20 flex items-center gap-2 transition-all hover:scale-[1.02]"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Publish Question</span>

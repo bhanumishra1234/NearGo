@@ -102,7 +102,7 @@ export default function QuestionDetailModal({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-[#E8E5DF] flex items-center justify-between bg-[#FAF8F5]">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold text-[#D9532F] bg-terracotta-50 border border-terracotta-200 px-2.5 py-0.5 rounded-full">
+            <span className="text-xs font-bold text-[#7C3AED] bg-violet-50 border border-violet-200 px-2.5 py-0.5 rounded-full">
               {question.community || 'c/DelhiTransit'}
             </span>
             <span className="text-xs text-stone-500 font-medium">📍 {question.locationName}</span>
@@ -121,7 +121,7 @@ export default function QuestionDetailModal({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-[#D9532F] text-white font-bold flex items-center justify-center text-sm shadow-inner">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-[#7C3AED] text-white font-bold flex items-center justify-center text-sm shadow-inner">
                   {question.author.name[0]}
                 </div>
                 <div>
@@ -139,7 +139,7 @@ export default function QuestionDetailModal({
                 onClick={() => onUpvoteQuestion(question.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
                   question.userUpvoted
-                    ? 'bg-[#D9532F] border-[#D9532F] text-white shadow-xs'
+                    ? 'bg-[#7C3AED] border-[#7C3AED] text-white shadow-xs'
                     : 'bg-[#F4F1EA] border-stone-200 text-stone-700 hover:text-stone-900'
                 }`}
               >
@@ -160,10 +160,10 @@ export default function QuestionDetailModal({
 
             {/* Embedded Fair Fare Protection Card */}
             {question.fareCheck && (
-              <div className="bg-[#FAF8F5] border border-terracotta-200 rounded-xl p-4 text-xs space-y-3">
+              <div className="bg-[#FAF8F5] border border-violet-200 rounded-xl p-4 text-xs space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-[#D9532F] font-bold text-xs uppercase tracking-wider">
-                    <ShieldCheck className="w-4 h-4 text-[#D9532F]" />
+                  <div className="flex items-center gap-2 text-[#7C3AED] font-bold text-xs uppercase tracking-wider">
+                    <ShieldCheck className="w-4 h-4 text-[#7C3AED]" />
                     <span>Real-Time Fair Fare Protection Card</span>
                   </div>
                   <span className="font-mono text-stone-500 text-[11px] font-semibold">
@@ -172,9 +172,9 @@ export default function QuestionDetailModal({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="bg-white p-2.5 rounded-lg border border-terracotta-200 shadow-xs">
+                  <div className="bg-white p-2.5 rounded-lg border border-violet-200 shadow-xs">
                     <div className="text-[10px] text-stone-500 font-medium">Official Auto Meter</div>
-                    <div className="text-base font-extrabold text-[#D9532F] font-mono">
+                    <div className="text-base font-extrabold text-[#7C3AED] font-mono">
                       {question.fareCheck.officialAutoMeter}
                     </div>
                   </div>
@@ -256,8 +256,8 @@ export default function QuestionDetailModal({
                   {ans.pin && (
                     <div className="bg-white border-2 border-stone-200 hover:border-terracotta-300 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all shadow-xs">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-full bg-terracotta-50 border border-terracotta-200 text-[#D9532F] flex items-center justify-center shrink-0">
-                          <MapPin className="w-5 h-5 text-[#D9532F]" />
+                        <div className="w-9 h-9 rounded-full bg-terracotta-50 border border-terracotta-200 text-[#7C3AED] flex items-center justify-center shrink-0">
+                          <MapPin className="w-5 h-5 text-[#7C3AED]" />
                         </div>
                         <div>
                           <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function QuestionDetailModal({
                           onHighlightOnMap(ans.pin);
                           onClose();
                         }}
-                        className="px-4 py-2 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0"
+                        className="px-4 py-2 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0"
                         title="Click to see location on map"
                       >
                         <Compass className="w-3.5 h-3.5" />
@@ -305,7 +305,7 @@ export default function QuestionDetailModal({
           {/* Post a Suggestion & Give Location Form */}
           <div className="pt-4 border-t border-stone-200">
             <h3 className="text-sm font-bold text-stone-900 mb-3 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#D9532F]" />
+              <Sparkles className="w-4 h-4 text-[#7C3AED]" />
               <span>Know the answer? Share advice and give a location:</span>
             </h3>
 
@@ -347,14 +347,14 @@ export default function QuestionDetailModal({
                       type="checkbox"
                       checked={attachPin}
                       onChange={(e) => setAttachPin(e.target.checked)}
-                      className="rounded accent-[#D9532F] w-4 h-4"
+                      className="rounded accent-[#7C3AED] w-4 h-4"
                     />
                     <span className="flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-[#D9532F]" />
+                      <MapPin className="w-4 h-4 text-[#7C3AED]" />
                       <span>Give a location with this suggestion (Interactive Map Pin)</span>
                     </span>
                   </label>
-                  <span className="text-[10px] text-[#D9532F] font-bold bg-terracotta-50 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] text-[#7C3AED] font-bold bg-terracotta-50 px-2 py-0.5 rounded-full">
                     Clickable on Map
                   </span>
                 </div>
@@ -368,11 +368,11 @@ export default function QuestionDetailModal({
                         onClick={() => setPinMode('map')}
                         className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                           pinMode === 'map'
-                            ? 'bg-white text-[#D9532F] shadow-xs'
+                            ? 'bg-white text-[#7C3AED] shadow-xs'
                             : 'text-stone-600 hover:text-stone-900'
                         }`}
                       >
-                        <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
+                        <MapPin className="w-3.5 h-3.5 text-[#7C3AED]" />
                         <span>📍 Pinpoint on Map (Hidden / Unofficial Spot)</span>
                       </button>
                       <button
@@ -380,7 +380,7 @@ export default function QuestionDetailModal({
                         onClick={() => setPinMode('landmark')}
                         className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                           pinMode === 'landmark'
-                            ? 'bg-white text-[#D9532F] shadow-xs'
+                            ? 'bg-white text-[#7C3AED] shadow-xs'
                             : 'text-stone-600 hover:text-stone-900'
                         }`}
                       >
@@ -474,7 +474,7 @@ export default function QuestionDetailModal({
               <div className="flex justify-end pt-1">
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-md shadow-terracotta-500/20 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                  className="px-5 py-2.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xs shadow-md shadow-violet-500/20 flex items-center gap-2 transition-all hover:scale-[1.02]"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Post Suggestion with Location Pin</span>

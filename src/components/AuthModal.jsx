@@ -85,7 +85,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Deepanshu Aggarwal"
-                  className="w-full pl-9 pr-3 py-2 text-xs border border-stone-300 rounded-xl focus:outline-none focus:border-[#D9532F]"
+                  className="w-full pl-9 pr-3 py-2 text-xs border border-stone-300 rounded-xl focus:outline-none focus:border-[#7C3AED]"
                 />
               </div>
             </div>
@@ -101,7 +101,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full pl-9 pr-3 py-2 text-xs border border-stone-300 rounded-xl focus:outline-none focus:border-[#D9532F]"
+                className="w-full pl-9 pr-3 py-2 text-xs border border-stone-300 rounded-xl focus:outline-none focus:border-[#7C3AED]"
               />
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2 text-xs border border-stone-300 rounded-xl focus:outline-none focus:border-[#D9532F]"
+                className="w-full pl-9 pr-3 py-2 text-xs border border-stone-300 rounded-xl focus:outline-none focus:border-[#7C3AED]"
               />
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white text-xs font-bold transition-colors flex items-center justify-center gap-2 mt-2 shadow-sm"
+            className="w-full py-2.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold transition-colors flex items-center justify-center gap-2 mt-2 shadow-sm"
           >
             {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             <span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span>
@@ -142,7 +142,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                   setMode('signup');
                   setError(null);
                 }}
-                className="text-[#D9532F] font-bold hover:underline"
+                className="text-[#7C3AED] font-bold hover:underline"
               >
                 Sign up
               </button>
@@ -156,7 +156,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                   setMode('login');
                   setError(null);
                 }}
-                className="text-[#D9532F] font-bold hover:underline"
+                className="text-[#7C3AED] font-bold hover:underline"
               >
                 Log in
               </button>

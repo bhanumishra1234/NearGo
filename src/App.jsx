@@ -363,7 +363,7 @@ export default function App() {
   ];
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#ffffff] dark:bg-[#000000] text-[#1C1917] dark:text-[#E7E5E4] flex flex-col font-sans selection:bg-[#D9532F] selection:text-white transition-colors duration-200">
+    <div className="h-screen w-screen overflow-hidden bg-[#ffffff] dark:bg-[#000000] text-[#1C1917] dark:text-[#E7E5E4] flex flex-col font-sans selection:bg-[#7C3AED] selection:text-white transition-colors duration-200">
       {/* Navbar */}
       <Navbar
         selectedCity={selectedCity}
@@ -408,7 +408,7 @@ export default function App() {
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-[#1a1a1a] text-stone-900 dark:text-white transition-colors"
                   >
-                    <Home className="w-4 h-4 text-[#D9532F]" />
+                    <Home className="w-4 h-4 text-[#7C3AED]" />
                     <span>All City Feed</span>
                   </button>
 
@@ -432,7 +432,7 @@ export default function App() {
                     onClick={() => setIsVibeModalOpen(true)}
                     className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors"
                   >
-                    <Sparkles className="w-4 h-4 text-[#B57850] dark:text-[#d49970]" />
+                    <Sparkles className="w-4 h-4 text-[#7C3AED] dark:text-[#A78BFA]" />
                     <span>Indic Street Slang</span>
                   </button>
                 </div>
@@ -453,7 +453,7 @@ export default function App() {
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-sm">{c.icon}</span>
                         <div className="truncate">
-                          <div className="font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#D9532F] truncate text-[11px]">
+                          <div className="font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#7C3AED] truncate text-[11px]">
                             {c.name}
                           </div>
                           <div className="text-[9px] text-stone-400 dark:text-stone-500">{c.members}</div>
@@ -467,7 +467,7 @@ export default function App() {
 
               {/* City Gazette Notice Card */}
               <div className="bg-[#FAF8F5] dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-2.5 shadow-2xs text-xs space-y-1">
-                <div className="flex items-center gap-1.5 text-[#D9532F] font-bold text-[11px]">
+                <div className="flex items-center gap-1.5 text-[#7C3AED] font-bold text-[11px]">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   <span>Delhi Gazette Meter Notice</span>
                 </div>
@@ -486,7 +486,7 @@ export default function App() {
                 <div>
                   <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
                     <span>Recent Local Discussions</span>
-                    <span className="text-xs bg-terracotta-50 dark:bg-[#D9532F]/15 text-[#D9532F] dark:text-[#ff7854] border border-terracotta-200 dark:border-[#D9532F]/30 px-2 py-0.5 rounded-full font-mono font-bold">
+                    <span className="text-xs bg-violet-50 dark:bg-[#7C3AED]/15 text-[#7C3AED] dark:text-[#A78BFA] border border-violet-200 dark:border-[#7C3AED]/30 px-2 py-0.5 rounded-full font-mono font-bold">
                       {displayedQuestions.length}
                     </span>
                   </h2>
@@ -494,7 +494,7 @@ export default function App() {
 
                 <button
                   onClick={() => setIsAskModalOpen(true)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5"
                 >
                   <MessageSquarePlus className="w-3.5 h-3.5" />
                   <span>Ask Local</span>
@@ -517,7 +517,7 @@ export default function App() {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
                   <div className="flex items-center gap-2">
                     <span className="font-extrabold text-stone-900 dark:text-white text-xs">
-                      Near<span className="text-[#D9532F]">Go</span>
+                      Near<span className="text-[#7C3AED]">Go</span>
                     </span>
                     <span className="text-stone-300 dark:text-stone-700">•</span>
                     <span>Hyper-Local Community Travel Companion</span>
@@ -535,14 +535,14 @@ export default function App() {
               <div className="bg-white dark:bg-[#0a0a0a] border border-[#E8E5DF] dark:border-[#1a1a1a] rounded-2xl p-2.5 shadow-2xs space-y-1.5">
                 <div className="flex items-center justify-between px-0.5">
                   <div className="flex items-center gap-1.5">
-                    <Compass className="w-3.5 h-3.5 text-[#D9532F]" />
+                    <Compass className="w-3.5 h-3.5 text-[#7C3AED]" />
                     <h3 className="text-[11px] font-bold text-stone-900 dark:text-stone-100 uppercase tracking-wider">
                       Live Spatial Map
                     </h3>
                   </div>
                   <button
                     onClick={() => setActiveTab('map')}
-                    className="text-[11px] text-[#D9532F] hover:underline font-bold"
+                    className="text-[11px] text-[#7C3AED] hover:underline font-bold"
                   >
                     Expand ➔
                   </button>
@@ -565,13 +565,13 @@ export default function App() {
               </div>
 
               {/* Quick Fair Fare Calculator Card */}
-              <div className="bg-white dark:bg-[#0a0a0a] border border-terracotta-200 dark:border-[#1a1a1a] rounded-2xl p-2.5 shadow-2xs space-y-1.5">
+              <div className="bg-white dark:bg-[#0a0a0a] border border-violet-200 dark:border-[#1a1a1a] rounded-2xl p-2.5 shadow-2xs space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#D9532F]">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#7C3AED]">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     <span>Fair Price Protection</span>
                   </div>
-                  <span className="text-[9px] bg-terracotta-50 dark:bg-[#D9532F]/15 text-[#D9532F] dark:text-[#ff7854] px-1.5 py-0.5 rounded-full font-bold">
+                  <span className="text-[9px] bg-violet-50 dark:bg-[#7C3AED]/15 text-[#7C3AED] dark:text-[#A78BFA] px-1.5 py-0.5 rounded-full font-bold">
                     Delhi Meter
                   </span>
                 </div>
@@ -580,7 +580,7 @@ export default function App() {
                 </p>
                 <button
                   onClick={() => setIsFareModalOpen(true)}
-                  className="w-full py-1.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  className="w-full py-1.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                 >
                   <Navigation className="w-3 h-3" />
                   <span>Open Fare & Scam Checker</span>
@@ -596,7 +596,7 @@ export default function App() {
                   </span>
                   <button
                     onClick={() => setIsVibeModalOpen(true)}
-                    className="text-[10px] text-[#D9532F] hover:underline font-semibold"
+                    className="text-[10px] text-[#7C3AED] hover:underline font-semibold"
                   >
                     View All
                   </button>
@@ -628,7 +628,7 @@ export default function App() {
             <div className="flex items-center justify-between bg-white dark:bg-[#0a0a0a] p-3 rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] shadow-xs">
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
-                  <Compass className="w-5 h-5 text-[#D9532F]" />
+                  <Compass className="w-5 h-5 text-[#7C3AED]" />
                   <span>Interactive Map & Pinned Recommendations</span>
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -639,7 +639,7 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsAskModalOpen(true)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-xs"
+                  className="px-3.5 py-1.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xs shadow-xs"
                 >
                   Pin a Question
                 </button>

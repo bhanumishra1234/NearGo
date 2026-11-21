@@ -39,10 +39,10 @@ export default function LocationPickerMap({
       className: 'custom-picker-pin',
       html: `
         <div class="relative flex items-center justify-center cursor-pointer group">
-          <div class="w-9 h-9 rounded-full bg-[#D9532F] ring-4 ring-terracotta-200 shadow-xl flex items-center justify-center text-white scale-110 animate-pulse">
+          <div class="w-9 h-9 rounded-full bg-[#7C3AED] ring-4 ring-terracotta-200 shadow-xl flex items-center justify-center text-white scale-110 animate-pulse">
             <span class="text-sm font-bold">📍</span>
           </div>
-          <div class="absolute -bottom-1 w-2.5 h-2.5 bg-[#D9532F] rotate-45"></div>
+          <div class="absolute -bottom-1 w-2.5 h-2.5 bg-[#7C3AED] rotate-45"></div>
         </div>
       `,
       iconSize: [36, 42],
@@ -162,7 +162,7 @@ export default function LocationPickerMap({
         <div>
           <label className="block text-[11px] font-bold text-stone-700 mb-1 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#D9532F]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" />
               <span>Custom Spot / Secret Stall Name:</span>
             </span>
             <span className="text-[10px] text-stone-400 font-normal">Can be unlisted/unofficial</span>
@@ -188,7 +188,7 @@ export default function LocationPickerMap({
               onClick={() => {
                 updatePosition(zone.lat, zone.lng, true);
               }}
-              className="px-2 py-0.5 rounded-full bg-stone-100 hover:bg-terracotta-50 hover:text-[#D9532F] text-stone-700 text-[10px] font-semibold whitespace-nowrap transition-colors border border-stone-200"
+              className="px-2 py-0.5 rounded-full bg-stone-100 hover:bg-terracotta-50 hover:text-[#7C3AED] text-stone-700 text-[10px] font-semibold whitespace-nowrap transition-colors border border-stone-200"
             >
               {zone.label}
             </button>
@@ -217,7 +217,7 @@ export default function LocationPickerMap({
         {/* Floating Instruction Banner */}
         <div className="absolute top-2 left-2 right-2 z-[400] pointer-events-none flex justify-center">
           <div className="bg-white/95 backdrop-blur-md px-3 py-1 rounded-full border border-stone-200 shadow-md text-[10px] font-bold text-stone-800 flex items-center gap-1.5 animate-in fade-in">
-            <span className="w-2 h-2 rounded-full bg-[#D9532F] animate-ping"></span>
+            <span className="w-2 h-2 rounded-full bg-[#7C3AED] animate-ping"></span>
             <span>Click anywhere or drag the pin to pinpoint exact spot</span>
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function LocationPickerMap({
       {/* Selected Coordinates & Neighborhood Card */}
       <div className="bg-[#FAF8F5] border border-stone-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-terracotta-50 border border-terracotta-200 text-[#D9532F] flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-full bg-terracotta-50 border border-terracotta-200 text-[#7C3AED] flex items-center justify-center shrink-0">
             <MapPin className="w-3.5 h-3.5" />
           </div>
           <div>

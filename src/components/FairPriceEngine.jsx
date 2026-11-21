@@ -96,7 +96,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
       {/* Header */}
       <div className="p-4 sm:p-5 bg-[#FAF8F5] border-b border-[#E8E5DF] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#D9532F] flex items-center justify-center text-white font-bold shadow-md shadow-terracotta-500/20">
+          <div className="w-10 h-10 rounded-full bg-[#7C3AED] flex items-center justify-center text-white font-bold shadow-md shadow-terracotta-500/20">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
@@ -125,7 +125,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
         {/* Quick Popular Routes */}
         <div>
           <div className="text-xs font-semibold text-stone-500 mb-2 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#D9532F]" />
+            <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" />
             <span>Popular Benchmark Routes:</span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -133,7 +133,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
               onClick={() => setPreset('iiitd', 'chandni-chowk', false, '500')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 originId === 'iiitd' && destId === 'chandni-chowk'
-                  ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F] font-bold'
+                  ? 'bg-violet-50 border-violet-400 text-[#7C3AED] font-bold'
                   : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-300'
               }`}
             >
@@ -143,7 +143,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
               onClick={() => setPreset('iiitd', 'moolchand', true, '200')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 originId === 'iiitd' && destId === 'moolchand'
-                  ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F] font-bold'
+                  ? 'bg-terracotta-50 border-terracotta-400 text-[#7C3AED] font-bold'
                   : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-300'
               }`}
             >
@@ -153,7 +153,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
               onClick={() => setPreset('ndls', 'cp', false, '300')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 originId === 'ndls' && destId === 'cp'
-                  ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F] font-bold'
+                  ? 'bg-terracotta-50 border-terracotta-400 text-[#7C3AED] font-bold'
                   : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-300'
               }`}
             >
@@ -163,7 +163,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
               onClick={() => setPreset('iiitd', 'cyber-hub', false, '750')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 originId === 'iiitd' && destId === 'cyber-hub'
-                  ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F] font-bold'
+                  ? 'bg-terracotta-50 border-terracotta-400 text-[#7C3AED] font-bold'
                   : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-300'
               }`}
             >
@@ -173,7 +173,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
               onClick={() => setPreset('t3-airport', 'cp', true, '1400')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 originId === 't3-airport' && destId === 'cp'
-                  ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F] font-bold'
+                  ? 'bg-terracotta-50 border-terracotta-400 text-[#7C3AED] font-bold'
                   : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-300'
               }`}
             >
@@ -183,7 +183,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
               onClick={() => setPreset('iiitd', 'noida-sec18', false, '400')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 originId === 'iiitd' && destId === 'noida-sec18'
-                  ? 'bg-terracotta-50 border-terracotta-400 text-[#D9532F] font-bold'
+                  ? 'bg-terracotta-50 border-terracotta-400 text-[#7C3AED] font-bold'
                   : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-300'
               }`}
             >
@@ -290,7 +290,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-stone-200 text-xs">
             <div className="flex items-center gap-2">
               <span className="text-stone-500 font-medium">Road Distance:</span>
-              <span className="font-mono font-bold text-[#D9532F] text-sm">
+              <span className="font-mono font-bold text-[#7C3AED] text-sm">
                 {computedDistance} km
               </span>
               <span className="text-stone-400">| Est. Travel Time:</span>
@@ -340,11 +340,11 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
         {/* Multi-Modal Comparison Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* 1. Official Auto Meter (Highlight) */}
-          <div className="bg-[#FAF8F5] border-2 border-terracotta-400 rounded-xl p-4 relative shadow-xs">
-            <div className="absolute -top-2.5 right-3 bg-[#D9532F] text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
+          <div className="bg-[#FAF8F5] border-2 border-violet-400 rounded-xl p-4 relative shadow-xs">
+            <div className="absolute -top-2.5 right-3 bg-[#7C3AED] text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
               Legal Meter Baseline
             </div>
-            <div className="flex items-center gap-2 text-[#D9532F] text-xs font-bold mb-1">
+            <div className="flex items-center gap-2 text-[#7C3AED] text-xs font-bold mb-1">
               <span>🛺 Auto Rickshaw Meter</span>
             </div>
             <div className="text-2xl font-extrabold text-stone-900 font-mono mt-1">
@@ -353,7 +353,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
             <p className="text-[11px] text-stone-500 mt-1">
               Formula: {fareData.auto.breakdown}
             </p>
-            <div className="mt-2.5 pt-2 border-t border-terracotta-200 text-[11px] text-[#A03216] font-semibold">
+            <div className="mt-2.5 pt-2 border-t border-violet-200 text-[11px] text-violet-700 font-semibold">
               💡 Say: "Bhaiya meter se chalo"
             </div>
           </div>
@@ -470,7 +470,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
 
         {/* Delhi Transport Authority Mandate Note */}
         <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#FAF8F5] border border-[#E8E5DF] text-[11px] text-stone-600">
-          <Info className="w-4 h-4 text-[#D9532F] shrink-0 mt-0.5" />
+          <Info className="w-4 h-4 text-[#7C3AED] shrink-0 mt-0.5" />
           <div>
             <span className="font-bold text-stone-800">Municipal Transport Mandate: </span>
             {fareData.auto.notice} If an auto driver refuses the electronic meter outside stations or terminals, use the prepaid booth or report to the traffic police helpline (<strong>1095</strong>).

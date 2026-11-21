@@ -59,7 +59,7 @@ export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, la
     <div className="bg-[#FAF8F5] p-3.5 rounded-xl border border-[#E8E5DF] space-y-2.5">
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
-          <Camera className="w-4 h-4 text-[#D9532F]" />
+          <Camera className="w-4 h-4 text-[#7C3AED]" />
           <span>{label}</span>
           <span className="text-[10px] text-stone-400 font-normal">
             ({photos.length}/{maxPhotos})
@@ -69,7 +69,7 @@ export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, la
           <button
             type="button"
             onClick={() => setShowUrlBox(!showUrlBox)}
-            className="text-[11px] font-semibold text-stone-600 hover:text-[#D9532F] px-2 py-0.5 rounded-md hover:bg-stone-200/60 transition-colors flex items-center gap-1"
+            className="text-[11px] font-semibold text-stone-600 hover:text-[#7C3AED] px-2 py-0.5 rounded-md hover:bg-stone-200/60 transition-colors flex items-center gap-1"
           >
             <Link className="w-3 h-3" />
             <span>Paste URL</span>
@@ -78,7 +78,7 @@ export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, la
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={photos.length >= maxPhotos}
-            className="text-[11px] font-bold text-white bg-[#D9532F] hover:bg-[#C2411E] px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 disabled:opacity-50"
+            className="text-[11px] font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9] px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 disabled:opacity-50"
           >
             <Upload className="w-3 h-3" />
             <span>Upload Photo</span>
@@ -130,7 +130,7 @@ export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, la
               className={`px-2 py-0.5 rounded-full whitespace-nowrap font-medium border text-[11px] transition-colors ${
                 photos.includes(preset.url)
                   ? 'bg-stone-100 border-stone-200 text-stone-400 cursor-default'
-                  : 'bg-white border-[#E8E5DF] text-stone-700 hover:border-terracotta-400 hover:text-[#D9532F]'
+                  : 'bg-white border-[#E8E5DF] text-stone-700 hover:border-terracotta-400 hover:text-[#7C3AED]'
               }`}
             >
               + {preset.label}
