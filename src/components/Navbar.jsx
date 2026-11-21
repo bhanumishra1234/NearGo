@@ -17,7 +17,8 @@ import {
   User,
   Gift,
   Store,
-  Landmark
+  Landmark,
+  Award
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getUserCredTier } from '../utils/credEngine.js';
@@ -291,8 +292,8 @@ export default function Navbar({
                             }}
                             className="w-full text-left px-3.5 py-1.5 hover:bg-stone-50 dark:hover:bg-[#161616] flex items-center gap-2 text-stone-700 dark:text-stone-300"
                           >
-                            <Store className="w-3.5 h-3.5 text-amber-500" />
-                            <span>Claim Spot (B2B SaaS)</span>
+                            <Award className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Local Guild (Invite Only)</span>
                           </button>
                         )}
 

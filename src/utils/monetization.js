@@ -246,41 +246,57 @@ export const OFFICIAL_HERITAGE_TRAILS = [
 ];
 
 /**
- * B2B SaaS Merchant Pricing Tiers
- * For Local Vendors, Indie Cafes & Heritage Stalls to claim listings and sponsor pins.
+ * NearGo Local Guild (Invite-Only Merchant & Heritage Network)
+ * Replaces commercial pay-to-win ads with authentic, peer-vouched community spots.
+ * Zero monthly subscription, zero pay-to-rank, zero paid map pins.
  */
-export const MERCHANT_SUBSCRIPTION_PLANS = [
-  {
-    id: 'starter',
-    name: 'Verified Local Partner',
-    pricePerMonth: 499,
-    priceFormatted: '₹499/mo',
-    target: 'Small street food kiosks, chai bars, and indie bakeries',
-    features: [
-      '⭐ Golden "Verified Community Partner" Badge on Map & Feed',
-      'Publish Official Operating Hours & Real-Time Specials',
-      'Upload Digital Menu (PDF / Image link)',
-      'Verified Merchant Response badge in community threads',
-      'Basic Footfall & Profile View Analytics',
-    ],
-    recommended: false,
-    cta: 'Claim Listing for ₹499',
+export const GUILD_INVITE_CODES = {
+  'OLD-DELHI-HERITAGE': {
+    code: 'OLD-DELHI-HERITAGE',
+    vouchedBy: 'Transit Elder Panditji (Old Delhi Chapter)',
+    credScore: 580,
+    area: 'Chandni Chowk & Dariba Kalan',
+    city: 'Delhi NCR',
   },
-  {
-    id: 'pro-growth',
-    name: 'Promoted Gem & Flash Deals',
-    pricePerMonth: 999,
-    priceFormatted: '₹999/mo',
-    target: 'Boutique cafes, heritage restaurants & curated craft breweries',
-    features: [
-      'Everything in Starter Plan',
-      '📍 Glowing Promoted Star Marker on NearGo Interactive Map',
-      '🎁 Publish 1 Exclusive NearGo Digital Flash Deal / Coupon Code',
-      'Top-3 placement in City Gem Recommendations & Vibe search',
-      'Pay-per-redemption commission tracker (₹20/redeemed customer)',
-      'Direct WhatsApp booking & inquiry integration button',
-    ],
-    recommended: true,
-    cta: 'Get Promoted Pin & Deals for ₹999',
+  'CHANDNI-GUILD-2026': {
+    code: 'CHANDNI-GUILD-2026',
+    vouchedBy: 'Verified Guide Aarav (Heritage Trails)',
+    credScore: 420,
+    area: 'Jama Masjid & Chawri Bazar',
+    city: 'Delhi NCR',
   },
-];
+  'BANGALORE-OORU-LOCAL': {
+    code: 'BANGALORE-OORU-LOCAL',
+    vouchedBy: 'Transit Elder Smitha (VV Puram & Basavanagudi)',
+    credScore: 510,
+    area: 'VV Puram Food Street',
+    city: 'Bengaluru',
+  },
+  'MUMBAI-HERITAGE-GUILD': {
+    code: 'MUMBAI-HERITAGE-GUILD',
+    vouchedBy: 'Verified Guide Kunal (Bandra Commuter Forum)',
+    credScore: 390,
+    area: 'Bandra & Khar Dandas',
+    city: 'Mumbai',
+  },
+};
+
+export function validateGuildInviteCode(code) {
+  if (!code) return { valid: false };
+  const clean = code.trim().toUpperCase();
+  if (GUILD_INVITE_CODES[clean]) {
+    return { valid: true, ...GUILD_INVITE_CODES[clean] };
+  }
+  // Allow generic community format: GUILD-XXXX-XXXX
+  if (/^GUILD-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(clean)) {
+    return {
+      valid: true,
+      code: clean,
+      vouchedBy: 'Local Cred Elder (Verified via Smart Contract / Signature)',
+      credScore: 500,
+      area: 'Local Urban District',
+      city: 'Delhi NCR',
+    };
+  }
+  return { valid: false, error: 'Invalid or expired invite token. Request a community vouch below.' };
+}

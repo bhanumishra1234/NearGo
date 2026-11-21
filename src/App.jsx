@@ -35,7 +35,8 @@ import {
   Share2,
   Gift,
   Store,
-  Landmark
+  Landmark,
+  Award
 } from 'lucide-react';
 
 export default function App() {
@@ -651,15 +652,15 @@ export default function App() {
                     </div>
                   </button>
 
-                  {/* 2. Merchant Claim & Partner Portal (B2B SaaS) */}
+                  {/* 2. Local Guild & Heritage Merchant Circle (Invite-Only) */}
                   <button
                     onClick={() => setIsMerchantModalOpen(true)}
                     className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors cursor-pointer"
                   >
-                    <Store className="w-4 h-4 text-amber-500" />
+                    <Award className="w-4 h-4 text-amber-500" />
                     <div className="flex items-center justify-between w-full">
-                      <span>Claim Spot (B2B SaaS)</span>
-                      <span className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.2 rounded border border-amber-500/30">₹499/mo</span>
+                      <span>Local Guild (Invite Only)</span>
+                      <span className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.2 rounded border border-amber-500/30">Vouched</span>
                     </div>
                   </button>
 
