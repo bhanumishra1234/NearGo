@@ -1011,7 +1011,7 @@ app.post('/api/questions/:qId/answers/:ansId/upvote', async (req, res) => {
 
 // ── 8. Fair Price Calculate ──────────────────────────────────────────────────
 app.post('/api/fares/calculate', (req, res) => {
-  const { cityKey = 'delhi', origin, destination, originCoords, destCoords, isNight = false, luggageCount = 0 } = req.body;
+  const { cityKey = 'delhi', origin, destination, originCoords, destCoords, isNight, luggageCount = 0 } = req.body;
   let distanceKm = 10;
   if (originCoords && destCoords) distanceKm = calculateDistance(originCoords.lat, originCoords.lng, destCoords.lat, destCoords.lng);
   else if (origin && destination) {
@@ -1023,12 +1023,12 @@ app.post('/api/fares/calculate', (req, res) => {
   res.json({ success: true, result, origin, destination });
 });
 
-// ── 9. Scam Check ────────────────────────────────────────────────────────────
+// ── 9. Scam Check (With Legal Luggage & Traffic Waiting Allowances) ───────────
 app.post('/api/fares/scam-check', (req, res) => {
-  const { quotedPrice, distanceKm, cityKey = 'delhi', isNight = false } = req.body;
+  const { quotedPrice, distanceKm, cityKey = 'delhi', isNight, luggageCount = 0, waitingMins = 0 } = req.body;
   if (!quotedPrice || !distanceKm) return res.status(400).json({ error: 'quotedPrice and distanceKm required' });
-  const fairEstimate = calculateRouteFare({ cityKey, distanceKm: parseFloat(distanceKm), isNight });
-  const evaluation = evaluateDriverQuote(parseFloat(quotedPrice), fairEstimate);
+  const fairEstimate = calculateRouteFare({ cityKey, distanceKm: parseFloat(distanceKm), isNight, luggageCount });
+  const evaluation = evaluateDriverQuote(parseFloat(quotedPrice), fairEstimate, { luggageCount, waitingMins, isNight });
   res.json({ success: true, evaluation, fairEstimate });
 });
 
