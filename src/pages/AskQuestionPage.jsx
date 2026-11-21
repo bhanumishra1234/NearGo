@@ -31,10 +31,10 @@ import { transcribeAudioWithSarvam } from '../utils/sarvamAudio.js';
 
 const TOPIC_CATEGORIES = [
   { id: 'transport', label: 'Transit & Fares', icon: Car, community: 'c/DelhiTransit' },
-  { id: 'food', label: 'Street Food & Dining', icon: Utensils, community: 'c/StreetFood' },
+  { id: 'food', label: 'Street Food', icon: Utensils, community: 'c/StreetFood' },
   { id: 'hidden_gems', label: 'Secret Spots', icon: Gem, community: 'c/SecretSpots' },
-  { id: 'shopping', label: 'Bargain Bazaars', icon: ShoppingBag, community: 'c/BargainBazaars' },
-  { id: 'cafes', label: 'Indie Cafes & Chai', icon: Coffee, community: 'c/IndieSpots' }
+  { id: 'shopping', label: 'Bazaars', icon: ShoppingBag, community: 'c/BargainBazaars' },
+  { id: 'cafes', label: 'Indie Cafes', icon: Coffee, community: 'c/IndieSpots' }
 ];
 
 const CITIES = ['Delhi NCR', 'Mumbai', 'Bengaluru'];
@@ -98,14 +98,14 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
       };
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0]?.[0]?.transcript;
-        if (transcript) {
-          if (field === 'title') {
-            setTitle((prev) => (prev ? `${prev} ${transcript}` : transcript));
-          } else {
-            setBody((prev) => (prev ? `${prev} ${transcript}` : transcript));
-          }
+        const transcript = event.results[0][0].transcript;
+        if (field === 'title') {
+          setTitle((prev) => (prev ? prev + ' ' + transcript : transcript));
+        } else {
+          setBody((prev) => (prev ? prev + ' ' + transcript : transcript));
         }
+        setIsRecording(null);
+        setRecordingStatus('');
       };
 
       recognition.onerror = () => {
@@ -120,8 +120,7 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
 
       recognitionRef.current = recognition;
       recognition.start();
-    } catch (err) {
-      console.warn('Voice recognition error:', err);
+    } catch {
       setIsRecording(null);
       setRecordingStatus('');
     }
@@ -137,15 +136,15 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
     let lat = 28.5459;
     let lng = 77.2732;
 
-    if (locationMode === 'map') {
-      locationName = customSpotName.trim() || customCoords.description || 'Custom Pinpointed Area';
+    if (locationMode === 'landmark') {
+      const lm = POPULAR_LANDMARKS.find((l) => l.id === selectedLandmarkId) || POPULAR_LANDMARKS[0];
+      locationName = customSpotName ? `${customSpotName} (Near ${lm.name})` : lm.name;
+      lat = lm.lat;
+      lng = lm.lng;
+    } else {
+      locationName = customSpotName || customCoords.description || 'Custom Pin';
       lat = customCoords.lat;
       lng = customCoords.lng;
-    } else {
-      const landmark = POPULAR_LANDMARKS.find((l) => l.id === selectedLandmarkId) || POPULAR_LANDMARKS[0];
-      locationName = customSpotName.trim() || landmark.name;
-      lat = landmark.lat;
-      lng = landmark.lng;
     }
 
     const currentCatObj = TOPIC_CATEGORIES.find(c => c.id === category);
@@ -176,75 +175,71 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
   };
 
   return (
-    <div className="w-full pb-16 bg-[#F4F1EA] dark:bg-[#050505] min-h-[calc(100vh-65px)]">
-      {/* Top Breadcrumb Bar */}
+    <div className="w-full pb-10 bg-[#F4F1EA] dark:bg-[#050505] min-h-[calc(100vh-65px)]">
+      {/* Top Bar - Compact Header */}
       <div className="border-b border-[#E8E5DF] dark:border-[#1a1a1a] bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-md sticky top-0 z-30 transition-colors">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between">
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-stone-300 hover:text-[#D9532F] dark:hover:text-[#D9532F] bg-stone-100 dark:bg-[#141414] hover:bg-stone-200 dark:hover:bg-[#1f1f1f] px-3.5 py-1.5 rounded-full transition-all"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-stone-300 hover:text-[#D9532F] dark:hover:text-[#D9532F] bg-stone-100 dark:bg-[#141414] hover:bg-stone-200 dark:hover:bg-[#1f1f1f] px-3 py-1 rounded-full transition-all"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Cancel & Back</span>
+            <span>Cancel</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#D9532F]" />
-              <span>Full-Page Creation Studio</span>
-            </span>
-          </div>
+          <span className="text-xs font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-[#D9532F]" />
+            <span>Ask Local Studio</span>
+          </span>
         </div>
       </div>
 
       {/* Main Form + Live Preview Layout */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
         
-        {/* Page Hero Header */}
-        <div className="mb-6 space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 dark:text-white tracking-tight">
-            Ask Locals a Real Question
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400">
-            Get authentic answers from genuine city residents, pinpoint custom spots, and calculate legal municipal meter fares.
-          </p>
+        {/* Compact Title + City Selector Row */}
+        <div className="mb-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#E8E5DF]/70 dark:border-[#1a1a1a]">
+          <div>
+            <h1 className="text-lg sm:text-xl font-extrabold text-stone-900 dark:text-white tracking-tight">
+              Ask Locals a Real Question
+            </h1>
+            <p className="text-[11px] text-stone-500 dark:text-stone-400">
+              Get genuine local answers, pinpoint custom spots, and verify legal meter fares.
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">City:</span>
+            <div className="flex items-center gap-1 bg-stone-100 dark:bg-[#141414] p-1 rounded-xl">
+              {CITIES.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setSelectedCity(c)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                    selectedCity === c
+                      ? 'bg-[#D9532F] text-white shadow-2xs'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  }`}
+                >
+                  {c.split(' ')[0]}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
           
-          {/* Main Creation Form (7 cols) */}
-          <main className="lg:col-span-7 bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-6 sm:p-7 shadow-xs">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Main Creation Form (7 cols) - Space-Efficient */}
+          <main className="lg:col-span-7 bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-4 sm:p-5 shadow-xs">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               
-              {/* City Selector Pills */}
+              {/* Category Pills (Horizontal Scrollbar-free) */}
               <div>
-                <label className="block text-xs font-bold text-stone-800 dark:text-stone-200 mb-2">
-                  1. Select Target City
+                <label className="block text-[11px] font-bold text-stone-700 dark:text-stone-300 mb-1">
+                  Topic Category
                 </label>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {CITIES.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setSelectedCity(c)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                        selectedCity === c
-                          ? 'bg-[#D9532F] text-white shadow-xs'
-                          : 'bg-stone-100 dark:bg-[#141414] text-stone-600 dark:text-stone-400 hover:bg-stone-200'
-                      }`}
-                    >
-                      📍 {c}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Topic Category */}
-              <div>
-                <label className="block text-xs font-bold text-stone-800 dark:text-stone-200 mb-2">
-                  2. Choose Topic Category
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
                   {TOPIC_CATEGORIES.map((cat) => {
                     const Icon = cat.icon;
                     const isSelected = category === cat.id;
@@ -253,15 +248,14 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                         key={cat.id}
                         type="button"
                         onClick={() => setCategory(cat.id)}
-                        className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1.5 ${
+                        className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
                           isSelected
-                            ? 'bg-terracotta-50/70 dark:bg-terracotta-950/40 border-[#D9532F] text-[#D9532F]'
-                            : 'bg-white dark:bg-[#121212] border-stone-200 dark:border-[#222] text-stone-700 dark:text-stone-300 hover:border-stone-300'
+                            ? 'bg-terracotta-50 dark:bg-terracotta-950/40 border-[#D9532F] text-[#D9532F] shadow-2xs'
+                            : 'bg-[#FAF8F5] dark:bg-[#121212] border-stone-200 dark:border-[#222] text-stone-600 dark:text-stone-400 hover:border-stone-300'
                         }`}
                       >
-                        <Icon className={`w-4 h-4 ${isSelected ? 'text-[#D9532F]' : 'text-stone-500'}`} />
-                        <span className="text-xs font-bold leading-tight">{cat.label}</span>
-                        <span className="text-[10px] text-stone-400">{cat.community}</span>
+                        <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#D9532F]' : 'text-stone-500'}`} />
+                        <span>{cat.label}</span>
                       </button>
                     );
                   })}
@@ -270,25 +264,25 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
 
               {/* Title Field */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-stone-800 dark:text-stone-200">
-                    3. Discussion Title
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
+                    Discussion Title
                   </label>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => handleToggleVoice('title')}
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all ${
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all ${
                         isRecording === 'title'
                           ? 'bg-red-500 text-white animate-pulse'
                           : 'bg-stone-100 dark:bg-[#1c1c1c] text-[#D9532F] hover:bg-stone-200'
                       }`}
                       title="Speak title in Hindi/English (Sarvam Saaras AI)"
                     >
-                      <Mic className="w-3 h-3" />
-                      <span>{isRecording === 'title' ? 'Listening...' : '🎙️ Speak (Sarvam)'}</span>
+                      <Mic className="w-2.5 h-2.5" />
+                      <span>{isRecording === 'title' ? 'Listening...' : 'Speak (Sarvam)'}</span>
                     </button>
-                    <span className="text-[11px] text-stone-400">
+                    <span className="text-[10px] text-stone-400 font-mono">
                       {title.length}/100
                     </span>
                   </div>
@@ -300,256 +294,218 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                   placeholder="e.g. Fair auto fare from Nizamuddin Station to Karol Bagh at 10 PM?"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl px-4 py-3 text-sm text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-terracotta-400 font-medium"
+                  className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl px-3.5 py-2 text-xs sm:text-sm text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-terracotta-400 font-medium"
                 />
               </div>
 
-              {/* Body / Context */}
+              {/* Body / Context (Compact) */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-stone-800 dark:text-stone-200">
-                    4. Details & Context
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
+                    Details & Context
                   </label>
                   <button
                     type="button"
                     onClick={() => handleToggleVoice('body')}
-                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all ${
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all ${
                       isRecording === 'body'
                         ? 'bg-red-500 text-white animate-pulse'
                         : 'bg-stone-100 dark:bg-[#1c1c1c] text-[#D9532F] hover:bg-stone-200'
                     }`}
                     title="Speak details in Hindi/English (Sarvam Saaras AI)"
                   >
-                    <Mic className="w-3 h-3" />
-                    <span>{isRecording === 'body' ? 'Listening...' : '🎙️ Speak (Sarvam)'}</span>
+                    <Mic className="w-2.5 h-2.5" />
+                    <span>{isRecording === 'body' ? 'Listening...' : 'Speak (Sarvam)'}</span>
                   </button>
                 </div>
                 <textarea
-                  rows={4}
+                  rows={2}
                   required
-                  placeholder="Provide context (e.g., driver quoted ₹350, wanted to check if metered rate is lower, or looking for cheap late night food)..."
+                  placeholder="Provide context (e.g. driver quoted ₹350, or looking for authentic late night street food)..."
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl p-4 text-xs sm:text-sm text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-terracotta-400 leading-relaxed"
+                  className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl p-2.5 text-xs text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-terracotta-400 leading-relaxed"
                 />
               </div>
 
-              {/* Location Pinning Section */}
-              <div className="bg-[#FAF8F5] dark:bg-[#121212] p-4 sm:p-5 rounded-2xl border border-terracotta-200 dark:border-terracotta-900/60 space-y-3">
+              {/* Location Pinning (Compact Row) */}
+              <div className="bg-[#FAF8F5] dark:bg-[#121212] p-2.5 rounded-xl border border-stone-200 dark:border-[#222] space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-[#D9532F]" />
-                    <span>5. Pin Location on City Map</span>
-                  </span>
-                  <span className="text-[10px] text-[#D9532F] font-bold bg-terracotta-50 dark:bg-terracotta-950/60 px-2.5 py-0.5 rounded-full border border-terracotta-200/50">
-                    Spatial Map Pin
-                  </span>
-                </div>
-
-                {/* Location Mode Tabs */}
-                <div className="flex items-center gap-1.5 bg-stone-100 dark:bg-[#181818] p-1 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => setLocationMode('landmark')}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                      locationMode === 'landmark'
-                        ? 'bg-white dark:bg-[#252525] text-[#D9532F] shadow-xs'
-                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
-                    }`}
-                  >
-                    <Compass className="w-3.5 h-3.5 text-stone-500" />
-                    <span>🏛️ Major Landmark / Metro</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLocationMode('map')}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                      locationMode === 'map'
-                        ? 'bg-white dark:bg-[#252525] text-[#D9532F] shadow-xs'
-                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
-                    }`}
-                  >
                     <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
-                    <span>📍 Pinpoint on Interactive Map</span>
-                  </button>
+                    <span>Pin Location</span>
+                  </span>
+                  <div className="flex items-center gap-1 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setLocationMode('landmark')}
+                      className={`px-2 py-0.5 rounded-md font-bold transition-all ${
+                        locationMode === 'landmark'
+                          ? 'bg-white dark:bg-[#252525] text-[#D9532F] shadow-2xs'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      🏛️ Hub/Metro
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLocationMode('map')}
+                      className={`px-2 py-0.5 rounded-md font-bold transition-all ${
+                        locationMode === 'map'
+                          ? 'bg-white dark:bg-[#252525] text-[#D9532F] shadow-2xs'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      📍 Interactive Pin
+                    </button>
+                  </div>
                 </div>
 
                 {locationMode === 'landmark' ? (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label htmlFor="ask-landmark" className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
-                          Select nearby hub / metro:
-                        </label>
-                        <select
-                          id="ask-landmark"
-                          aria-label="Nearby Hub or Metro"
-                          value={selectedLandmarkId}
-                          onChange={(e) => setSelectedLandmarkId(e.target.value)}
-                          className="w-full bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-xl p-2.5 text-xs text-stone-900 dark:text-white font-medium"
-                        >
-                          {POPULAR_LANDMARKS.map((l) => (
-                            <option key={l.id} value={l.id}>
-                              {l.name} ({l.area})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
-                          Custom area / place title:
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Near Exit Gate 2"
-                          value={customSpotName}
-                          onChange={(e) => setCustomSpotName(e.target.value)}
-                          className="w-full bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-xl p-2.5 text-xs text-stone-900 dark:text-white"
-                        />
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <select
+                      id="ask-landmark"
+                      aria-label="Nearby Hub or Metro"
+                      value={selectedLandmarkId}
+                      onChange={(e) => setSelectedLandmarkId(e.target.value)}
+                      className="bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white font-medium"
+                    >
+                      {POPULAR_LANDMARKS.map((l) => (
+                        <option key={l.id} value={l.id}>
+                          {l.name} ({l.area})
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Custom area (e.g. Near Exit Gate 2)"
+                      value={customSpotName}
+                      onChange={(e) => setCustomSpotName(e.target.value)}
+                      className="bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
+                    />
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <LocationPickerMap
                       initialLat={28.5459}
                       initialLng={77.2732}
                       spotName={customSpotName}
                       onSpotNameChange={setCustomSpotName}
                       onSelectLocation={setCustomCoords}
-                      height="240px"
+                      height="170px"
                     />
-                    <div className="text-[11px] text-emerald-800 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/30 p-2.5 rounded-lg border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>
-                        <strong>Custom Pin Active:</strong> Your question will be pinned directly on the map with custom coordinates!
-                      </span>
-                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Fair Fare Check Request */}
-              <div className="bg-[#FAF8F5] dark:bg-[#121212] p-4 sm:p-5 rounded-2xl border border-stone-200 dark:border-[#222] space-y-3">
-                <label className="text-xs font-bold text-stone-900 dark:text-white flex items-center gap-2 cursor-pointer">
+              {/* Fair Fare Check Request (Collapsible Minimal Row) */}
+              <div className="bg-[#FAF8F5] dark:bg-[#121212] p-2.5 rounded-xl border border-stone-200 dark:border-[#222] space-y-2">
+                <label className="text-xs font-bold text-stone-900 dark:text-white flex items-center justify-between cursor-pointer">
+                  <span className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#D9532F]" />
+                    <span>Include Fair Fare Tariff Audit</span>
+                  </span>
                   <input
                     type="checkbox"
                     checked={requestFareCheck}
                     onChange={(e) => setRequestFareCheck(e.target.checked)}
-                    className="rounded accent-[#D9532F] w-4 h-4"
+                    className="rounded accent-[#D9532F] w-3.5 h-3.5"
                   />
-                  <span className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-[#D9532F]" />
-                    <span>Include Fair Fare Tariff Audit for this route</span>
-                  </span>
                 </label>
 
                 {requestFareCheck && (
-                  <div className="pt-2 border-t border-stone-200 dark:border-[#1f1f1f] grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
-                        Starting Point (Origin)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. New Delhi Railway Station"
-                        value={fareOrigin}
-                        onChange={(e) => setFareOrigin(e.target.value)}
-                        className="w-full bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
-                        Destination
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. India Gate"
-                        value={fareDestination}
-                        onChange={(e) => setFareDestination(e.target.value)}
-                        className="w-full bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-white"
-                      />
-                    </div>
+                  <div className="pt-2 border-t border-stone-200/80 dark:border-[#1f1f1f] grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Origin (e.g. New Delhi Station)"
+                      value={fareOrigin}
+                      onChange={(e) => setFareOrigin(e.target.value)}
+                      className="bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Destination (e.g. India Gate)"
+                      value={fareDestination}
+                      onChange={(e) => setFareDestination(e.target.value)}
+                      className="bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
+                    />
                   </div>
                 )}
               </div>
 
-              {/* Photos Attachment (Cloudinary CDN) */}
-              <div>
-                <label className="block text-xs font-bold text-stone-800 dark:text-stone-200 mb-2">
-                  6. Attach Photos (Auto-compressed to WebP & Cloudinary CDN)
-                </label>
-                <PhotoUploader
-                  photos={photos}
-                  onChange={setPhotos}
-                  label="Attach Photos (Auto meter, bill, stall, menu...)"
-                  maxPhotos={4}
-                />
-              </div>
-
-              {/* Author Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Photos & User Profile (Compact Row) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
-                    Your Display Name
+                  <label className="block text-[11px] font-bold text-stone-700 dark:text-stone-300 mb-1">
+                    Attach Photos (Optional)
                   </label>
-                  <input
-                    type="text"
-                    value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white font-medium"
+                  <PhotoUploader
+                    photos={photos}
+                    onChange={setPhotos}
+                    label="Attach Photos (0/4)"
+                    maxPhotos={4}
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
-                    Vibe Preference
-                  </label>
-                  <select
-                    aria-label="Vibe Preference"
-                    value={vibeCategory}
-                    onChange={(e) => setVibeCategory(e.target.value)}
-                    className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl px-3.5 py-2.5 text-xs text-stone-900 dark:text-white font-medium"
-                  >
-                    <option value="student_budget">🎓 Student Budget</option>
-                    <option value="heritage">🏰 Heritage & Culture</option>
-                    <option value="street_food">🥟 Street Food Lover</option>
-                    <option value="night_owl">🌙 Late Night Safe</option>
-                    <option value="family_friendly">👨‍👩‍👧 Family Friendly</option>
-                  </select>
-                </div>
-              </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 dark:text-stone-300 mb-1">
+                      Display Name & Vibe
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Your Name"
+                        value={authorName}
+                        onChange={(e) => setAuthorName(e.target.value)}
+                        className="bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white font-medium"
+                      />
+                      <select
+                        aria-label="Vibe Preference"
+                        value={vibeCategory}
+                        onChange={(e) => setVibeCategory(e.target.value)}
+                        className="bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-lg px-2 py-1.5 text-xs text-stone-900 dark:text-white font-medium"
+                      >
+                        <option value="student_budget">🎓 Student</option>
+                        <option value="heritage">🏰 Heritage</option>
+                        <option value="street_food">🥟 Foodie</option>
+                        <option value="night_owl">🌙 Late Night</option>
+                        <option value="family_friendly">👨‍👩‍👧 Family</option>
+                      </select>
+                    </div>
+                  </div>
 
-              {/* Submit Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100 dark:border-[#1a1a1a]">
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="px-5 py-2.5 rounded-full text-xs font-bold text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-[#181818] transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !title.trim() || !body.trim()}
-                  className="px-7 py-3 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-md shadow-terracotta-500/20 flex items-center gap-2 transition-all hover:scale-[1.02] disabled:opacity-50"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>{isSubmitting ? 'Publishing...' : 'Publish Discussion to Community'}</span>
-                </button>
+                  {/* Submit Action */}
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={onBack}
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-[#181818] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || !title.trim() || !body.trim()}
+                      className="px-5 py-2 rounded-xl bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-md shadow-terracotta-500/20 flex items-center gap-1.5 transition-all hover:scale-[1.02] disabled:opacity-50"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>{isSubmitting ? 'Posting...' : 'Publish Question'}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </form>
           </main>
 
-          {/* Right Column: Live Post Preview & Guidelines (5 cols) */}
-          <aside className="lg:col-span-5 space-y-5 lg:sticky lg:top-20">
+          {/* Right Column: Compact Live Post Preview (5 cols) */}
+          <aside className="lg:col-span-5 space-y-3 lg:sticky lg:top-14">
             
             {/* Live Card Preview */}
-            <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-5 shadow-xs space-y-3">
+            <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-3.5 shadow-xs space-y-2">
               <div className="flex items-center justify-between text-xs font-bold text-stone-900 dark:text-white">
                 <span className="flex items-center gap-1.5">
-                  <Eye className="w-4 h-4 text-[#D9532F]" />
+                  <Eye className="w-3.5 h-3.5 text-[#D9532F]" />
                   <span>Live Feed Preview</span>
                 </span>
                 <span className="text-[10px] text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full font-semibold">
@@ -558,7 +514,7 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
               </div>
 
               {/* Preview Card */}
-              <div className="bg-[#FAF8F5] dark:bg-[#121212] rounded-xl border border-[#E8E5DF] dark:border-[#222] p-4 space-y-2.5">
+              <div className="bg-[#FAF8F5] dark:bg-[#121212] rounded-xl border border-[#E8E5DF] dark:border-[#222] p-3 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold text-[#D9532F] bg-white dark:bg-[#181818] px-2 py-0.5 rounded-full border border-terracotta-200">
                     {TOPIC_CATEGORIES.find(c => c.id === category)?.community || 'c/DelhiTransit'}
@@ -566,54 +522,43 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                   <span className="text-[10px] text-stone-400">📍 {selectedCity}</span>
                 </div>
 
-                <div className="text-sm font-bold text-stone-900 dark:text-white line-clamp-2">
+                <div className="text-xs font-bold text-stone-900 dark:text-white line-clamp-2">
                   {title || 'Your question title will appear here...'}
                 </div>
 
-                <div className="text-xs text-stone-600 dark:text-stone-400 line-clamp-3">
+                <div className="text-[11px] text-stone-600 dark:text-stone-400 line-clamp-2">
                   {body || 'Provide details about what you want to know from local residents...'}
                 </div>
 
                 {photos.length > 0 && (
                   <div className="flex gap-1.5 pt-1">
                     {photos.slice(0, 3).map((p, i) => (
-                      <img key={i} src={p} alt="preview" className="w-12 h-12 object-cover rounded-md border border-stone-200" />
+                      <img key={i} src={p} alt="preview" className="w-10 h-10 object-cover rounded-md border border-stone-200" />
                     ))}
                     {photos.length > 3 && (
-                      <div className="w-12 h-12 rounded-md bg-stone-200 text-stone-600 text-xs font-bold flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-md bg-stone-200 text-stone-600 text-[10px] font-bold flex items-center justify-center">
                         +{photos.length - 3}
                       </div>
                     )}
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-stone-200/80 dark:border-[#1e1e1e] flex items-center justify-between text-[11px] text-stone-400">
+                <div className="pt-1.5 border-t border-stone-200/80 dark:border-[#1e1e1e] flex items-center justify-between text-[10px] text-stone-400">
                   <span>By {authorName}</span>
                   <span>0 Answers • 0 Upvotes</span>
                 </div>
               </div>
             </div>
 
-            {/* Quality Advice Guidelines */}
-            <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-5 shadow-xs space-y-3">
-              <h4 className="text-xs font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Tips for Fastest Verified Answers</span>
-              </h4>
-              <ul className="space-y-2 text-xs text-stone-600 dark:text-stone-400">
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Mention the time of day:</strong> Auto fares in Indian cities carry legal night surcharges (11 PM - 5 AM).</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Include the specific gate or exit:</strong> Transit stations like Rajiv Chowk or Dadar have dozens of exits.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Attach a photo:</strong> Photos of quotes or meters receive 3x more local upvotes.</span>
-                </li>
-              </ul>
+            {/* Quick Tips Badge */}
+            <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-3 text-[11px] text-stone-700 dark:text-stone-300 space-y-1">
+              <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Tips for Fast Local Answers</span>
+              </div>
+              <p className="text-[10px] text-stone-600 dark:text-stone-400 leading-snug">
+                Mention specific exits or landmark gates, time of day for night tariffs, and attach a quote photo for 3x faster local replies.
+              </p>
             </div>
           </aside>
         </div>
