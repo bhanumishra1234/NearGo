@@ -48,6 +48,76 @@ export default function App() {
   const [authMode, setAuthMode] = useState('login');
 
   const { user } = useAuth();
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [locationStatus, setLocationStatus] = useState(null);
+
+  // Helper to determine closest supported city from coordinates
+  const detectNearestCity = (lat, lng) => {
+    // City center reference coordinates
+    const CITIES = [
+      { name: 'Delhi NCR', lat: 28.6139, lng: 77.2090 },
+      { name: 'Mumbai', lat: 19.0760, lng: 72.8777 },
+      { name: 'Bengaluru', lat: 12.9716, lng: 77.5946 },
+    ];
+
+    let closest = CITIES[0];
+    let minDiff = Infinity;
+
+    CITIES.forEach((c) => {
+      // Euclidean approximate distance
+      const diff = Math.hypot(c.lat - lat, c.lng - lng);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = c;
+      }
+    });
+
+    return closest.name;
+  };
+
+  // Trigger browser Geolocation permission & auto-select city
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatus('Geolocation not supported');
+      return;
+    }
+
+    setIsDetectingLocation(true);
+    setLocationStatus('Locating...');
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const matchedCity = detectNearestCity(latitude, longitude);
+        setSelectedCity(matchedCity);
+        localStorage.setItem('neargo_selected_city', matchedCity);
+        setIsDetectingLocation(false);
+        setLocationStatus(`Auto-detected: ${matchedCity}`);
+        setTimeout(() => setLocationStatus(null), 3500);
+      },
+      (err) => {
+        setIsDetectingLocation(false);
+        if (err.code === 1) {
+          setLocationStatus('Permission denied');
+        } else {
+          setLocationStatus('Could not detect');
+        }
+        setTimeout(() => setLocationStatus(null), 3500);
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  // Auto-request location or load saved preference on initial mount
+  useEffect(() => {
+    const savedCity = localStorage.getItem('neargo_selected_city');
+    if (savedCity) {
+      setSelectedCity(savedCity);
+    } else {
+      // Automatically request browser location if not explicitly chosen before
+      requestLocation();
+    }
+  }, []);
 
   // Sync with backend API if running
   useEffect(() => {
@@ -282,7 +352,13 @@ export default function App() {
       {/* Navbar */}
       <Navbar
         selectedCity={selectedCity}
-        setSelectedCity={setSelectedCity}
+        setSelectedCity={(city) => {
+          setSelectedCity(city);
+          localStorage.setItem('neargo_selected_city', city);
+        }}
+        onRequestLocation={requestLocation}
+        isDetectingLocation={isDetectingLocation}
+        locationStatus={locationStatus}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenAskModal={() => setIsAskModalOpen(true)}

@@ -19,6 +19,9 @@ import { useAuth } from '../context/AuthContext.jsx';
 export default function Navbar({
   selectedCity,
   setSelectedCity,
+  onRequestLocation,
+  isDetectingLocation,
+  locationStatus,
   activeTab,
   setActiveTab,
   onOpenAskModal,
@@ -76,8 +79,8 @@ export default function Navbar({
               </span>
             </div>
 
-            {/* City Dropdown Pill */}
-            <div className="hidden md:flex items-center ml-2 pl-3 border-l border-stone-200">
+            {/* City Dropdown Pill with Location Permission Button */}
+            <div className="hidden md:flex items-center ml-2 pl-3 border-l border-stone-200 gap-1.5">
               <div className="flex items-center gap-1.5 bg-[#FAF8F5] border border-[#E8E5DF] hover:border-terracotta-300 px-2.5 py-1.5 rounded-full text-xs transition-colors">
                 <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
                 <select
@@ -90,6 +93,25 @@ export default function Navbar({
                   <option value="Bengaluru">Bengaluru</option>
                 </select>
               </div>
+
+              {/* Auto Detect Location Button */}
+              <button
+                onClick={onRequestLocation}
+                disabled={isDetectingLocation}
+                title="Detect my location and auto-select city"
+                className={`p-1.5 rounded-full border text-xs flex items-center gap-1 transition-all ${
+                  isDetectingLocation
+                    ? 'bg-terracotta-50 border-terracotta-300 text-[#D9532F] animate-pulse'
+                    : 'bg-[#FAF8F5] border-[#E8E5DF] text-stone-600 hover:text-[#D9532F] hover:border-terracotta-300'
+                }`}
+              >
+                <Navigation className={`w-3.5 h-3.5 ${isDetectingLocation ? 'animate-spin' : ''}`} />
+                {locationStatus && (
+                  <span className="text-[10px] font-semibold pr-1 text-[#D9532F]">
+                    {locationStatus}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
