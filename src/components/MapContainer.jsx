@@ -437,27 +437,34 @@ export default function MapContainer({
 
         const activeMarker = L.marker([targetLat, targetLng], { icon: customActiveIcon }).addTo(markersLayer.current);
         activeMarker.bindPopup(`
-          <div style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; padding:4px; min-width:200px;">
-            <div style="font-size:10px; text-transform:uppercase; font-weight:800; color:#D9532F; margin-bottom:2px;">📍 Clicked Location</div>
-            <div style="font-weight:700; font-size:14px; color:#1C1917; margin-bottom:2px;">${highlightedPin.name || 'Suggested Spot'}</div>
+          <div style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; padding:4px 6px; min-width:200px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+              <span style="font-size:9px; font-weight:800; text-transform:uppercase; color:#D9532F; background:#FFF1EE; padding:2px 6px; border-radius:4px;">📍 Active Spot</span>
+            </div>
+            <div style="font-weight:700; font-size:13px; color:#1C1917; margin-bottom:2px;">${highlightedPin.name || 'Suggested Spot'}</div>
             <div style="font-size:11px; color:#6B7280; margin-bottom:4px;">📍 ${highlightedPin.neighborhood || 'Selected Area'}</div>
-            ${highlightedPin.insiderTip ? `<div style="font-size:11px; color:#374151; background:#FAF8F5; padding:6px; border-radius:6px; border-left:3px solid #D9532F;">"${highlightedPin.insiderTip}"</div>` : ''}
+            ${highlightedPin.insiderTip ? `<div style="font-size:11px; color:#374151; background:#FAF8F5; padding:6px; border-radius:6px; border-left:3px solid #D9532F; margin-top:4px;">"${highlightedPin.insiderTip}"</div>` : ''}
           </div>
-        `);
+        `, {
+          autoPan: true,
+          autoPanPaddingTopLeft: [30, 95],
+          autoPanPaddingBottomRight: [30, 60]
+        });
         matched = { marker: activeMarker };
       }
 
-      // Smoothly fly to coordinates and open the popup
-      leafletMap.current.flyTo([targetLat, targetLng], 16, {
+      // Smoothly fly to coordinates offset slightly south to leave generous top clearance for controls
+      const flyLat = targetLat + 0.0025;
+      leafletMap.current.flyTo([flyLat, targetLng], 15, {
         animate: true,
-        duration: 1.0,
+        duration: 0.9,
       });
 
       setTimeout(() => {
         if (matched && matched.marker) {
           matched.marker.openPopup();
         }
-      }, 700);
+      }, 650);
     }
   }, [questions, filterType, highlightedPin, isPanIndiaView]);
 
@@ -594,15 +601,15 @@ export default function MapContainer({
         </div>
       )}
 
-      {/* Floating Active Highlighted Location Toast */}
+      {/* Floating Active Highlighted Location Badge - Positioned neatly top-right to avoid clashing with marker popup or quick-jump bar */}
       {highlightedPin && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] bg-white border-2 border-[#D9532F] text-stone-900 px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 text-xs font-bold pointer-events-auto animate-pulse">
-          <MapPin className="w-4 h-4 text-[#D9532F]" />
-          <span>Viewing Spot: {highlightedPin.name || 'Suggested Location'}</span>
+        <div className="absolute top-14 right-3 z-[1000] bg-white/95 dark:bg-[#0c0c0c]/95 backdrop-blur-md border border-[#D9532F] text-stone-900 dark:text-white pl-3 pr-2 py-1.5 rounded-full shadow-lg flex items-center gap-2 text-xs font-bold pointer-events-auto animate-in fade-in slide-in-from-top-2 duration-150">
+          <MapPin className="w-3.5 h-3.5 text-[#D9532F] shrink-0" />
+          <span className="max-w-[160px] sm:max-w-[240px] truncate">{highlightedPin.name || 'Suggested Location'}</span>
           {onClearHighlight && (
             <button
               onClick={onClearHighlight}
-              className="text-stone-400 hover:text-stone-700 ml-1 p-0.5 rounded-full"
+              className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-0.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
               title="Clear Highlight"
             >
               <X className="w-3.5 h-3.5" />
@@ -622,26 +629,26 @@ export default function MapContainer({
       {/* Map DOM Element */}
       <div ref={mapRef} className="w-full h-full flex-1" />
 
-      {/* Bottom Map Legend - hidden if minimal */}
+      {/* Bottom Map Legend - Centered at bottom to leave both corners completely clear */}
       {!minimal && (
-        <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 dark:bg-[#0c0c0c]/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8E5DF] dark:border-[#1e1e1e] shadow-md flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-stone-700 dark:text-stone-300 font-medium">
-          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[300] max-w-[calc(100%-2rem)] overflow-x-auto bg-white/95 dark:bg-[#0c0c0c]/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8E5DF] dark:border-[#1e1e1e] shadow-md flex items-center justify-center gap-3 sm:gap-4 text-[11px] text-stone-700 dark:text-stone-300 font-medium pointer-events-auto">
+          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold whitespace-nowrap">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Survey of India Compliant</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
             <span className="w-2.5 h-2.5 rounded-full bg-[#D9532F]"></span>
             <span>Traveler Questions</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
             <span>Suggested Spots</span>
           </div>
-          <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
+          <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold whitespace-nowrap">
             <span className="text-xs">⭐</span>
             <span>Partner Deals</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
             <span>NCR Metro</span>
           </div>

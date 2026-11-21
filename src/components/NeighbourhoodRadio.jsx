@@ -114,7 +114,7 @@ export default function NeighbourhoodRadio({ selectedCity = 'Delhi NCR', onFlyTo
     return (
       <button
         onClick={() => setIsDismissed(false)}
-        className="fixed bottom-4 left-4 z-40 p-2 rounded-full bg-stone-900/90 text-stone-300 hover:text-white border border-stone-800 shadow-lg backdrop-blur-md transition-all hover:scale-105"
+        className="fixed bottom-4 left-4 z-[1050] p-2.5 rounded-full bg-stone-900/95 text-stone-300 hover:text-white border border-stone-800 shadow-2xl backdrop-blur-md transition-all hover:scale-105"
         title="Open Desi Audio Radio"
       >
         <Radio className="w-4 h-4 text-[#D9532F]" />
@@ -123,7 +123,7 @@ export default function NeighbourhoodRadio({ selectedCity = 'Delhi NCR', onFlyTo
   }
 
   return (
-    <div className="fixed bottom-4 left-4 z-40 select-none font-sans">
+    <div className="fixed bottom-4 left-4 z-[1050] select-none font-sans">
       {!isOpen ? (
         /* ================= ULTRA-MINIMAL FLOATING CAPSULE ================= */
         <div className="flex items-center gap-2 bg-stone-950/90 text-white pl-3 pr-2 py-1.5 rounded-full border border-stone-800/80 shadow-xl backdrop-blur-md hover:border-stone-700 transition-all">
