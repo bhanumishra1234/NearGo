@@ -9,29 +9,29 @@
   }
 
   .dark body {
-    @apply bg-[#121212] text-[#E7E5E4];
+    @apply bg-[#121417] text-[#E7E5E4];
   }
 
-  /* Dark mode support for common cards and panels */
+  /* Dark mode support for common cards and panels using refined Charcoal Black */
   .dark .bg-white {
-    background-color: #1E1E1E !important;
+    background-color: #1A1D21 !important;
     color: #F5F5F4;
   }
   .dark .bg-\[\#ffffff\], .dark .bg-\[\#F7F6F3\], .dark .bg-\[\#FAF8F5\], .dark .bg-\[\#F4F1EA\] {
-    background-color: #27272A !important;
+    background-color: #22262B !important;
     color: #E4E4E7;
   }
-  .dark .border-\[\#E8E5DF\], .dark .border-stone-100, .dark .border-stone-200 {
-    border-color: #3F3F46 !important;
+  .dark .border-\[\#E8E5DF\], .dark .border-stone-100, .dark .border-stone-200, .dark .border-stone-200\/80 {
+    border-color: #2D3339 !important;
   }
   .dark .text-stone-900, .dark .text-stone-800, .dark .text-stone-700 {
     color: #F4F4F5 !important;
   }
   .dark .text-stone-600, .dark .text-stone-500 {
-    color: #A1A1AA !important;
+    color: #9BA3AF !important;
   }
   .dark .hover\:bg-stone-50:hover, .dark .hover\:bg-stone-100:hover, .dark .hover\:bg-\[\#FAF8F5\]:hover, .dark .hover\:bg-\[\#ECE7DC\]:hover {
-    background-color: #333338 !important;
+    background-color: #282E35 !important;
   }
 }
 

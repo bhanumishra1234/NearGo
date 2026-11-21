@@ -363,7 +363,7 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212] text-[#1C1917] dark:text-[#E7E5E4] flex flex-col font-sans selection:bg-[#D9532F] selection:text-white transition-colors duration-200">
+    <div className="min-h-screen bg-[#ffffff] dark:bg-[#121417] text-[#1C1917] dark:text-[#E7E5E4] flex flex-col font-sans selection:bg-[#D9532F] selection:text-white transition-colors duration-200">
       {/* Navbar */}
       <Navbar
         selectedCity={selectedCity}
