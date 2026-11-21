@@ -204,10 +204,27 @@ export function estimateTravelTime(distanceKm, hour = new Date().getHours()) {
 }
 
 // Calculate comprehensive multi-modal fares for a route
+export function isCurrentlyIndianNightTime(cityKey = 'delhi') {
+  const tariff = CITY_TARIFFS[cityKey] || CITY_TARIFFS.delhi;
+  const autoTariff = tariff.auto;
+  // Calculate current hour in Indian Standard Time (IST: UTC + 5:30)
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const istDate = new Date(utc + 3600000 * 5.5);
+  const istHour = istDate.getHours();
+
+  if (autoTariff.nightStartHour > autoTariff.nightEndHour) {
+    // e.g. 23 (11 PM) to 5 (5 AM)
+    return istHour >= autoTariff.nightStartHour || istHour < autoTariff.nightEndHour;
+  } else {
+    return istHour >= autoTariff.nightStartHour && istHour < autoTariff.nightEndHour;
+  }
+}
+
 export function calculateRouteFare({
   cityKey = 'delhi',
   distanceKm,
-  isNight = false,
+  isNight = undefined,
   luggageCount = 0,
   trafficMultiplier = 1.0,
 }) {
@@ -215,6 +232,9 @@ export function calculateRouteFare({
   const autoTariff = tariff.auto;
   const cabTariff = tariff.cabs;
   const metroTariff = tariff.metro;
+
+  // Auto-detect Indian Standard Time night surge if not explicitly overridden
+  const effectiveIsNight = isNight !== undefined ? isNight : isCurrentlyIndianNightTime(cityKey);
 
   // 1. Official Auto Meter Fare
   let autoFare = 0;
@@ -225,7 +245,7 @@ export function calculateRouteFare({
     autoFare = autoTariff.baseFare + extraKm * autoTariff.perKmRate;
   }
   
-  if (isNight) {
+  if (effectiveIsNight) {
     autoFare *= (1 + autoTariff.nightSurchargePercent / 100);
   }
   if (luggageCount > 0) {
@@ -259,17 +279,23 @@ export function calculateRouteFare({
   }
   const metroCardFare = Math.round(metroFare * (1 - metroTariff.smartCardDiscount));
 
+  // Multi-modal savings comparison matrix
+  const savingsVsAuto = Math.max(0, autoMeterMin - metroCardFare);
+  const savingsVsCab = Math.max(0, cabSurgeMin - autoMeterMin);
+
   return {
     distanceKm,
     durationMin,
-    isNight,
+    isNight: effectiveIsNight,
+    autoNightApplied: isNight === undefined && effectiveIsNight,
+    luggageCount,
     city: tariff.cityName,
     currency: tariff.currency,
     auto: {
       min: autoMeterMin,
       max: autoMeterMax,
       exactMeter: Math.round(autoFare),
-      breakdown: `${tariff.currency}${autoTariff.baseFare} for 1st ${autoTariff.baseKm}km + ${tariff.currency}${autoTariff.perKmRate}/km${isNight ? ` + ${autoTariff.nightSurchargePercent}% night surcharge` : ''}`,
+      breakdown: `${tariff.currency}${autoTariff.baseFare} for 1st ${autoTariff.baseKm}km + ${tariff.currency}${autoTariff.perKmRate}/km${effectiveIsNight ? ` + ${autoTariff.nightSurchargePercent}% night surcharge` : ''}${luggageCount > 0 ? ` + ${tariff.currency}${luggageCount * autoTariff.luggageChargePerBag} luggage` : ''}`,
       notice: autoTariff.rulesNotice,
     },
     cabs: {
@@ -282,13 +308,30 @@ export function calculateRouteFare({
       smartCardFare: metroCardFare,
       estimatedTimeMin: Math.max(15, Math.round(distanceKm * 2.2)),
       ecoFriendly: true,
+      savingsVsAuto,
+    },
+    savingsMatrix: {
+      metroSavingsVsAuto: savingsVsAuto,
+      autoSavingsVsCab: savingsVsCab,
+      recommendation: savingsVsAuto > 50 ? 'Take the Metro to beat traffic and save money' : 'Auto is optimal for this distance',
     }
   };
 }
 
 // Evaluate whether a driver's quoted price is gouging
-export function evaluateDriverQuote(quotedPrice, fairEstimate) {
-  const fairMedian = (fairEstimate.auto.min + fairEstimate.auto.max) / 2;
+export function evaluateDriverQuote(quotedPrice, fairEstimate, options = {}) {
+  const { luggageCount = 0, waitingMins = 0, isNight = false } = options;
+  
+  // Factor in legitimate legal allowances for luggage and traffic waiting
+  let legitimateBuffer = 0;
+  if (luggageCount > 0) {
+    legitimateBuffer += luggageCount * 10; // Approx ₹10/bag legal allowance
+  }
+  if (waitingMins > 0) {
+    legitimateBuffer += Math.min(60, waitingMins * 1.0); // Legal waiting allowance capped reasonably
+  }
+
+  const fairMedian = (fairEstimate.auto.min + fairEstimate.auto.max) / 2 + legitimateBuffer;
   const ratio = quotedPrice / fairMedian;
 
   if (ratio <= 1.15) {
@@ -307,7 +350,7 @@ export function evaluateDriverQuote(quotedPrice, fairEstimate) {
       badge: 'Slightly High ⚠️',
       color: 'amber',
       percentageDiff: Math.round((ratio - 1) * 100),
-      message: `Driver quoted ₹${quotedPrice}, which is about ${Math.round((ratio - 1) * 100)}% above meter.`,
+      message: `Driver quoted ₹${quotedPrice}, which is about ${Math.round((ratio - 1) * 100)}% above meter${legitimateBuffer > 0 ? ' (factoring in luggage/waiting)' : ''}.`,
       advice: `Counter with ₹${fairEstimate.auto.min} - ₹${fairEstimate.auto.max} or say "Meter se chalo bhaiya".`,
       counterOffer: fairEstimate.auto.max,
     };

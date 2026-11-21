@@ -37,6 +37,7 @@ export default function QuestionDetailPage({
   onAddAnswer,
   onUpvoteQuestion,
   onUpvoteAnswer,
+  onAcceptAnswer,
   onHighlightOnMap,
   relatedQuestions = [],
   onSelectRelatedQuestion
@@ -198,6 +199,9 @@ export default function QuestionDetailPage({
   };
 
   const sortedAnswers = [...(question.answers || [])].sort((a, b) => {
+    // Verified accepted solution floats to the top
+    if (a.isAccepted && !b.isAccepted) return -1;
+    if (!a.isAccepted && b.isAccepted) return 1;
     if (activeAnswerSort === 'upvotes') {
       return (b.upvotes || 0) - (a.upvotes || 0);
     }
@@ -488,38 +492,65 @@ export default function QuestionDetailPage({
                   {sortedAnswers.map((ans) => (
                     <div
                       key={ans.id}
-                      className="bg-[#FAF8F5] dark:bg-[#121212] border border-[#E8E5DF] dark:border-[#1a1a1a] rounded-2xl p-5 space-y-4 shadow-xs"
+                      className={`rounded-2xl p-5 space-y-4 shadow-xs transition-all ${
+                        ans.isAccepted
+                          ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-2 border-emerald-500/80 shadow-md shadow-emerald-500/5'
+                          : 'bg-[#FAF8F5] dark:bg-[#121212] border border-[#E8E5DF] dark:border-[#1a1a1a]'
+                      }`}
                     >
                       {/* Author bar & upvotes */}
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center justify-center">
                             {ans.author?.name?.[0] || 'L'}
                           </div>
                           <div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-xs font-bold text-stone-900 dark:text-white">
                                 {ans.author?.name}
                               </span>
                               <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50 font-semibold">
                                 {ans.author?.badge}
                               </span>
+                              {ans.isAccepted && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-600 text-white font-extrabold flex items-center gap-1 shadow-2xs">
+                                  <Check className="w-3 h-3" />
+                                  <span>Verified Solution</span>
+                                </span>
+                              )}
                             </div>
                             <span className="text-[10px] text-stone-400 dark:text-stone-500">{ans.createdAt}</span>
                           </div>
                         </div>
 
-                        <button
-                          onClick={() => onUpvoteAnswer(question.id, ans.id)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
-                            ans.userUpvoted
-                              ? 'bg-emerald-600 border-emerald-600 text-white'
-                              : 'bg-white dark:bg-[#181818] border-stone-200 dark:border-[#262626] text-stone-700 dark:text-stone-300 hover:text-emerald-600'
-                          }`}
-                        >
-                          <ThumbsUp className={`w-3 h-3 ${ans.userUpvoted ? 'fill-white' : ''}`} />
-                          <span>{ans.upvotes}</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          {onAcceptAnswer && (
+                            <button
+                              onClick={() => onAcceptAnswer(question.id, ans.id)}
+                              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${
+                                ans.isAccepted
+                                  ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
+                                  : 'bg-white dark:bg-[#181818] border-stone-200 dark:border-[#262626] text-stone-600 dark:text-stone-400 hover:text-emerald-600 hover:border-emerald-300'
+                              }`}
+                              title={ans.isAccepted ? 'Click to unmark solution' : 'Mark this advice as verified solution'}
+                            >
+                              <Check className={`w-3 h-3 ${ans.isAccepted ? 'text-emerald-600 font-bold' : ''}`} />
+                              <span>{ans.isAccepted ? 'Accepted' : 'Accept Solution'}</span>
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => onUpvoteAnswer(question.id, ans.id)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+                              ans.userUpvoted
+                                ? 'bg-emerald-600 border-emerald-600 text-white'
+                                : 'bg-white dark:bg-[#181818] border-stone-200 dark:border-[#262626] text-stone-700 dark:text-stone-300 hover:text-emerald-600'
+                            }`}
+                          >
+                            <ThumbsUp className={`w-3 h-3 ${ans.userUpvoted ? 'fill-white' : ''}`} />
+                            <span>{ans.upvotes}</span>
+                          </button>
+                        </div>
                       </div>
 
                       {/* Answer Body */}

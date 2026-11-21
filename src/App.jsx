@@ -435,6 +435,62 @@ export default function App() {
     }).catch(() => {});
   };
 
+  // Handle Accept Answer as Verified Solution (Q&A Lifecycle Business Logic)
+  const handleAcceptAnswer = (qId, ansId) => {
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id === qId) {
+          const updatedAnswers = q.answers.map((a) => {
+            if (a.id === ansId) {
+              const nextAccepted = !a.isAccepted;
+              return {
+                ...a,
+                isAccepted: nextAccepted,
+                author: {
+                  ...a.author,
+                  reputation: (a.author?.reputation || 100) + (nextAccepted ? 15 : -15),
+                },
+              };
+            }
+            return { ...a, isAccepted: false };
+          });
+
+          return {
+            ...q,
+            status: updatedAnswers.some((a) => a.isAccepted) ? 'solved' : 'open',
+            answers: updatedAnswers,
+          };
+        }
+        return q;
+      })
+    );
+
+    if (selectedQuestion && selectedQuestion.id === qId) {
+      setSelectedQuestion((prev) => {
+        const updatedAnswers = prev.answers.map((a) => {
+          if (a.id === ansId) {
+            const nextAccepted = !a.isAccepted;
+            return {
+              ...a,
+              isAccepted: nextAccepted,
+              author: {
+                ...a.author,
+                reputation: (a.author?.reputation || 100) + (nextAccepted ? 15 : -15),
+              },
+            };
+          }
+          return { ...a, isAccepted: false };
+        });
+
+        return {
+          ...prev,
+          status: updatedAnswers.some((a) => a.isAccepted) ? 'solved' : 'open',
+          answers: updatedAnswers,
+        };
+      });
+    }
+  };
+
   const handleHighlightOnMap = (target) => {
     setHighlightedPin(target);
     navigateToMap(target);
@@ -503,6 +559,7 @@ export default function App() {
           onAddAnswer={handleAddAnswer}
           onUpvoteQuestion={handleUpvoteQuestion}
           onUpvoteAnswer={handleUpvoteAnswer}
+          onAcceptAnswer={handleAcceptAnswer}
           onHighlightOnMap={(pin) => {
             handleHighlightOnMap(pin);
           }}
