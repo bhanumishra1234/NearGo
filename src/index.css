@@ -4,8 +4,34 @@
 
 @layer base {
   body {
-    @apply bg-[#F7F6F3] text-[#1C1917] font-sans antialiased;
+    @apply bg-[#ffffff] text-[#1C1917] font-sans antialiased;
     overflow-x: hidden;
+  }
+
+  .dark body {
+    @apply bg-[#121212] text-[#E7E5E4];
+  }
+
+  /* Dark mode support for common cards and panels */
+  .dark .bg-white {
+    background-color: #1E1E1E !important;
+    color: #F5F5F4;
+  }
+  .dark .bg-\[\#ffffff\], .dark .bg-\[\#F7F6F3\], .dark .bg-\[\#FAF8F5\], .dark .bg-\[\#F4F1EA\] {
+    background-color: #27272A !important;
+    color: #E4E4E7;
+  }
+  .dark .border-\[\#E8E5DF\], .dark .border-stone-100, .dark .border-stone-200 {
+    border-color: #3F3F46 !important;
+  }
+  .dark .text-stone-900, .dark .text-stone-800, .dark .text-stone-700 {
+    color: #F4F4F5 !important;
+  }
+  .dark .text-stone-600, .dark .text-stone-500 {
+    color: #A1A1AA !important;
+  }
+  .dark .hover\:bg-stone-50:hover, .dark .hover\:bg-stone-100:hover, .dark .hover\:bg-\[\#FAF8F5\]:hover, .dark .hover\:bg-\[\#ECE7DC\]:hover {
+    background-color: #333338 !important;
   }
 }
 

@@ -10,7 +10,9 @@ import {
   LogOut,
   LogIn,
   ChevronDown,
-  ShieldCheck
+  ShieldCheck,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -20,6 +22,8 @@ export default function Navbar({
   onRequestLocation,
   isDetectingLocation,
   locationStatus,
+  darkMode,
+  setDarkMode,
   activeTab,
   setActiveTab,
   onOpenAskModal,
@@ -208,6 +212,27 @@ export default function Navbar({
                         </button>
                       </div>
 
+                      {/* Theme Toggle Slider */}
+                      <div className="px-3.5 py-2 border-t border-stone-100 flex items-center justify-between text-stone-700">
+                        <div className="flex items-center gap-2">
+                          {darkMode ? <Moon className="w-3.5 h-3.5 text-indigo-500" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
+                          <span className="text-xs font-medium">{darkMode ? 'Dark Mode' : 'Light Mode'}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setDarkMode(!darkMode)}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                            darkMode ? 'bg-[#D9532F]' : 'bg-stone-300'
+                          }`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                              darkMode ? 'translate-x-4' : 'translate-x-0'
+                            }`}
+                          />
+                        </button>
+                      </div>
+
                       <div className="pt-1 border-t border-stone-100">
                         <button
                           onClick={async () => {
@@ -250,6 +275,27 @@ export default function Navbar({
                           className="w-full py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-center transition-colors"
                         >
                           <span>Create Account</span>
+                        </button>
+                      </div>
+
+                      {/* Theme Toggle Slider for guest users */}
+                      <div className="px-3.5 py-2 border-t border-stone-100 flex items-center justify-between text-stone-700">
+                        <div className="flex items-center gap-2">
+                          {darkMode ? <Moon className="w-3.5 h-3.5 text-indigo-500" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
+                          <span className="text-xs font-medium">{darkMode ? 'Dark Mode' : 'Light Mode'}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setDarkMode(!darkMode)}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                            darkMode ? 'bg-[#D9532F]' : 'bg-stone-300'
+                          }`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                              darkMode ? 'translate-x-4' : 'translate-x-0'
+                            }`}
+                          />
                         </button>
                       </div>
                     </>

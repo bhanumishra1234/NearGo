@@ -39,6 +39,21 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
 
+  // Dark/Light Theme state
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('neargo_theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('neargo_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('neargo_theme', 'light');
+    }
+  }, [darkMode]);
+
   // Modals state
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
@@ -348,7 +363,7 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F7F6F3] text-[#1C1917] flex flex-col font-sans selection:bg-[#D9532F] selection:text-white">
+    <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212] text-[#1C1917] dark:text-[#E7E5E4] flex flex-col font-sans selection:bg-[#D9532F] selection:text-white transition-colors duration-200">
       {/* Navbar */}
       <Navbar
         selectedCity={selectedCity}
@@ -359,6 +374,8 @@ export default function App() {
         onRequestLocation={requestLocation}
         isDetectingLocation={isDetectingLocation}
         locationStatus={locationStatus}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenAskModal={() => setIsAskModalOpen(true)}
