@@ -17,6 +17,7 @@ import {
 import { VIBE_CATEGORIES, INDIC_SLANG_DICTIONARY, VIBE_CURATED_SPOTS } from './src/data/vibeData.js';
 import { NCR_METRO_STATIONS, METRO_LINES } from './src/data/metroData.js';
 import { runScheduledFareSync } from './scripts/cron-job.js';
+import { neo4jService } from './server/neo4jService.js';
 
 import path from 'path';
 import fs from 'fs';
@@ -929,6 +930,56 @@ app.get('/api/vibe/curated', (req, res) => {
   res.json({ categories: VIBE_CATEGORIES, dictionary: INDIC_SLANG_DICTIONARY, curatedSpots: VIBE_CURATED_SPOTS });
 });
 
+// ── 10b. Neo4j Graph Database Endpoints ─────────────────────────────────────
+// Graph Overview for Judges / Evaluator Dashboards
+app.get('/api/graph/overview', async (req, res) => {
+  try {
+    const overview = await neo4jService.getOverview();
+    res.json({ success: true, ...overview });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Interactive Visual Knowledge Graph (Nodes & Links)
+app.get('/api/graph/explore', async (req, res) => {
+  try {
+    const { city, limit } = req.query;
+    const graphData = await neo4jService.getGraphData({
+      city: city || 'Delhi NCR',
+      limit: parseInt(limit, 10) || 40,
+    });
+    res.json({ success: true, ...graphData });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Multi-Hop Shortest Transit Path Calculation
+app.get('/api/graph/shortest-transit', async (req, res) => {
+  try {
+    const { origin = 'Kashmere Gate', destination = 'Majnu Ka Tilla' } = req.query;
+    const route = await neo4jService.getShortestTransitRoute(origin, destination);
+    res.json({ success: true, route });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Interactive Cypher Query Playground (Read-Only)
+app.post('/api/graph/cypher', async (req, res) => {
+  try {
+    const { cypher } = req.body;
+    if (!cypher || typeof cypher !== 'string') {
+      return res.status(400).json({ error: 'Valid Cypher query string required' });
+    }
+    const result = await neo4jService.executeCypher(cypher);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ── 11. Cron (Protected against DoS execution via CRON_SECRET) ───────────────
 app.all('/api/cron/sync-fares', async (req, res) => {
   if (process.env.CRON_SECRET) {
@@ -968,6 +1019,7 @@ if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
     console.log(`[NearGo] Running on http://localhost:${PORT}`);
     console.log(`[NearGo] Supabase: ${process.env.SUPABASE_URL ? '✓ Connected' : '✗ SUPABASE_URL missing'}`);
+    console.log(`[NearGo] Neo4j Graph Engine: ✓ Active (${process.env.NEO4J_URI ? 'Neo4j Aura Cloud' : 'In-Memory Engine'})`);
   });
 }
 
