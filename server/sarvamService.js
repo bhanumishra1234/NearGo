@@ -26,7 +26,7 @@ class SarvamService {
       provider: 'Sarvam AI (Indic Foundational AI)',
       configured: this.isConfigured(),
       models: {
-        tts: 'bulbul:v1',
+        tts: 'bulbul:v3',
         translation: 'mayura:v1',
         stt: 'saaras:v1',
       },
@@ -51,19 +51,21 @@ class SarvamService {
    * Bulbul:v1 — Text to Speech
    * Generates natural Indic voice audio with authentic street pronunciation & dialects
    */
-  async generateSpeech({ text, languageCode = 'hi-IN', speaker = 'meera', pace = 1.0 }) {
+  async generateSpeech({ text, languageCode = 'hi-IN', speaker = 'priya', pace = 1.0 }) {
     if (!text || !text.trim()) {
       throw new Error('Text parameter is required for TTS');
     }
 
     const cleanText = text.trim();
-    const cacheKey = `${languageCode}:${speaker}:${cleanText}`;
+    // Default valid bulbul:v3 speakers
+    const validSpeaker = (speaker && speaker !== 'meera' && speaker !== 'arvind') ? speaker : 'priya';
+    const cacheKey = `${languageCode}:${validSpeaker}:${cleanText}`;
 
     if (this.ttsCache.has(cacheKey)) {
       return {
         audioBase64: this.ttsCache.get(cacheKey),
         languageCode,
-        speaker,
+        speaker: validSpeaker,
         cached: true,
         isLiveSarvam: true,
       };
@@ -89,13 +91,13 @@ class SarvamService {
         body: JSON.stringify({
           inputs: [cleanText],
           target_language_code: languageCode,
-          speaker: speaker || 'meera',
+          speaker: validSpeaker,
           pitch: 0,
           pace: pace || 1.0,
           loudness: 1.5,
           speech_sample_rate: 8000,
           enable_preprocessing: true,
-          model: 'bulbul:v1',
+          model: 'bulbul:v3',
         }),
       });
 
