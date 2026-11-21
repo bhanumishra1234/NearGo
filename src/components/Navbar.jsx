@@ -35,7 +35,7 @@ export default function Navbar({
   sidebarOpen,
   setSidebarOpen,
 }) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, signInAsDemo } = useAuth();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -187,13 +187,13 @@ export default function Navbar({
 
               {/* Dropdown Menu */}
               {profileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#0c0c0c] rounded-xl border border-[#E8E5DF] dark:border-[#1e1e1e] shadow-lg py-1.5 z-50 text-xs">
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#0c0c0c] rounded-xl border border-[#E8E5DF] dark:border-[#1e1e1e] shadow-lg py-1.5 z-50 text-xs">
                   {user ? (
                     <>
-                      <div className="px-3.5 py-2 border-b border-stone-100">
-                        <div className="font-bold text-stone-900 truncate">{displayName}</div>
-                        <div className="text-[10px] text-stone-400 truncate mt-0.5">{user.email}</div>
-                        <div className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-[9px]">
+                      <div className="px-3.5 py-2 border-b border-stone-100 dark:border-[#1a1a1a]">
+                        <div className="font-bold text-stone-900 dark:text-white truncate">{displayName}</div>
+                        <div className="text-[10px] text-stone-400 dark:text-stone-500 truncate mt-0.5">{user.email}</div>
+                        <div className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold text-[9px] border border-emerald-200/60 dark:border-emerald-800/40">
                           <ShieldCheck className="w-2.5 h-2.5" />
                           <span>Verified Local</span>
                         </div>
@@ -205,7 +205,7 @@ export default function Navbar({
                             setProfileDropdownOpen(false);
                             onOpenAskModal();
                           }}
-                          className="w-full text-left px-3.5 py-1.5 hover:bg-stone-50 flex items-center gap-2 text-stone-700"
+                          className="w-full text-left px-3.5 py-1.5 hover:bg-stone-50 dark:hover:bg-[#161616] flex items-center gap-2 text-stone-700 dark:text-stone-300"
                         >
                           <MessageSquarePlus className="w-3.5 h-3.5 text-[#D9532F]" />
                           <span>My Questions</span>
@@ -213,7 +213,7 @@ export default function Navbar({
                       </div>
 
                       {/* Theme Toggle Slider */}
-                      <div className="px-3.5 py-2 border-t border-stone-100 flex items-center justify-between text-stone-700">
+                      <div className="px-3.5 py-2 border-t border-stone-100 dark:border-[#1a1a1a] flex items-center justify-between text-stone-700 dark:text-stone-300">
                         <div className="flex items-center gap-2">
                           {darkMode ? <Moon className="w-3.5 h-3.5 text-indigo-500" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
                           <span className="text-xs font-medium">{darkMode ? 'Dark Mode' : 'Light Mode'}</span>
@@ -233,13 +233,13 @@ export default function Navbar({
                         </button>
                       </div>
 
-                      <div className="pt-1 border-t border-stone-100">
+                      <div className="pt-1 border-t border-stone-100 dark:border-[#1a1a1a]">
                         <button
                           onClick={async () => {
                             setProfileDropdownOpen(false);
                             await signOut();
                           }}
-                          className="w-full text-left px-3.5 py-1.5 hover:bg-stone-50 flex items-center gap-2 text-red-600 font-semibold"
+                          className="w-full text-left px-3.5 py-1.5 hover:bg-stone-50 dark:hover:bg-[#161616] flex items-center gap-2 text-red-600 dark:text-red-400 font-semibold"
                         >
                           <LogOut className="w-3.5 h-3.5" />
                           <span>Sign Out</span>
@@ -248,14 +248,28 @@ export default function Navbar({
                     </>
                   ) : (
                     <>
-                      <div className="px-3.5 py-2 border-b border-stone-100">
-                        <div className="font-bold text-stone-900">Welcome to NearGo</div>
-                        <div className="text-[10px] text-stone-500 mt-0.5">
-                          Sign in to post questions and vote.
+                      <div className="px-3.5 py-2 border-b border-stone-100 dark:border-[#1a1a1a]">
+                        <div className="font-bold text-stone-900 dark:text-white">Welcome to NearGo</div>
+                        <div className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5">
+                          Sign in to post questions, submit gems, and vote.
                         </div>
                       </div>
 
-                      <div className="p-2 space-y-1">
+                      {/* 1-Click Demo Login for Judges/Evaluators */}
+                      <div className="p-2 pb-1">
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            signInAsDemo('Aarav Sharma (Verified Local)');
+                          }}
+                          className="w-full py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-[#D9532F] hover:from-amber-600 hover:to-[#C2411E] text-white font-bold text-center flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>⚡ 1-Click Demo Login</span>
+                        </button>
+                      </div>
+
+                      <div className="p-2 pt-1 space-y-1">
                         <button
                           onClick={() => {
                             setProfileDropdownOpen(false);
@@ -272,14 +286,14 @@ export default function Navbar({
                             setProfileDropdownOpen(false);
                             onOpenAuthModal('signup');
                           }}
-                          className="w-full py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-center transition-colors"
+                          className="w-full py-1.5 rounded-lg bg-stone-100 dark:bg-[#181818] hover:bg-stone-200 dark:hover:bg-[#222222] text-stone-700 dark:text-stone-300 font-semibold text-center transition-colors border border-transparent dark:border-[#222222]"
                         >
                           <span>Create Account</span>
                         </button>
                       </div>
 
                       {/* Theme Toggle Slider for guest users */}
-                      <div className="px-3.5 py-2 border-t border-stone-100 flex items-center justify-between text-stone-700">
+                      <div className="px-3.5 py-2 border-t border-stone-100 dark:border-[#1a1a1a] flex items-center justify-between text-stone-700 dark:text-stone-300">
                         <div className="flex items-center gap-2">
                           {darkMode ? <Moon className="w-3.5 h-3.5 text-indigo-500" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
                           <span className="text-xs font-medium">{darkMode ? 'Dark Mode' : 'Light Mode'}</span>
