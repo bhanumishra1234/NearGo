@@ -319,6 +319,7 @@ export default function QuestionDetailModal({
                   className="bg-[#FAF8F5] border border-[#E8E5DF] rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:border-terracotta-400 font-medium"
                 />
                 <select
+                  aria-label="Author Credential Badge"
                   value={authorBadge}
                   onChange={(e) => setAuthorBadge(e.target.value)}
                   className="bg-[#FAF8F5] border border-[#E8E5DF] rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:border-terracotta-400 font-medium"
@@ -412,10 +413,10 @@ export default function QuestionDetailModal({
                       <div className="space-y-2.5">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           <div>
-                            <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                            <label htmlFor="answer-landmark" className="block text-[11px] font-semibold text-stone-600 mb-1">
                               Select nearby area / landmark:
                             </label>
-                            <select
+                            <select id="answer-landmark" aria-label="Nearby Area or Landmark"
                               value={selectedLandmarkId}
                               onChange={(e) => setSelectedLandmarkId(e.target.value)}
                               className="w-full bg-white border border-[#E8E5DF] rounded-lg p-2 text-xs text-stone-900 font-medium"

@@ -197,10 +197,10 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             {/* Origin Landmark */}
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">
+              <label htmlFor="origin-select" className="block text-xs font-semibold text-stone-700 mb-1">
                 Starting Location (Origin)
               </label>
-              <select
+              <select id="origin-select" aria-label="Starting Location Origin"
                 value={originId}
                 onChange={(e) => {
                   setOriginId(e.target.value);
@@ -242,10 +242,10 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
 
             {/* Destination Landmark */}
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">
+              <label htmlFor="dest-select" className="block text-xs font-semibold text-stone-700 mb-1">
                 Destination Landmark / Metro Station
               </label>
-              <select
+              <select id="dest-select" aria-label="Destination Landmark or Metro Station"
                 value={destId}
                 onChange={(e) => {
                   setDestId(e.target.value);

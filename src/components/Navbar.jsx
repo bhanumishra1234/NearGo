@@ -56,7 +56,7 @@ export default function Navbar({
   const initial = user && displayName ? displayName.charAt(0).toUpperCase() : '';
 
   return (
-    <header className="sticky top-0 z-[1100] bg-white/95 dark:bg-[#000000]/95 backdrop-blur-md border-b border-[#E8E5DF] dark:border-[#1a1a1a]">
+    <header aria-label="Main Site Navigation" className="sticky top-0 z-[1100] bg-white/95 dark:bg-[#000000]/95 backdrop-blur-md border-b border-[#E8E5DF] dark:border-[#1a1a1a]">
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6">
         <div className="flex items-center justify-between h-14 gap-3">
           {/* Left: Brand & City Selector */}
@@ -84,7 +84,7 @@ export default function Navbar({
             <div className="hidden sm:flex items-center ml-1 pl-3 border-l border-stone-200 dark:border-[#1f1f1f] gap-1">
               <div className="flex items-center gap-1.5 bg-[#F7F6F3] dark:bg-[#111111] border border-[#E8E5DF] dark:border-[#1e1e1e] hover:border-stone-300 dark:hover:border-stone-600 px-2.5 py-1 rounded-full text-xs transition-colors">
                 <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
-                <select
+                <select id="navbar-city-select" aria-label="Select Active City"
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
                   className="bg-transparent text-stone-800 dark:text-stone-100 font-semibold outline-none cursor-pointer text-xs pr-1"

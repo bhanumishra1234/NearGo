@@ -154,8 +154,8 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
           {/* Category & Vibe Selectors */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">Topic / Space</label>
-              <select
+              <label htmlFor="ask-category" className="block text-xs font-semibold text-stone-700 mb-1">Topic / Space</label>
+              <select id="ask-category" aria-label="Topic / Space"
                 value={category}
                 onChange={(e) => {
                   setCategory(e.target.value);
@@ -171,8 +171,8 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">Primary Vibe</label>
-              <select
+              <label htmlFor="ask-vibe" className="block text-xs font-semibold text-stone-700 mb-1">Primary Vibe</label>
+              <select id="ask-vibe" aria-label="Primary Vibe"
                 value={vibeCategory}
                 onChange={(e) => setVibeCategory(e.target.value)}
                 className="w-full bg-[#FAF8F5] border border-[#E8E5DF] rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:border-terracotta-400 font-medium"
@@ -224,7 +224,7 @@ export default function AskQuestionModal({ onClose, onAddQuestion }) {
             </div>
 
             {locationMode === 'landmark' ? (
-              <select
+              <select aria-label="Select Landmark"
                 value={selectedLandmarkId}
                 onChange={(e) => setSelectedLandmarkId(e.target.value)}
                 className="w-full bg-white border border-[#E8E5DF] rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:border-terracotta-400 font-medium"

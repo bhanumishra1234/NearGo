@@ -414,7 +414,7 @@ export default function App() {
         {activeTab === 'feed' ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full overflow-hidden">
             {/* 1. Left Sidebar: Navigation & Spaces (3 cols) - STRICTLY NON-SCROLLABLE */}
-            <aside className={`lg:col-span-3 h-full overflow-hidden py-4 ${sidebarOpen ? 'flex' : 'hidden lg:flex'} flex-col space-y-2.5 select-none shrink-0`}>
+            <aside aria-label="City Spaces and Topic Navigation" className={`lg:col-span-3 h-full overflow-hidden py-4 ${sidebarOpen ? 'flex' : 'hidden lg:flex'} flex-col space-y-2.5 select-none shrink-0`}>
               {/* Primary Feed Navigation */}
               <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-2.5 shadow-2xs">
                 <div className="space-y-0.5 text-xs font-semibold">
@@ -521,7 +521,8 @@ export default function App() {
             </aside>
 
             {/* 2. Center Column: Community Feed & Discussions (6 cols) - THE ONLY SCROLLABLE SECTION */}
-            <main className="lg:col-span-6 h-full overflow-y-auto no-scrollbar py-4 px-1 space-y-4">
+            <main aria-label="Community Feed and Discussions" className="lg:col-span-6 h-full overflow-y-auto no-scrollbar py-4 px-1 space-y-4">
+                <h1 className="sr-only">NearGo — Hyper-Local Community Travel Companion & Real-Time City Guide</h1>
               <div className="flex items-center justify-between pb-1">
                 <div>
                   <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
@@ -570,7 +571,7 @@ export default function App() {
             </main>
 
             {/* 3. Right Sidebar: Mini-Map, Quick Scam Auditor, Slang (3 cols) - STRICTLY NON-SCROLLABLE */}
-            <aside className="hidden lg:flex lg:col-span-3 h-full overflow-hidden py-4 flex-col space-y-2.5 select-none shrink-0">
+            <aside aria-label="Live Tools and Spatial Mini-Map" className="hidden lg:flex lg:col-span-3 h-full overflow-hidden py-4 flex-col space-y-2.5 select-none shrink-0">
               {/* Interactive Map Preview Card */}
               <div className="bg-white dark:bg-[#0a0a0a] border border-[#E8E5DF] dark:border-[#1a1a1a] rounded-2xl p-2.5 shadow-2xs space-y-1.5">
                 <div className="flex items-center justify-between px-0.5">

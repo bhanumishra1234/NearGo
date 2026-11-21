@@ -465,7 +465,7 @@ export const INITIAL_QUESTIONS = [
     community: 'c/DULife',
     communityName: 'North Campus & Student Hangouts',
     title: 'Cozy study cafes with Wi-Fi & budget meals in DU North Campus?',
-    body: 'Studying for upcoming exams with batchmates. We need chill spots around Hudson Lane or Kamla Nagar with reliable charging sockets, decent filter coffee/tea, and meal combos under ₹250.',
+    body: 'Studying for upcoming exams with batch mates. We need chill spots around Hudson Lane or Kamla Nagar with reliable charging sockets, decent filter coffee/tea, and meal combos under ₹250.',
     author: {
       name: 'Harshita Bose',
       badge: 'DU Student',

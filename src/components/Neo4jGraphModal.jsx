@@ -120,7 +120,7 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
 
           <div className="flex items-center gap-2">
             {/* City Selector */}
-            <select
+            <select aria-label="Select City Network"
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
               className="bg-stone-100 dark:bg-[#1c1c1c] text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-[#333333] px-2.5 py-1 rounded-full text-xs font-semibold outline-none cursor-pointer"
