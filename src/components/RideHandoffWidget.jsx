@@ -41,6 +41,12 @@ export default function RideHandoffWidget({
           href={links.rapido.url}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={(e) => {
+            if (links.rapido.url.startsWith('intent://')) {
+              e.preventDefault();
+              window.location.href = links.rapido.url;
+            }
+          }}
           className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#FFDE00] hover:bg-[#ebd000] text-stone-900 font-bold text-xs transition-all shadow-2xs group"
           title="Book Auto or Bike Taxi on Rapido"
         >

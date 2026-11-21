@@ -1,3 +1,4 @@
+import { getRapidoDeepLink } from '../utils/monetization.js';
 import React, { useState } from 'react';
 import {
   ThumbsUp,
@@ -280,10 +281,17 @@ export default function QuestionsFeed({
                     <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium">1-Click Ride Handoff:</span>
                     <div className="flex items-center gap-1.5">
                       <a
-                        href={`https://rapido.onelink.me/5vjY?pid=neargo&af_dp=rapido%3A%2F%2Fride%3Fdrop_name%3D${encodeURIComponent(q.fareCheck.destination || q.locationName)}&af_web_dp=https%3A%2F%2Fwww.rapido.bike%2F`}
+                        href={getRapidoDeepLink({ destination: q.fareCheck.destination || q.locationName })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const targetUrl = getRapidoDeepLink({ destination: q.fareCheck.destination || q.locationName });
+                          if (targetUrl.startsWith('intent://')) {
+                            e.preventDefault();
+                            window.location.href = targetUrl;
+                          }
+                        }}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
                         className="px-2.5 py-1 rounded-md bg-[#FFDE00] hover:bg-[#ebd000] text-black font-extrabold text-[10px] flex items-center gap-1 shadow-2xs transition-transform active:scale-95"
                       >
                         <span>🛺 Book Rapido</span>

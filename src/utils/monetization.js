@@ -9,6 +9,31 @@
  * Generate 1-Click Ride-Hailing Deep Links with Pre-Filled Destination Coordinates
  * Uses official universal URL schemes and web intents with affiliate attribution tags.
  */
+/**
+ * Smart Cross-Platform Rapido Deep Link Generator
+ * - Android: Triggers native Rapido app intent with pre-filled destination, falls back to Google Play Store
+ * - iOS: Directs to Rapido Apple App Store listing
+ * - Desktop/Web: Directs to official Rapido portal (rapido.bike) without AppsFlyer 'Application ID not found' errors
+ */
+export function getRapidoDeepLink({ destination = '', destLat = null, destLng = null } = {}) {
+  const encDest = encodeURIComponent(destination || 'My Destination');
+
+  if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+    const ua = navigator.userAgent || '';
+    if (/android/i.test(ua)) {
+      const latParam = destLat ? `&drop_lat=${destLat}` : '';
+      const lngParam = destLng ? `&drop_lng=${destLng}` : '';
+      return `intent://ride?drop_name=${encDest}${latParam}${lngParam}#Intent;scheme=rapido;package=com.rapido.passenger;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.rapido.passenger;end`;
+    }
+    if (/iPad|iPhone|iPod/.test(ua)) {
+      return 'https://apps.apple.com/app/rapido-bike-taxi-auto-cabs/id1198464607';
+    }
+  }
+
+  // Desktop or universal web fallback
+  return 'https://www.rapido.bike/';
+}
+
 export function generateRideDeepLinks({
   origin = 'Current Location',
   destination = 'Target Destination',
@@ -36,8 +61,8 @@ export function generateRideDeepLinks({
       color: 'bg-[#FFDE00] text-black hover:bg-[#ebd000]',
       icon: '🛺',
       commission: '₹12 - ₹18 per ride install',
-      // Rapido universal onelink / web search fallback
-      url: `https://rapido.onelink.me/5vjY?pid=neargo_app&c=fair_fare_handoff&af_dp=rapido%3A%2F%2Fride%3Fdrop_lat%3D${destLat}%26drop_lng%3D${destLng}%26drop_name%3D${encDest}&af_web_dp=https%3A%2F%2Fwww.rapido.bike%2F`,
+      // Dynamic cross-platform deep link (Android native intent / iOS App Store / Web fallback)
+      url: getRapidoDeepLink({ destination, destLat, destLng }),
     },
     ola: {
       name: 'Ola Cabs',
