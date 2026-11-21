@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { MapPin, Navigation, Filter, CheckCircle2, Sparkles, X, Compass, Train } from 'lucide-react';
+import { MapPin, Navigation, Filter, CheckCircle2, Sparkles, X, Compass, Train, ShieldCheck } from 'lucide-react';
 import { NCR_METRO_STATIONS, METRO_LINES } from '../data/metroData.js';
+import { INDIA_SOVEREIGN_BOUNDARY } from '../data/indiaBoundary.js';
 
 export default function MapContainer({
   questions = [],
@@ -17,8 +18,41 @@ export default function MapContainer({
   const leafletMap = useRef(null);
   const markersLayer = useRef(null);
   const markersRegistry = useRef([]);
+  const soiLayerRef = useRef(null);
   const [filterType, setFilterType] = useState('all'); // all | questions | gems
   const [activeCenter, setActiveCenter] = useState('southDelhi');
+  const [isPanIndiaView, setIsPanIndiaView] = useState(false);
+
+  // Active City Hubs across India
+  const CITY_HUBS = [
+    {
+      id: 'hub-delhi',
+      name: 'Delhi NCR',
+      tag: 'National Capital & Transit Hub',
+      lat: 28.6139,
+      lng: 77.2090,
+      zoom: 13,
+      icon: '🏛️',
+    },
+    {
+      id: 'hub-mumbai',
+      name: 'Mumbai',
+      tag: 'Financial Capital & Coastal Gems',
+      lat: 18.9432,
+      lng: 72.8230,
+      zoom: 13,
+      icon: '🌊',
+    },
+    {
+      id: 'hub-blr',
+      name: 'Bengaluru',
+      tag: 'Silicon Valley & Cafe Corridor',
+      lat: 12.9716,
+      lng: 77.5946,
+      zoom: 13,
+      icon: '☕',
+    },
+  ];
 
   // Regional quick navigation centers per city
   const PRESET_CENTERS = {
@@ -64,10 +98,28 @@ export default function MapContainer({
 
       // OpenStreetMap high-detail free tiles (no API key required)
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        attribution: '&copy; OpenStreetMap contributors | Survey of India Boundary Overlay',
         subdomains: 'abc',
         maxZoom: 19,
+        minZoom: 4,
       }).addTo(map);
+
+      // Official Survey of India Sovereign Boundary GeoJSON Overlay
+      soiLayerRef.current = L.geoJSON(INDIA_SOVEREIGN_BOUNDARY, {
+        style: {
+          color: '#D9532F', // Terracotta orange sovereign boundary stroke
+          weight: 2.8,
+          opacity: 0.95,
+          fillColor: '#FF9933', // Saffron subtle national tint
+          fillOpacity: 0.04,
+          lineJoin: 'round',
+        },
+      }).addTo(map);
+
+      soiLayerRef.current.bindTooltip(
+        '🇮🇳 Sovereign Boundary of India (Survey of India Compliant: Complete J&K, Ladakh & Arunachal Pradesh)',
+        { sticky: true }
+      );
 
       markersLayer.current = L.layerGroup().addTo(map);
       leafletMap.current = map;
@@ -98,6 +150,53 @@ export default function MapContainer({
 
     markersLayer.current.clearLayers();
     markersRegistry.current = [];
+
+    // In Pan-India view, render interactive City Hub Badges across India
+    if (isPanIndiaView) {
+      CITY_HUBS.forEach((hub) => {
+        const hubCount = questions.filter(
+          (q) => q.city && q.city.toLowerCase().includes(hub.name.toLowerCase().split(' ')[0])
+        ).length;
+
+        const hubIcon = L.divIcon({
+          className: 'city-hub-pin',
+          html: `
+            <div class="cursor-pointer group flex flex-col items-center">
+              <div class="px-3 py-1.5 rounded-full bg-stone-900 text-white font-bold text-xs shadow-2xl border-2 border-[#D9532F] flex items-center gap-2 whitespace-nowrap hover:scale-110 transition-transform">
+                <span class="text-sm">${hub.icon}</span>
+                <span>${hub.name}</span>
+                <span class="text-[10px] bg-[#D9532F] text-white px-2 py-0.5 rounded-full font-mono font-bold">${hubCount || 10} spots</span>
+              </div>
+              <div class="w-2.5 h-2.5 bg-[#D9532F] rotate-45 -mt-1 shadow-md"></div>
+            </div>
+          `,
+          iconSize: [140, 42],
+          iconAnchor: [70, 42],
+        });
+
+        const hubMarker = L.marker([hub.lat, hub.lng], { icon: hubIcon }).addTo(markersLayer.current);
+        hubMarker.bindPopup(`
+          <div style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; padding:4px; min-width:200px;">
+            <div style="font-size:10px; text-transform:uppercase; font-weight:800; color:#D9532F; margin-bottom:2px;">🇮🇳 NearGo Active Hub</div>
+            <div style="font-weight:800; font-size:14px; color:#1C1917; margin-bottom:2px;">${hub.name}</div>
+            <div style="font-size:11px; color:#6B7280; margin-bottom:6px;">${hub.tag}</div>
+            <button id="btn-fly-${hub.id}" style="width:100%; background:#D9532F; color:#FFFFFF; font-weight:700; padding:6px 10px; border-radius:6px; border:none; cursor:pointer; font-size:11px;">
+              Explore ${hub.name} (Zoom In) ➔
+            </button>
+          </div>
+        `);
+
+        hubMarker.on('popupopen', () => {
+          const btn = document.getElementById(`btn-fly-${hub.id}`);
+          if (btn) {
+            btn.onclick = () => {
+              setIsPanIndiaView(false);
+              leafletMap.current.flyTo([hub.lat, hub.lng], hub.zoom, { animate: true, duration: 1.2 });
+            };
+          }
+        });
+      });
+    }
 
     // 1. Question Markers (Terracotta Clay Accent)
     if (filterType === 'all' || filterType === 'questions') {
@@ -323,11 +422,12 @@ export default function MapContainer({
         }
       }, 700);
     }
-  }, [questions, filterType, highlightedPin]);
+  }, [questions, filterType, highlightedPin, isPanIndiaView]);
 
   // Auto re-center when selectedCity changes
   useEffect(() => {
     if (!leafletMap.current) return;
+    setIsPanIndiaView(false);
     const cityCoords = {
       'Mumbai': { lat: 18.9432, lng: 72.8230, zoom: 13 },
       'Bengaluru': { lat: 12.9716, lng: 77.5946, zoom: 13 },
@@ -338,7 +438,9 @@ export default function MapContainer({
       leafletMap.current.flyTo([target.lat, target.lng], target.zoom, { animate: true, duration: 1.2 });
     }
   }, [selectedCity]);
+
   const handleCenterSelect = (key) => {
+    setIsPanIndiaView(false);
     setActiveCenter(key);
     const target = PRESET_CENTERS[key];
     if (target && leafletMap.current) {
@@ -346,15 +448,35 @@ export default function MapContainer({
     }
   };
 
+  const handlePanIndiaView = () => {
+    if (!leafletMap.current) return;
+    setIsPanIndiaView(true);
+    setActiveCenter('panIndia');
+    leafletMap.current.flyTo([22.8, 80.0], 5, { animate: true, duration: 1.2 });
+  };
+
   return (
-    <div className={`relative w-full h-full flex flex-col bg-[#F4F1EA] rounded-2xl overflow-hidden border border-[#E8E5DF] shadow-sm ${minimal ? 'min-h-[140px]' : 'min-h-[480px]'}`}>
+    <div className={`relative w-full h-full flex flex-col bg-[#F4F1EA] dark:bg-[#000000] rounded-2xl overflow-hidden border border-[#E8E5DF] dark:border-[#1a1a1a] shadow-sm ${minimal ? 'min-h-[140px]' : 'min-h-[480px]'}`}>
       {/* Top Floating Control Bar - hidden if minimal */}
       {!minimal && (
         <div className="absolute top-3 left-3 right-3 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
           {/* Preset Center Navigation Chips */}
-          <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-[#E8E5DF] shadow-md pointer-events-auto overflow-x-auto max-w-full">
-            <Navigation className="w-3.5 h-3.5 text-[#D9532F] ml-1 shrink-0" />
-            <span className="text-[11px] font-bold text-stone-500 hidden sm:inline mr-1">Quick Jump:</span>
+          <div className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0c0c0c]/95 backdrop-blur-md p-1.5 rounded-full border border-[#E8E5DF] dark:border-[#1e1e1e] shadow-md pointer-events-auto overflow-x-auto max-w-full">
+            {/* Pan-India SOI View Button */}
+            <button
+              onClick={handlePanIndiaView}
+              className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
+                isPanIndiaView
+                  ? 'bg-gradient-to-r from-orange-500 via-amber-500 to-emerald-600 text-white ring-2 ring-amber-300'
+                  : 'bg-stone-100 dark:bg-[#181818] text-stone-800 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-[#222222]'
+              }`}
+              title="Official Survey of India Sovereign Boundary (Full J&K, Ladakh & NE)"
+            >
+              <span>🇮🇳</span>
+              <span>Pan-India SOI View</span>
+            </button>
+
+            <span className="text-[11px] font-bold text-stone-400 dark:text-stone-500 hidden sm:inline mr-1">| Quick Jump:</span>
             {Object.entries(PRESET_CENTERS)
               .filter(([_, item]) => item.city === selectedCity)
               .map(([key, item]) => (
@@ -362,9 +484,9 @@ export default function MapContainer({
                 key={key}
                 onClick={() => handleCenterSelect(key)}
                 className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
-                  activeCenter === key
+                  activeCenter === key && !isPanIndiaView
                     ? 'bg-[#D9532F] text-white shadow-xs'
-                    : 'text-stone-700 hover:bg-stone-100'
+                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-[#181818]'
                 }`}
               >
                 {item.name.split(' (')[0]}
@@ -373,12 +495,12 @@ export default function MapContainer({
           </div>
 
           {/* Filter Pills */}
-          <div className="flex items-center gap-1 bg-white/95 backdrop-blur-md p-1 rounded-full border border-[#E8E5DF] shadow-md pointer-events-auto">
+          <div className="flex items-center gap-1 bg-white/95 dark:bg-[#0c0c0c]/95 backdrop-blur-md p-1 rounded-full border border-[#E8E5DF] dark:border-[#1e1e1e] shadow-md pointer-events-auto">
             <Filter className="w-3 h-3 text-stone-400 ml-1.5 mr-0.5" />
             <button
               onClick={() => setFilterType('all')}
               className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
-                filterType === 'all' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900'
+                filterType === 'all' ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900' : 'text-stone-600 dark:text-stone-300 hover:text-stone-900'
               }`}
             >
               All Pins
@@ -386,7 +508,7 @@ export default function MapContainer({
             <button
               onClick={() => setFilterType('questions')}
               className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
-                filterType === 'questions' ? 'bg-terracotta-50 text-[#D9532F]' : 'text-stone-600 hover:text-stone-900'
+                filterType === 'questions' ? 'bg-terracotta-50 dark:bg-[#D9532F]/20 text-[#D9532F]' : 'text-stone-600 dark:text-stone-300 hover:text-stone-900'
               }`}
             >
               ❓ Questions
@@ -394,7 +516,7 @@ export default function MapContainer({
             <button
               onClick={() => setFilterType('gems')}
               className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
-                filterType === 'gems' ? 'bg-emerald-50 text-emerald-700' : 'text-stone-600 hover:text-stone-900'
+                filterType === 'gems' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400' : 'text-stone-600 dark:text-stone-300 hover:text-stone-900'
               }`}
             >
               💎 Suggested Spots
@@ -402,13 +524,36 @@ export default function MapContainer({
             <button
               onClick={() => setFilterType('metro')}
               className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1 ${
-                filterType === 'metro' ? 'bg-blue-600 text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'
+                filterType === 'metro' ? 'bg-blue-600 text-white shadow-xs' : 'text-stone-600 dark:text-stone-300 hover:text-stone-900'
               }`}
             >
               <span>🚇 Metro</span>
               <span className="text-[9px] opacity-80">({NCR_METRO_STATIONS.length})</span>
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Pan-India SOI Badge Notification */}
+      {isPanIndiaView && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] bg-white/95 dark:bg-[#0c0c0c]/95 backdrop-blur-md border-2 border-emerald-500 text-stone-900 dark:text-white px-4 py-1.5 rounded-full shadow-xl flex items-center gap-2 text-xs font-bold pointer-events-auto animate-fadeIn">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <span>Survey of India Sovereign Boundary (Undivided J&K, Ladakh & Arunachal Pradesh)</span>
+          <button
+            onClick={() => {
+              setIsPanIndiaView(false);
+              const cityCoords = {
+                'Mumbai': { lat: 18.9432, lng: 72.8230, zoom: 13 },
+                'Bengaluru': { lat: 12.9716, lng: 77.5946, zoom: 13 },
+                'Delhi NCR': { lat: 28.5459, lng: 77.2732, zoom: 13 },
+              };
+              const target = cityCoords[selectedCity] || cityCoords['Delhi NCR'];
+              leafletMap.current?.flyTo([target.lat, target.lng], target.zoom, { animate: true, duration: 1.0 });
+            }}
+            className="text-[10px] bg-stone-100 dark:bg-[#202020] hover:bg-stone-200 px-2 py-0.5 rounded-full ml-1 text-stone-700 dark:text-stone-300"
+          >
+            Zoom to {selectedCity} ➔
+          </button>
         </div>
       )}
 
@@ -442,7 +587,11 @@ export default function MapContainer({
 
       {/* Bottom Map Legend - hidden if minimal */}
       {!minimal && (
-        <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8E5DF] shadow-md flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-stone-700 font-medium">
+        <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 dark:bg-[#0c0c0c]/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8E5DF] dark:border-[#1e1e1e] shadow-md flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-stone-700 dark:text-stone-300 font-medium">
+          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Survey of India Compliant</span>
+          </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#D9532F]"></span>
             <span>Traveler Questions</span>
@@ -452,16 +601,8 @@ export default function MapContainer({
             <span>Suggested Spots</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-            <span>Unofficial Gems (✨)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
             <span>NCR Metro</span>
-          </div>
-          <div className="hidden md:flex items-center gap-1.5 text-stone-400">
-            <CheckCircle2 className="w-3.5 h-3.5 text-stone-500" />
-            <span>OpenStreetMap Live</span>
           </div>
         </div>
       )}
