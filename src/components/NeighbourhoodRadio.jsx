@@ -111,7 +111,7 @@ export default function NeighbourhoodRadio({ selectedCity = 'Delhi NCR', current
   if (!currentStory) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 select-none font-sans">
+    <div className="fixed bottom-5 left-5 z-40 select-none font-sans">
       {/* Minimized Floating Radio Pill */}
       {!isOpen ? (
         <button

@@ -93,13 +93,15 @@ export default function MapContainer({
 
       const map = L.map(mapRef.current, {
         center: initialCenter,
-        zoom: 13,
-        zoomControl: true,
+        zoom: minimal ? 12 : 13,
+        zoomControl: !minimal,
+        attributionControl: !minimal,
+        scrollWheelZoom: !minimal,
       });
 
       // OpenStreetMap high-detail free tiles (no API key required)
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors | Survey of India Boundary Overlay',
+        attribution: minimal ? '' : '&copy; OpenStreetMap contributors | Survey of India Boundary Overlay',
         subdomains: 'abc',
         maxZoom: 19,
         minZoom: 4,

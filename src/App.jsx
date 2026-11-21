@@ -731,7 +731,11 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="h-[120px] rounded-xl overflow-hidden border border-[#E8E5DF] dark:border-[#1a1a1a]">
+                <div
+                  onClick={navigateToMap}
+                  className="h-[155px] rounded-xl overflow-hidden border border-[#E8E5DF] dark:border-[#1a1a1a] cursor-pointer relative group"
+                  title="Click to expand full spatial map"
+                >
                   <MapContainer
                     questions={questions}
                     onSelectQuestion={(q) => navigateToPost(q)}
@@ -739,6 +743,12 @@ export default function App() {
                     minimal={true}
                     selectedCity={selectedCity}
                   />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors pointer-events-none flex items-center justify-center">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-stone-900/85 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md backdrop-blur-xs flex items-center gap-1">
+                      <Compass className="w-3 h-3 text-[#D9532F]" />
+                      <span>Click to Expand Full Map</span>
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between text-[10px] text-stone-500 dark:text-stone-400 font-medium px-0.5">
