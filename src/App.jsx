@@ -9,7 +9,6 @@ import AskQuestionModal from './components/AskQuestionModal.jsx';
 import VibeEngineModal from './components/VibeEngineModal.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import Neo4jGraphModal from './components/Neo4jGraphModal.jsx';
-import CyberAuditModal from './components/CyberAuditModal.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import { INITIAL_QUESTIONS } from './data/seedData.js';
 import { calculateDistance, calculateRouteFare } from './data/tariffs.js';
@@ -29,8 +28,7 @@ import {
   ChevronRight,
   TrendingUp,
   Volume2,
-  Share2,
-  Lock
+  Share2
 } from 'lucide-react';
 
 export default function App() {
@@ -65,7 +63,6 @@ export default function App() {
   const [isVibeModalOpen, setIsVibeModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isGraphModalOpen, setIsGraphModalOpen] = useState(false);
-  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
 
   const { user, accessToken } = useAuth();
@@ -464,17 +461,6 @@ export default function App() {
                       <span className="text-[9px] bg-[#008CC1]/10 text-[#008CC1] font-mono font-bold px-1.5 py-0.2 rounded border border-[#008CC1]/30">Cypher</span>
                     </div>
                   </button>
-
-                  <button
-                    onClick={() => setIsAuditModalOpen(true)}
-                    className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors cursor-pointer"
-                  >
-                    <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <div className="flex items-center justify-between w-full">
-                      <span>Cyber Audit Report</span>
-                      <span className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold px-1.5 py-0.2 rounded border border-emerald-500/30">A+ 100%</span>
-                    </div>
-                  </button>
                 </div>
               </div>
 
@@ -748,12 +734,6 @@ export default function App() {
         isOpen={isGraphModalOpen}
         onClose={() => setIsGraphModalOpen(false)}
         defaultCity={selectedCity}
-      />
-
-      {/* Cybersecurity Audit Report Modal */}
-      <CyberAuditModal
-        isOpen={isAuditModalOpen}
-        onClose={() => setIsAuditModalOpen(false)}
       />
     </div>
   );
