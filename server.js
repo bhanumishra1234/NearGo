@@ -1216,8 +1216,8 @@ app.get('/api/security/audit-report', (req, res) => {
 app.get('/api/security/audit-logs', (req, res) => {
   res.json({
     success: true,
-    count: securityAuditTrail.length,
-    logs: securityAuditTrail.slice(0, 50),
+    count: SECURITY_AUDIT_LOGS.length,
+    logs: SECURITY_AUDIT_LOGS.slice(0, 50),
   });
 });
 
