@@ -4,6 +4,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
 
@@ -27,8 +28,49 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-app.use(cors());
-app.use(express.json());
+// ── Cyber Defense: HTTP Security Headers (OWASP Hardened via Helmet) ────────
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // allow Leaflet tile loading and fonts
+    crossOriginEmbedderPolicy: false,
+    frameguard: { action: 'deny' }, // Anti-Clickjacking
+    noSniff: true, // Anti-MIME Sniffing
+    xssFilter: true, // XSS filter protection
+    hsts: { maxAge: 31536000, includeSubDomains: true }, // Strict Transport Security
+  })
+);
+
+// ── Cyber Defense: Restricted CORS Policy ───────────────────────────────────
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5001',
+  'http://127.0.0.1:5001',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        ALLOWED_ORIGINS.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com')
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error('Blocked by NearGo CORS security policy'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  })
+);
+
+// ── Cyber Defense: DoS & Buffer Overflow Defense ────────────────────────────
+app.use(express.json({ limit: '50kb' })); // Block large payload memory exhaustion
 
 // ── Supabase Client ──────────────────────────────────────────────────────────
 const supabase = createClient(
@@ -36,50 +78,85 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-// ── In-Memory Sliding Window Rate Limiter for Authentication ─────────────────
-const loginAttempts = new Map(); // key (IP or email) -> { count, firstAttempt, lockedUntil }
-const MAX_LOGIN_ATTEMPTS = 5;
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 mins window
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000;  // 15 mins lockout
+// ── Cyber Defense: Input Sanitization & Anti-Injection Defense ──────────────
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
-function checkLoginRateLimit(key) {
-  const now = Date.now();
-  const record = loginAttempts.get(key);
-  if (!record) return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS };
-
-  if (record.lockedUntil && record.lockedUntil > now) {
-    const retryAfterSeconds = Math.ceil((record.lockedUntil - now) / 1000);
-    return { allowed: false, remaining: 0, retryAfterSeconds };
-  }
-
-  // Reset if window has elapsed
-  if (now - record.firstAttempt > RATE_LIMIT_WINDOW_MS) {
-    loginAttempts.delete(key);
-    return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS };
-  }
-
-  if (record.count >= MAX_LOGIN_ATTEMPTS) {
-    record.lockedUntil = now + LOCKOUT_DURATION_MS;
-    const retryAfterSeconds = Math.ceil(LOCKOUT_DURATION_MS / 1000);
-    return { allowed: false, remaining: 0, retryAfterSeconds };
-  }
-
-  return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - record.count };
+function validateEmail(email) {
+  if (typeof email !== 'string') return false;
+  const trimmed = email.trim();
+  if (trimmed.length > 254 || trimmed.length < 5) return false;
+  return EMAIL_REGEX.test(trimmed);
 }
 
-function recordFailedLogin(key) {
-  const now = Date.now();
-  const record = loginAttempts.get(key) || { count: 0, firstAttempt: now, lockedUntil: 0 };
-  record.count += 1;
-  if (record.count >= MAX_LOGIN_ATTEMPTS) {
-    record.lockedUntil = now + LOCKOUT_DURATION_MS;
-  }
-  loginAttempts.set(key, record);
+function validatePasswordStrength(password) {
+  if (typeof password !== 'string') return false;
+  // Minimum 8 characters, max 128 characters
+  if (password.length < 8 || password.length > 128) return false;
+  // Must have at least 1 number or special character
+  const hasNumberOrSymbol = /[0-9!@#$%^&*(),.?":{}|<>]/.test(password);
+  return hasNumberOrSymbol;
 }
 
-function resetLoginRateLimit(key) {
-  loginAttempts.delete(key);
+function sanitizeInput(str, maxLen = 200) {
+  if (typeof str !== 'string') return '';
+  return str.trim().slice(0, maxLen).replace(/<[^>]*>?/gm, ''); // Strip HTML tags against stored XSS
 }
+
+// ── Cyber Defense: Multi-Tier Sliding Window Rate Limiter ───────────────────
+class SlidingRateLimiter {
+  constructor(maxAttempts, windowMs, lockoutMs) {
+    this.maxAttempts = maxAttempts;
+    this.windowMs = windowMs;
+    this.lockoutMs = lockoutMs;
+    this.store = new Map();
+  }
+
+  check(key) {
+    const now = Date.now();
+    const record = this.store.get(key);
+    if (!record) return { allowed: true, remaining: this.maxAttempts };
+
+    if (record.lockedUntil && record.lockedUntil > now) {
+      const retryAfterSeconds = Math.ceil((record.lockedUntil - now) / 1000);
+      return { allowed: false, remaining: 0, retryAfterSeconds };
+    }
+
+    if (now - record.firstAttempt > this.windowMs) {
+      this.store.delete(key);
+      return { allowed: true, remaining: this.maxAttempts };
+    }
+
+    if (record.count >= this.maxAttempts) {
+      record.lockedUntil = now + this.lockoutMs;
+      return { allowed: false, remaining: 0, retryAfterSeconds: Math.ceil(this.lockoutMs / 1000) };
+    }
+
+    return { allowed: true, remaining: this.maxAttempts - record.count };
+  }
+
+  recordFailure(key) {
+    const now = Date.now();
+    const record = this.store.get(key) || { count: 0, firstAttempt: now, lockedUntil: 0 };
+    record.count += 1;
+    if (record.count >= this.maxAttempts) {
+      record.lockedUntil = now + this.lockoutMs;
+    }
+    this.store.set(key, record);
+  }
+
+  reset(key) {
+    this.store.delete(key);
+  }
+}
+
+// 1. Login Brute Force Defense: Max 5 attempts per 15 minutes
+const loginLimiter = new SlidingRateLimiter(5, 15 * 60 * 1000, 15 * 60 * 1000);
+
+// 2. Password Reset Spam Defense: Max 3 attempts per 15 minutes
+const forgotPasswordLimiter = new SlidingRateLimiter(3, 15 * 60 * 1000, 15 * 60 * 1000);
+
+// 3. Automated Registration Bot Defense: Max 5 registrations per hour
+const signupLimiter = new SlidingRateLimiter(5, 60 * 60 * 1000, 60 * 60 * 1000);
 
 // ── SMTP Transporter Configuration (Optional Email Delivery) ─────────────────
 function getSmtpTransporter() {
@@ -150,23 +227,30 @@ function mapAnswer(a) {
 // ── Auth Route 1: Rate-Limited Login with JWT & Refresh Token ───────────────
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
+
+  // Strict Input Sanitization & Validation
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Valid email and password strings are required' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  if (!validateEmail(cleanEmail)) {
+    return res.status(400).json({ error: 'Please provide a valid email address format' });
   }
 
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
   const ipKey = `ip:${clientIp}`;
-  const emailKey = `email:${email.toLowerCase().trim()}`;
+  const emailKey = `email:${cleanEmail}`;
 
   // 1. Check Rate Limit (Max 5 attempts / 15 mins)
-  const ipLimit = checkLoginRateLimit(ipKey);
-  const emailLimit = checkLoginRateLimit(emailKey);
+  const ipLimit = loginLimiter.check(ipKey);
+  const emailLimit = loginLimiter.check(emailKey);
 
   if (!ipLimit.allowed || !emailLimit.allowed) {
     const retryAfter = Math.max(ipLimit.retryAfterSeconds || 0, emailLimit.retryAfterSeconds || 0);
     res.setHeader('Retry-After', retryAfter);
     return res.status(429).json({
-      error: `Too many failed login attempts. Temporarily locked for security. Please try again in ${Math.ceil(retryAfter / 60)} minutes.`,
+      error: `Security Lockout: Too many failed login attempts. Protected against brute force. Try again in ${Math.ceil(retryAfter / 60)} minutes.`,
       rateLimited: true,
       retryAfterSeconds: retryAfter,
       remainingAttempts: 0,
@@ -175,24 +259,24 @@ app.post('/api/auth/login', async (req, res) => {
 
   // 2. Perform authentication with Supabase
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: cleanEmail,
     password,
   });
 
   if (error) {
-    recordFailedLogin(ipKey);
-    recordFailedLogin(emailKey);
-    const updatedLimit = checkLoginRateLimit(emailKey);
+    loginLimiter.recordFailure(ipKey);
+    loginLimiter.recordFailure(emailKey);
+    const updatedLimit = loginLimiter.check(emailKey);
     return res.status(401).json({
-      error: error.message,
+      error: 'Invalid login credentials', // Generic error prevents user enumeration
       remainingAttempts: updatedLimit.remaining,
-      maxAttempts: MAX_LOGIN_ATTEMPTS,
+      maxAttempts: 5,
     });
   }
 
-  // 3. Login succeeded — clear rate limiting
-  resetLoginRateLimit(ipKey);
-  resetLoginRateLimit(emailKey);
+  // 3. Login succeeded — reset rate limits
+  loginLimiter.reset(ipKey);
+  loginLimiter.reset(emailKey);
 
   return res.json({
     success: true,
@@ -208,8 +292,8 @@ app.post('/api/auth/login', async (req, res) => {
 // ── Auth Route 2: Refresh JWT Access Token using Refresh Token ──────────────
 app.post('/api/auth/refresh', async (req, res) => {
   const { refresh_token } = req.body;
-  if (!refresh_token) {
-    return res.status(400).json({ error: 'refresh_token is required' });
+  if (!refresh_token || typeof refresh_token !== 'string') {
+    return res.status(400).json({ error: 'Valid refresh_token string is required' });
   }
 
   const { data, error } = await supabase.auth.refreshSession({
@@ -217,7 +301,7 @@ app.post('/api/auth/refresh', async (req, res) => {
   });
 
   if (error || !data.session) {
-    return res.status(401).json({ error: error ? error.message : 'Invalid or expired refresh token' });
+    return res.status(401).json({ error: 'Invalid or expired refresh token' });
   }
 
   return res.json({
@@ -231,58 +315,118 @@ app.post('/api/auth/refresh', async (req, res) => {
   });
 });
 
-// ── Auth Route 3: Forgot Password (Sends Recovery Email) ────────────────────
+// ── Auth Route 3: Forgot Password (Anti-Enumeration + Rate Limited) ──────────
 app.post('/api/auth/forgot-password', async (req, res) => {
   const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
+  if (!email || !validateEmail(email)) {
+    return res.status(400).json({ error: 'A valid email address is required' });
   }
 
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const ipKey = `ip:${clientIp}`;
+
+  // Rate Limit: Max 3 recovery attempts per 15 minutes per IP
+  const rateCheck = forgotPasswordLimiter.check(ipKey);
+  if (!rateCheck.allowed) {
+    res.setHeader('Retry-After', rateCheck.retryAfterSeconds);
+    return res.status(429).json({
+      error: `Too many password reset requests. Please wait ${Math.ceil(rateCheck.retryAfterSeconds / 60)} minutes before trying again.`,
+      rateLimited: true,
+    });
+  }
+  forgotPasswordLimiter.recordFailure(ipKey);
+
+  const cleanEmail = email.toLowerCase().trim();
   const redirectTo = `${req.headers.origin || 'http://localhost:3000'}/#reset-password`;
 
-  // 1. Trigger Supabase password recovery
-  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo,
+  // Always return constant message to prevent account enumeration attacks
+  const constantResponse = {
+    success: true,
+    message: 'If an account matches that email address, a secure password recovery link has been dispatched.',
+  };
+
+  try {
+    await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo });
+
+    const transporter = getSmtpTransporter();
+    if (transporter) {
+      transporter.sendMail({
+        from: process.env.SMTP_FROM || 'NearGo Security <security@neargo.in>',
+        to: cleanEmail,
+        subject: 'NearGo Security: Password Reset Link',
+        html: `
+          <div style="font-family:'Plus Jakarta Sans',sans-serif; max-width:600px; margin:auto; padding:24px; border:1px solid #e5e7eb; border-radius:12px;">
+            <h2 style="color:#D9532F; margin-top:0;">NearGo Security Notice</h2>
+            <p>A password reset was requested for your NearGo account.</p>
+            <p>Click below to securely update your password (link expires in 1 hour):</p>
+            <p><a href="${redirectTo}" style="background:#D9532F; color:#fff; padding:10px 20px; border-radius:9999px; text-decoration:none; font-weight:bold; display:inline-block;">Reset Password</a></p>
+            <p style="font-size:12px; color:#6b7280; margin-top:20px;">If you did not request this, please safely ignore this email. Your credentials remain safe.</p>
+          </div>
+        `,
+      }).catch(err => console.warn('[SMTP Error]', err.message));
+    }
+  } catch (_) {
+    // Suppress error to prevent timing/enumeration leaks
+  }
+
+  return res.json(constantResponse);
+});
+
+// ── Auth Route 4: Rate-Limited Register (Bot Defense) ────────────────────────
+app.post('/api/auth/register', async (req, res) => {
+  const { email, password, fullName } = req.body;
+
+  if (!email || !validateEmail(email)) {
+    return res.status(400).json({ error: 'Valid email address required' });
+  }
+
+  if (!password || !validatePasswordStrength(password)) {
+    return res.status(400).json({
+      error: 'Password does not meet cybersecurity requirements: minimum 8 characters, with at least 1 number or special symbol.',
+    });
+  }
+
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const ipKey = `ip:${clientIp}`;
+
+  const regLimit = signupLimiter.check(ipKey);
+  if (!regLimit.allowed) {
+    res.setHeader('Retry-After', regLimit.retryAfterSeconds);
+    return res.status(429).json({
+      error: 'Registration rate limit exceeded. Protected against automated bot account creation.',
+      rateLimited: true,
+    });
+  }
+  signupLimiter.recordFailure(ipKey);
+
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanName = sanitizeInput(fullName || 'Local Traveler', 60);
+
+  const { data, error } = await supabase.auth.signUp({
+    email: cleanEmail,
+    password,
+    options: {
+      data: {
+        full_name: cleanName,
+        badge: 'Verified Local',
+        isVerified: true,
+      },
+    },
   });
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 
-  // 2. If custom SMTP is configured in .env, send customized recovery email
-  const transporter = getSmtpTransporter();
-  let smtpDelivered = false;
-  if (transporter) {
-    try {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || 'NearGo Support <support@neargo.in>',
-        to: email,
-        subject: 'Reset your NearGo password',
-        html: `
-          <div style="font-family:sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #eee; border-radius:12px;">
-            <h2 style="color:#D9532F;">NearGo Community Travel</h2>
-            <p>You requested a password reset for your NearGo account.</p>
-            <p>Click the link below to securely create a new password:</p>
-            <p><a href="${redirectTo}" style="background:#D9532F; color:#fff; padding:10px 18px; border-radius:20px; text-decoration:none; font-weight:bold; display:inline-block;">Reset Password</a></p>
-            <p style="font-size:12px; color:#888;">If you did not request this, you can safely ignore this email.</p>
-          </div>
-        `,
-      });
-      smtpDelivered = true;
-    } catch (smtpErr) {
-      console.warn('[NearGo SMTP] Could not send via custom SMTP, fallback to Supabase:', smtpErr.message);
-    }
-  }
-
-  return res.json({
+  return res.status(201).json({
     success: true,
-    message: 'Password reset link sent! Please check your email inbox.',
-    smtpConfigured: !!transporter,
-    smtpDelivered,
+    user: data.user,
+    accessToken: data.session?.access_token || null,
+    refreshToken: data.session?.refresh_token || null,
   });
 });
 
-// ── Auth Route 4: Verify JWT Token (Protected Verification) ─────────────────
+// ── Auth Route 5: Verify JWT Token (Protected Verification) ─────────────────
 app.get('/api/auth/verify-token', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.startsWith('Bearer ') && authHeader.split(' ')[1];

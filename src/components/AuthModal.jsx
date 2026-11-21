@@ -42,6 +42,62 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
   const [successMsg, setSuccessMsg] = useState(null);
   const [showTokenInfo, setShowTokenInfo] = useState(false);
 
+  // Cybersecurity: Password Entropy & Complexity Evaluation
+  const evaluatePasswordEntropy = (pwd) => {
+    let score = 0;
+    if (pwd.length >= 8) score += 1;
+    if (pwd.length >= 12) score += 1;
+    if (/[A-Z]/.test(pwd)) score += 1;
+    if (/[a-z]/.test(pwd)) score += 1;
+    if (/[0-9]/.test(pwd)) score += 1;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) score += 1;
+    return score;
+  };
+
+  const renderPasswordSecurityBar = (pwd) => {
+    if (!pwd || pwd.length === 0) return null;
+    const score = evaluatePasswordEntropy(pwd);
+    let label = 'Weak';
+    let color = 'bg-red-500';
+    let textCol = 'text-red-600 dark:text-red-400';
+    let width = '25%';
+
+    if (score >= 5) {
+      label = 'Strong (Cyber-Resilient)';
+      color = 'bg-emerald-500';
+      textCol = 'text-emerald-600 dark:text-emerald-400';
+      width = '100%';
+    } else if (score >= 3) {
+      label = 'Fair (Moderate Entropy)';
+      color = 'bg-amber-500';
+      textCol = 'text-amber-600 dark:text-amber-400';
+      width = '65%';
+    }
+
+    return (
+      <div className="mt-1.5 space-y-1">
+        <div className="flex items-center justify-between text-[10px]">
+          <span className="text-stone-400 font-medium">Entropy & Strength:</span>
+          <span className={`font-bold ${textCol}`}>{label}</span>
+        </div>
+        <div className="w-full h-1.5 bg-stone-200 dark:bg-[#202020] rounded-full overflow-hidden">
+          <div className={`h-full ${color} transition-all duration-300`} style={{ width }}></div>
+        </div>
+        <div className="flex items-center gap-2 text-[9px] text-stone-400 pt-0.5">
+          <span className={pwd.length >= 8 ? 'text-emerald-600 font-bold' : ''}>
+            {pwd.length >= 8 ? '✓' : '•'} 8+ chars
+          </span>
+          <span className={/[0-9]/.test(pwd) ? 'text-emerald-600 font-bold' : ''}>
+            {/[0-9]/.test(pwd) ? '✓' : '•'} 1+ number
+          </span>
+          <span className={/[!@#$%^&*(),.?":{}|<>]/.test(pwd) ? 'text-emerald-600 font-bold' : ''}>
+            {/[!@#$%^&*(),.?":{}|<>]/.test(pwd) ? '✓' : '•'} 1+ symbol
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   useEffect(() => {
     if (isPasswordRecovery) {
       setMode('reset_password');
@@ -89,6 +145,17 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
+
+    // Cybersecurity: Enforce strict password entropy
+    if (password.length < 8) {
+      setError('Cybersecurity Requirement: Password must be at least 8 characters long');
+      return;
+    }
+    if (!/[0-9!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      setError('Entropy Defense: Password must include at least 1 number or special character');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -119,7 +186,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     try {
       await sendPasswordResetEmail(email);
       setSuccessMsg(
-        `Password reset email sent to ${email}! Please check your inbox (and spam folder) for the secure recovery link.`
+        `If an account matches ${email}, a secure password recovery link has been dispatched. Please check your inbox and spam folder.`
       );
     } catch (err) {
       setError(err.message || 'Failed to send recovery email');
@@ -133,8 +200,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     setError(null);
     setSuccessMsg(null);
 
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (newPassword.length < 8) {
+      setError('Cybersecurity Requirement: Password must be at least 8 characters');
+      return;
+    }
+
+    if (!/[0-9!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+      setError('Entropy Defense: Password must include at least 1 number or special symbol');
       return;
     }
 
@@ -173,7 +245,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
           <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold mb-2">
               <ShieldCheck className="w-3 h-3" />
-              <span>JWT & Supabase Auth</span>
+              <span>Cybersecurity Hardened (OWASP • Helmet • JWT)</span>
             </div>
 
             <button
@@ -390,13 +462,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                 <input
                   type="password"
                   required
-                  minLength={6}
+                  minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="•••••••• (min 6 characters)"
+                  placeholder="•••••••• (min 8 characters)"
                   className="w-full pl-9 pr-3 py-2 text-xs bg-white dark:bg-[#121212] border border-stone-300 dark:border-[#222222] rounded-xl text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-[#D9532F]"
                 />
               </div>
+              {renderPasswordSecurityBar(password)}
             </div>
 
             <button
@@ -471,13 +544,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                 <input
                   type="password"
                   required
-                  minLength={6}
+                  minLength={8}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="•••••••• (min 6 characters)"
+                  placeholder="•••••••• (min 8 characters)"
                   className="w-full pl-9 pr-3 py-2 text-xs bg-white dark:bg-[#121212] border border-stone-300 dark:border-[#222222] rounded-xl text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-[#D9532F]"
                 />
               </div>
+              {renderPasswordSecurityBar(newPassword)}
             </div>
 
             <div>
