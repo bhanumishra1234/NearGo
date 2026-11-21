@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, Link, X, Plus, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Camera, Upload, Link, X, Plus, Sparkles, Image as ImageIcon, Loader2, CheckCircle2 } from 'lucide-react';
+import { uploadImage } from '../utils/imageUpload';
 
 const PRESET_PHOTOS = [
   { label: '🛺 Auto Rickshaw', url: 'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?auto=format&fit=crop&w=800&q=80' },
@@ -12,26 +13,46 @@ const PRESET_PHOTOS = [
 export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, label = 'Attach Photos' }) {
   const [urlInput, setUrlInput] = useState('');
   const [showUrlBox, setShowUrlBox] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
   const fileInputRef = useRef(null);
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    files.forEach((file) => {
-      if (photos.length >= maxPhotos) return;
-      if (!file.type.startsWith('image/')) return;
+    const availableSlots = maxPhotos - photos.length;
+    if (availableSlots <= 0) return;
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          onChange([...photos, event.target.result]);
+    const validFiles = files.filter(f => f.type.startsWith('image/')).slice(0, availableSlots);
+    if (!validFiles.length) return;
+
+    setUploading(true);
+    setUploadStatus('Optimizing & uploading to Cloudinary CDN...');
+
+    try {
+      const uploadedUrls = [];
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        setUploadStatus(`Uploading ${i + 1}/${validFiles.length}...`);
+        const result = await uploadImage(file);
+        if (result?.url) {
+          uploadedUrls.push(result.url);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+      }
 
-    e.target.value = '';
+      if (uploadedUrls.length > 0) {
+        onChange([...photos, ...uploadedUrls]);
+      }
+    } catch (err) {
+      console.error('Image upload failed:', err);
+    } finally {
+      setUploading(false);
+      setUploadStatus('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const handleAddUrl = (e) => {
@@ -77,11 +98,20 @@ export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, la
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={photos.length >= maxPhotos}
-            className="text-[11px] font-bold text-white bg-[#D9532F] hover:bg-[#C2411E] px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 disabled:opacity-50"
+            disabled={uploading || photos.length >= maxPhotos}
+            className="text-[11px] font-bold text-white bg-[#D9532F] hover:bg-[#C2411E] px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 disabled:opacity-50 shadow-2xs"
           >
-            <Upload className="w-3 h-3" />
-            <span>Upload Photo</span>
+            {uploading ? (
+              <>
+                <Loader2 className="w-3 h-3 animate-spin" />
+                <span>Uploading...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-3 h-3" />
+                <span>Upload Photo</span>
+              </>
+            )}
           </button>
           <input
             ref={fileInputRef}
@@ -93,6 +123,14 @@ export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, la
           />
         </div>
       </div>
+
+      {/* Uploading progress indicator */}
+      {uploading && (
+        <div className="flex items-center gap-2 py-1 px-2.5 bg-amber-50 border border-amber-200/70 rounded-lg text-amber-800 text-[11px]">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D9532F] shrink-0" />
+          <span className="font-medium">{uploadStatus || 'Processing image...'}</span>
+        </div>
+      )}
 
       {/* URL input box */}
       {showUrlBox && (
@@ -142,26 +180,34 @@ export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, la
       {/* Thumbnails preview strip */}
       {photos.length > 0 && (
         <div className="grid grid-cols-4 gap-2 pt-1">
-          {photos.map((photo, index) => (
-            <div
-              key={index}
-              className="relative aspect-square rounded-lg overflow-hidden border border-[#E8E5DF] bg-stone-100 group shadow-2xs"
-            >
-              <img
-                src={photo}
-                alt={`Upload preview ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-              <button
-                type="button"
-                onClick={() => handleRemovePhoto(index)}
-                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center transition-colors"
-                title="Remove photo"
+          {photos.map((photo, index) => {
+            const isCloudinary = typeof photo === 'string' && photo.includes('cloudinary.com');
+            return (
+              <div
+                key={index}
+                className="relative aspect-square rounded-lg overflow-hidden border border-[#E8E5DF] bg-stone-100 group shadow-2xs"
               >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
+                <img
+                  src={photo}
+                  alt={`Upload preview ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                {isCloudinary && (
+                  <span className="absolute bottom-1 left-1 bg-black/60 backdrop-blur-xs text-[9px] text-emerald-300 px-1 py-0.2 rounded font-medium">
+                    CDN
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleRemovePhoto(index)}
+                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center transition-colors"
+                  title="Remove photo"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
