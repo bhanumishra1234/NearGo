@@ -52,8 +52,8 @@ export default function Navbar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-  const initial = displayName.charAt(0).toUpperCase();
+  const displayName = user ? (user.user_metadata?.full_name || user.email?.split('@')[0] || 'User') : '';
+  const initial = user && displayName ? displayName.charAt(0).toUpperCase() : '';
 
   return (
     <header className="sticky top-0 z-[1100] bg-white/95 dark:bg-[#000000]/95 backdrop-blur-md border-b border-[#E8E5DF] dark:border-[#1a1a1a]">
@@ -195,8 +195,12 @@ export default function Navbar({
                 className="flex items-center gap-1 p-0.5 rounded-full hover:bg-stone-100 dark:hover:bg-[#161616] transition-colors focus:outline-none cursor-pointer"
                 title={user ? displayName : 'Account Menu (Sign In)'}
               >
-                <div className={`w-7 h-7 rounded-full ${user ? 'bg-stone-900 dark:bg-stone-800 text-white border border-stone-700' : 'bg-stone-900 dark:bg-stone-800 text-white border border-stone-700'} font-bold flex items-center justify-center text-[11px]`}>
-                  <span>{initial}</span>
+                <div className={`w-7 h-7 rounded-full ${user ? 'bg-stone-900 dark:bg-stone-800 text-white border border-stone-700' : 'bg-stone-100 dark:bg-[#181818] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-[#262626]'} font-bold flex items-center justify-center text-[11px]`}>
+                  {user ? (
+                    <span>{initial}</span>
+                  ) : (
+                    <User className="w-3.5 h-3.5 text-stone-600 dark:text-stone-300" />
+                  )}
                 </div>
                 <ChevronDown className={`w-3 h-3 text-stone-500 transition-transform duration-200 ${profileDropdownOpen ? 'rotate-180' : ''}`} />
               </button>

@@ -241,19 +241,20 @@ class Neo4jGraphManager {
     return { nodes, links };
   }
 
-  // 3. Shortest Multi-Hop Transit Route Pathfinding
+  // 3. Shortest Multi-Hop Transit Route Pathfinding (Injection-Safe)
   async getShortestTransitRoute(originName, destName) {
-    // Finds nearest stations and calculates optimal route avoiding scam zones
-    const stations = Array.from(this.inMemoryNodes.values()).filter((n) => n.label === 'MetroStation');
-    const spots = Array.from(this.inMemoryNodes.values()).filter((n) => n.label === 'SecretSpot');
+    // Sanitize origin & destination against Cypher injection
+    const cleanOrigin = (originName || '').replace(/[^a-zA-Z0-9\s\-_.,]/g, '').slice(0, 80) || 'Kashmere Gate';
+    const cleanDest = (destName || '').replace(/[^a-zA-Z0-9\s\-_.,]/g, '').slice(0, 80) || 'Majnu Ka Tilla';
 
     return {
-      query: `MATCH path = shortestPath((orig:Location {name: "${originName}"})-[*..6]-(dest:Location {name: "${destName}"})) RETURN path`,
+      query: `MATCH path = shortestPath((orig:Location {name: $origin})-[*..6]-(dest:Location {name: $dest})) RETURN path`,
+      params: { origin: cleanOrigin, dest: cleanDest },
       optimalRoute: [
-        { step: 1, type: 'Boarding', instruction: 'Start from origin: ' + originName },
+        { step: 1, type: 'Boarding', instruction: 'Start from origin: ' + cleanOrigin },
         { step: 2, type: 'Metro Hop', instruction: 'Ride Yellow Line via Rajiv Chowk Interchange (₹30, 14 mins)' },
         { step: 3, type: 'Last Mile', instruction: 'Exit via Gate 2; take metered auto or E-Rickshaw for flat ₹20' },
-        { step: 4, type: 'Arrival', instruction: 'Arrived safely at ' + destName + ' (Scam risk: 0%)' },
+        { step: 4, type: 'Arrival', instruction: 'Arrived safely at ' + cleanDest + ' (Scam risk: 0%)' },
       ],
       estimatedOfficialFare: '₹50 total (Official government meter rate)',
       scamWarningsEncountered: 0,
@@ -261,8 +262,53 @@ class Neo4jGraphManager {
     };
   }
 
-  // 4. Cypher Query Playground (Read-Only Cypher Runner)
+  // 4. Cypher Query Playground (Read-Only Injection-Hardened Runner)
+  validateCypherSecurity(cypher) {
+    if (!cypher || typeof cypher !== 'string') {
+      return { allowed: false, reason: 'Cypher query must be a valid non-empty string' };
+    }
+    if (cypher.length > 500) {
+      return { allowed: false, reason: 'Cypher query exceeds maximum permitted length of 500 characters' };
+    }
+    const normalized = cypher.trim().toUpperCase();
+
+    // Disallow comments to prevent comment-based query evasion
+    if (normalized.includes('//') || normalized.includes('/*') || normalized.includes('--')) {
+      return { allowed: false, reason: 'Cypher comments are forbidden to prevent injection evasion' };
+    }
+
+    // Must start with read-only keywords
+    if (!normalized.startsWith('MATCH') && !normalized.startsWith('RETURN')) {
+      return { allowed: false, reason: 'Only read-only MATCH and RETURN Cypher queries are permitted' };
+    }
+
+    // Blacklist destructive and privilege-escalating Cypher clauses
+    const FORBIDDEN_CLAUSES = [
+      'DELETE', 'DETACH', 'CREATE', 'MERGE', 'SET', 'REMOVE',
+      'DROP', 'ALTER', 'CALL', 'LOAD CSV', 'APOC', 'SYSTEM',
+      'TERMINATE', 'KILL', 'GRANT', 'REVOKE', 'DENY', 'PASSWORD'
+    ];
+
+    for (const clause of FORBIDDEN_CLAUSES) {
+      const regex = new RegExp(`\\b${clause}\\b`, 'i');
+      if (regex.test(normalized)) {
+        return {
+          allowed: false,
+          reason: `Security Policy Violation: Write or administrative clause "${clause}" is strictly prohibited`,
+        };
+      }
+    }
+
+    return { allowed: true };
+  }
+
   async executeCypher(cypher) {
+    // 1. Cybersecurity validation
+    const securityCheck = this.validateCypherSecurity(cypher);
+    if (!securityCheck.allowed) {
+      return { success: false, error: securityCheck.reason, blockedByWAF: true };
+    }
+
     if (this.connectionMode === 'live-aura' && this.driver) {
       const session = this.driver.session({ defaultAccessMode: neo4j.session.READ });
       try {
