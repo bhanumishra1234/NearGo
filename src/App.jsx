@@ -62,7 +62,7 @@ export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
 
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [locationStatus, setLocationStatus] = useState(null);
 
@@ -199,7 +199,10 @@ export default function App() {
       }));
     }
 
-    fetch(`/api/questions/${qId}/upvote`, { method: 'POST' }).catch(() => {});
+    fetch(`/api/questions/${qId}/upvote`, {
+      method: 'POST',
+      headers: { ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
+    }).catch(() => {});
   };
 
   // Handle Answer Upvote
@@ -243,7 +246,10 @@ export default function App() {
       }));
     }
 
-    fetch(`/api/questions/${qId}/answers/${ansId}/upvote`, { method: 'POST' }).catch(() => {});
+    fetch(`/api/questions/${qId}/answers/${ansId}/upvote`, {
+      method: 'POST',
+      headers: { ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
+    }).catch(() => {});
   };
 
   // Handle Add New Question
@@ -297,7 +303,10 @@ export default function App() {
 
     fetch('/api/questions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
       body: JSON.stringify({ ...questionData, photos: questionData.photos || [] }),
     }).catch(() => {});
   };
@@ -343,7 +352,10 @@ export default function App() {
 
     fetch(`/api/questions/${qId}/answers`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
       body: JSON.stringify(answerData),
     }).catch(() => {});
   };

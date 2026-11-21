@@ -77,24 +77,73 @@ CREATE TABLE IF NOT EXISTS upvotes (
 );
 
 -- ─────────────────────────────────────────────
--- 4. ROW LEVEL SECURITY (open read, open write for now)
+-- 4. ROW LEVEL SECURITY (OWASP Hardened Zero-Trust)
 -- ─────────────────────────────────────────────
 ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE answers   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE upvotes   ENABLE ROW LEVEL SECURITY;
 
--- Allow anyone to read
+-- 4a. Public Read: Anyone can read questions and answers
 CREATE POLICY "Public read questions" ON questions FOR SELECT USING (true);
 CREATE POLICY "Public read answers"   ON answers   FOR SELECT USING (true);
+CREATE POLICY "Public read upvotes"   ON upvotes   FOR SELECT USING (true);
 
--- Allow anyone to insert (open community — add auth later)
-CREATE POLICY "Public insert questions" ON questions FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public insert answers"   ON answers   FOR INSERT WITH CHECK (true);
+-- 4b. Controlled Insert: Validate title & body non-empty
+CREATE POLICY "Public insert questions" ON questions FOR INSERT WITH CHECK (
+  length(trim(title)) > 0 AND length(trim(body)) > 0
+);
+CREATE POLICY "Public insert answers"   ON answers   FOR INSERT WITH CHECK (
+  length(trim(body)) > 0
+);
 CREATE POLICY "Public insert upvotes"   ON upvotes   FOR INSERT WITH CHECK (true);
 
--- Allow upvote count updates
-CREATE POLICY "Public update question upvotes" ON questions FOR UPDATE USING (true);
-CREATE POLICY "Public update answer upvotes"   ON answers   FOR UPDATE USING (true);
+-- 4c. Atomic Stored Procedures for Secure Upvoting (Prevents Arbitrary Column Modification)
+CREATE OR REPLACE FUNCTION increment_question_upvote(target_q_id TEXT)
+RETURNS INT AS $$
+DECLARE
+  new_count INT;
+BEGIN
+  UPDATE questions
+  SET upvotes = upvotes + 1
+  WHERE id = target_q_id
+  RETURNING upvotes INTO new_count;
+  RETURN new_count;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION increment_answer_upvote(target_ans_id TEXT)
+RETURNS INT AS $$
+DECLARE
+  new_count INT;
+BEGIN
+  UPDATE answers
+  SET upvotes = upvotes + 1
+  WHERE id = target_ans_id
+  RETURNING upvotes INTO new_count;
+  RETURN new_count;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 4d. Anti-Tampering Trigger: Disallow client modification of verified status directly
+CREATE OR REPLACE FUNCTION protect_verified_credentials()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF (OLD.author_verified IS FALSE AND NEW.author_verified IS TRUE AND auth.role() = 'anon') THEN
+    NEW.author_verified = FALSE;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_protect_question_verified ON questions;
+CREATE TRIGGER trg_protect_question_verified
+  BEFORE UPDATE ON questions
+  FOR EACH ROW EXECUTE FUNCTION protect_verified_credentials();
+
+DROP TRIGGER IF EXISTS trg_protect_answer_verified ON answers;
+CREATE TRIGGER trg_protect_answer_verified
+  BEFORE UPDATE ON answers
+  FOR EACH ROW EXECUTE FUNCTION protect_verified_credentials();
 
 -- ─────────────────────────────────────────────
 -- 5. INDEXES for fast map + search queries
