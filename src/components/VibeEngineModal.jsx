@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Sparkles, Compass, Volume2, Check, Copy, Flame, MapPin, Zap, X } from 'lucide-react';
+import { Sparkles, Compass, Volume2, Check, Copy, Flame, MapPin, Zap, X, Loader2, Play, Radio } from 'lucide-react';
 import { VIBE_CATEGORIES, INDIC_SLANG_DICTIONARY, VIBE_CURATED_SPOTS } from '../data/vibeData.js';
+import { playSarvamSpeech, stopCurrentAudio } from '../utils/sarvamAudio.js';
 
 export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
   const [activeTab, setActiveTab] = useState('slang'); // 'slang' | 'vibe_spots'
   const [selectedVibeTag, setSelectedVibeTag] = useState('late_night');
   const [copiedPhrase, setCopiedPhrase] = useState(null);
+  const [playingPhrase, setPlayingPhrase] = useState(null);
 
   const handleCopy = (phrase) => {
     navigator.clipboard?.writeText(phrase);
@@ -13,12 +15,20 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
     setTimeout(() => setCopiedPhrase(null), 2000);
   };
 
-  const handlePlaySound = (phrase) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(phrase);
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
+  const handlePlaySound = async (phrase) => {
+    if (playingPhrase === phrase) {
+      stopCurrentAudio();
+      setPlayingPhrase(null);
+      return;
     }
+    setPlayingPhrase(phrase);
+    await playSarvamSpeech({
+      text: phrase,
+      languageCode: 'hi-IN',
+      speaker: 'meera',
+      onEnd: () => setPlayingPhrase(null),
+      onError: () => setPlayingPhrase(null),
+    });
   };
 
   const filteredSpots = VIBE_CURATED_SPOTS.filter(
@@ -100,13 +110,27 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => handlePlaySound(item.phrase)}
-                          className="w-7 h-7 rounded-full bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 flex items-center justify-center transition-colors shadow-xs"
-                          title="Listen to pronunciation"
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold border flex items-center gap-1 transition-all shadow-xs ${
+                            playingPhrase === item.phrase
+                              ? 'bg-[#D9532F] text-white border-[#D9532F] animate-pulse'
+                              : 'bg-white hover:bg-stone-100 text-stone-700 border-stone-200'
+                          }`}
+                          title="Speak out loud via Sarvam Bulbul AI"
                         >
-                          <Volume2 className="w-3.5 h-3.5 text-[#D9532F]" />
+                          {playingPhrase === item.phrase ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Playing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Volume2 className="w-3.5 h-3.5 text-[#D9532F]" />
+                              <span className="text-[10px]">Sarvam Voice</span>
+                            </>
+                          )}
                         </button>
                         <button
                           onClick={() => handleCopy(item.phrase)}

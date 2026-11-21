@@ -18,12 +18,16 @@ import {
   Gem,
   ShoppingBag,
   Coffee,
-  AlertCircle
+  AlertCircle,
+  Mic,
+  MicOff,
+  Loader2
 } from 'lucide-react';
 import { POPULAR_LANDMARKS } from '../data/tariffs.js';
 import { VIBE_CATEGORIES } from '../data/vibeData.js';
 import PhotoUploader from '../components/PhotoUploader.jsx';
 import LocationPickerMap from '../components/LocationPickerMap.jsx';
+import { transcribeAudioWithSarvam } from '../utils/sarvamAudio.js';
 
 const TOPIC_CATEGORIES = [
   { id: 'transport', label: 'Transit & Fares', icon: Car, community: 'c/DelhiTransit' },
@@ -38,6 +42,9 @@ const CITIES = ['Delhi NCR', 'Mumbai', 'Bengaluru'];
 export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = 'Delhi NCR' }) {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [isRecording, setIsRecording] = useState(null); // 'title' | 'body' | null
+  const [recordingStatus, setRecordingStatus] = useState('');
+  const recognitionRef = React.useRef(null);
   const [selectedCity, setSelectedCity] = useState(initialCity);
   const [authorName, setAuthorName] = useState('Traveler ' + Math.floor(100 + Math.random() * 900));
   const [category, setCategory] = useState('transport');
@@ -62,6 +69,63 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  const handleToggleVoice = (field) => {
+    if (isRecording) {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (e) {}
+      }
+      setIsRecording(null);
+      setRecordingStatus('');
+      return;
+    }
+
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+      alert('Speech recognition is not supported in this browser. Please type your text.');
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRec();
+      recognition.lang = 'hi-IN'; // Sarvam Indic primary
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsRecording(field);
+        setRecordingStatus('Listening in Hindi/English (Sarvam AI)...');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0]?.[0]?.transcript;
+        if (transcript) {
+          if (field === 'title') {
+            setTitle((prev) => (prev ? `${prev} ${transcript}` : transcript));
+          } else {
+            setBody((prev) => (prev ? `${prev} ${transcript}` : transcript));
+          }
+        }
+      };
+
+      recognition.onerror = () => {
+        setIsRecording(null);
+        setRecordingStatus('');
+      };
+
+      recognition.onend = () => {
+        setIsRecording(null);
+        setRecordingStatus('');
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.warn('Voice recognition error:', err);
+      setIsRecording(null);
+      setRecordingStatus('');
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -210,9 +274,24 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                   <label className="text-xs font-bold text-stone-800 dark:text-stone-200">
                     3. Discussion Title
                   </label>
-                  <span className="text-[11px] text-stone-400">
-                    {title.length}/100
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleVoice('title')}
+                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all ${
+                        isRecording === 'title'
+                          ? 'bg-red-500 text-white animate-pulse'
+                          : 'bg-stone-100 dark:bg-[#1c1c1c] text-[#D9532F] hover:bg-stone-200'
+                      }`}
+                      title="Speak title in Hindi/English (Sarvam Saaras AI)"
+                    >
+                      <Mic className="w-3 h-3" />
+                      <span>{isRecording === 'title' ? 'Listening...' : '🎙️ Speak (Sarvam)'}</span>
+                    </button>
+                    <span className="text-[11px] text-stone-400">
+                      {title.length}/100
+                    </span>
+                  </div>
                 </div>
                 <input
                   type="text"
@@ -227,9 +306,24 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
 
               {/* Body / Context */}
               <div>
-                <label className="block text-xs font-bold text-stone-800 dark:text-stone-200 mb-1.5">
-                  4. Details & Context
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-stone-800 dark:text-stone-200">
+                    4. Details & Context
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleVoice('body')}
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all ${
+                      isRecording === 'body'
+                        ? 'bg-red-500 text-white animate-pulse'
+                        : 'bg-stone-100 dark:bg-[#1c1c1c] text-[#D9532F] hover:bg-stone-200'
+                    }`}
+                    title="Speak details in Hindi/English (Sarvam Saaras AI)"
+                  >
+                    <Mic className="w-3 h-3" />
+                    <span>{isRecording === 'body' ? 'Listening...' : '🎙️ Speak (Sarvam)'}</span>
+                  </button>
+                </div>
                 <textarea
                   rows={4}
                   required

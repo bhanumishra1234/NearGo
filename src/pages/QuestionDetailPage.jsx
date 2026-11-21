@@ -18,7 +18,10 @@ import {
   ExternalLink,
   ChevronRight,
   TrendingUp,
-  Award
+  Award,
+  Languages,
+  Volume2,
+  Loader2
 } from 'lucide-react';
 import { POPULAR_LANDMARKS } from '../data/tariffs.js';
 import PhotoGallery from '../components/PhotoGallery.jsx';
@@ -26,6 +29,7 @@ import PhotoUploader from '../components/PhotoUploader.jsx';
 import LocationPickerMap from '../components/LocationPickerMap.jsx';
 import RideHandoffWidget from '../components/RideHandoffWidget.jsx';
 import StayAndToursWidget from '../components/StayAndToursWidget.jsx';
+import { translateTextWithSarvam, playSarvamSpeech } from '../utils/sarvamAudio.js';
 
 export default function QuestionDetailPage({
   question,
@@ -48,6 +52,59 @@ export default function QuestionDetailPage({
   const [answerPhotos, setAnswerPhotos] = useState([]);
   const [copiedShare, setCopiedShare] = useState(false);
   const [activeAnswerSort, setActiveAnswerSort] = useState('upvotes'); // 'upvotes' | 'newest'
+
+  // Sarvam Indic Translation & Spoken Tariff State
+  const [activeLang, setActiveLang] = useState('en-IN');
+  const [translating, setTranslating] = useState(false);
+  const [translatedData, setTranslatedData] = useState({}); // { [lang]: { title, body } }
+  const [playingTariffAudio, setPlayingTariffAudio] = useState(false);
+
+  const handleTranslate = async (targetLang) => {
+    if (targetLang === activeLang) return;
+    if (targetLang === 'en-IN') {
+      setActiveLang('en-IN');
+      return;
+    }
+
+    if (translatedData[targetLang]) {
+      setActiveLang(targetLang);
+      return;
+    }
+
+    setTranslating(true);
+    try {
+      const [transTitle, transBody] = await Promise.all([
+        translateTextWithSarvam({ text: question.title, sourceLang: 'en-IN', targetLang }),
+        translateTextWithSarvam({ text: question.body, sourceLang: 'en-IN', targetLang }),
+      ]);
+
+      setTranslatedData((prev) => ({
+        ...prev,
+        [targetLang]: { title: transTitle, body: transBody },
+      }));
+      setActiveLang(targetLang);
+    } catch (err) {
+      console.warn('[Sarvam Translate UI Error]:', err);
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const handlePlayTariffAudio = async () => {
+    if (playingTariffAudio) return;
+    if (!question?.fareCheck) return;
+
+    setPlayingTariffAudio(true);
+    const briefingText = `${question.city || 'Delhi'} auto fare advice: Official meter for ${question.fareCheck.distanceKm} kilometers is ${question.fareCheck.officialAutoMeter}. Cab apps estimate ${question.fareCheck.cabEstimate}. Always insist on starting the electronic meter.`;
+
+    await playSarvamSpeech({
+      text: briefingText,
+      languageCode: activeLang === 'hi-IN' ? 'hi-IN' : 'en-IN',
+      speaker: 'meera',
+      onEnd: () => setPlayingTariffAudio(false),
+      onError: () => setPlayingTariffAudio(false),
+    });
+  };
 
   // Scroll to top when post opens
   useEffect(() => {
@@ -209,8 +266,45 @@ export default function QuestionDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Main Discussion & Answers Column (8 cols) */}
-          <main className="lg:col-span-8 space-y-6">
+          <main className="lg:col-span-8 space-y-5">
             
+            {/* Sarvam Mayura Indic Translation Bar */}
+            <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-3.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2 text-xs font-bold text-stone-800 dark:text-stone-200">
+                <Languages className="w-4 h-4 text-[#D9532F]" />
+                <span>Indic Translation (Sarvam Mayura AI):</span>
+                {translating && (
+                  <span className="flex items-center gap-1 text-[11px] text-[#D9532F] font-normal">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Translating...</span>
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[
+                  { code: 'en-IN', label: 'English', flag: '🇬🇧' },
+                  { code: 'hi-IN', label: 'हिंदी', flag: '🇮🇳' },
+                  { code: 'mr-IN', label: 'मराठी', flag: '🇮🇳' },
+                  { code: 'kn-IN', label: 'ಕನ್ನಡ', flag: '🇮🇳' },
+                ].map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => handleTranslate(l.code)}
+                    disabled={translating}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${
+                      activeLang === l.code
+                        ? 'bg-[#D9532F] text-white shadow-xs'
+                        : 'bg-stone-100 dark:bg-[#161616] text-stone-600 dark:text-stone-400 hover:bg-stone-200'
+                    }`}
+                  >
+                    <span>{l.flag}</span>
+                    <span>{l.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Primary Question Article Card */}
             <article className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-6 sm:p-7 shadow-xs space-y-5">
               
@@ -226,6 +320,11 @@ export default function QuestionDetailPage({
                 {question.city && (
                   <span className="text-[11px] bg-stone-100 dark:bg-[#161616] text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded-md font-medium">
                     {question.city}
+                  </span>
+                )}
+                {activeLang !== 'en-IN' && (
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-2 py-0.5 rounded-md font-semibold">
+                    ⚡ Translated to {activeLang === 'hi-IN' ? 'Hindi' : activeLang === 'mr-IN' ? 'Marathi' : 'Kannada'}
                   </span>
                 )}
                 {question.tags?.map((tag, idx) => (
@@ -258,13 +357,13 @@ export default function QuestionDetailPage({
                 </div>
               </div>
 
-              {/* Title & Body */}
+              {/* Title & Body (Live Sarvam Translation) */}
               <div className="space-y-3 pt-1">
                 <h1 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-white leading-snug">
-                  {question.title}
+                  {translatedData[activeLang]?.title || question.title}
                 </h1>
                 <div className="text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed bg-[#FAF8F5] dark:bg-[#121212] p-5 rounded-xl border border-[#E8E5DF] dark:border-[#1a1a1a] whitespace-pre-line">
-                  {question.body}
+                  {translatedData[activeLang]?.body || question.body}
                 </div>
               </div>
 
@@ -278,14 +377,25 @@ export default function QuestionDetailPage({
               {/* Embedded Real-Time Fair Fare Protection Card */}
               {question.fareCheck && (
                 <div className="bg-[#FAF8F5] dark:bg-[#111] border border-terracotta-200 dark:border-terracotta-900/60 rounded-2xl p-5 space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2 text-[#D9532F] font-bold text-xs uppercase tracking-wider">
                       <ShieldCheck className="w-4 h-4 text-[#D9532F]" />
                       <span>Real-Time Fair Fare Protection Card</span>
                     </div>
-                    <span className="font-mono text-stone-500 dark:text-stone-400 text-xs font-semibold">
-                      Distance: {question.fareCheck.distanceKm} km
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handlePlayTariffAudio}
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white dark:bg-[#181818] text-[#D9532F] border border-terracotta-200 hover:bg-terracotta-50 transition-colors shadow-2xs"
+                        title="Listen to Spoken Municipal Fare Briefing"
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>{playingTariffAudio ? 'Speaking...' : '🔊 Spoken Fare Briefing'}</span>
+                      </button>
+                      <span className="font-mono text-stone-500 dark:text-stone-400 text-xs font-semibold">
+                        Distance: {question.fareCheck.distanceKm} km
+                      </span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

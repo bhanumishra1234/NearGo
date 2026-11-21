@@ -19,6 +19,7 @@ import { VIBE_CATEGORIES, INDIC_SLANG_DICTIONARY, VIBE_CURATED_SPOTS } from './s
 import { NCR_METRO_STATIONS, METRO_LINES } from './src/data/metroData.js';
 import { runScheduledFareSync } from './scripts/cron-job.js';
 import { neo4jService } from './server/neo4jService.js';
+import { sarvamService } from './server/sarvamService.js';
 
 import path from 'path';
 import fs from 'fs';
@@ -1099,6 +1100,41 @@ app.all('/api/cron/sync-fares', async (req, res) => {
     res.json({ success: true, report });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ── 11b. Sarvam AI Indic Language Endpoints ─────────────────────────────────
+app.get('/api/sarvam/status', (req, res) => {
+  res.json(sarvamService.getStatus());
+});
+
+app.post('/api/sarvam/tts', async (req, res) => {
+  try {
+    const { text, languageCode, speaker, pace } = req.body || {};
+    const result = await sarvamService.generateSpeech({ text, languageCode, speaker, pace });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/sarvam/translate', async (req, res) => {
+  try {
+    const { text, sourceLang, targetLang, mode } = req.body || {};
+    const result = await sarvamService.translateText({ text, sourceLang, targetLang, mode });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/sarvam/stt', async (req, res) => {
+  try {
+    const { audioBase64, languageCode } = req.body || {};
+    const result = await sarvamService.transcribeAudio({ audioBase64, languageCode });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

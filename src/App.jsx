@@ -12,6 +12,7 @@ import Neo4jGraphModal from './components/Neo4jGraphModal.jsx';
 import MerchantPartnerModal from './components/MerchantPartnerModal.jsx';
 import CouponRedeemModal from './components/CouponRedeemModal.jsx';
 import HeritageTrailsModal from './components/HeritageTrailsModal.jsx';
+import NeighbourhoodRadio from './components/NeighbourhoodRadio.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import { INITIAL_QUESTIONS } from './data/seedData.js';
 import { calculateDistance, calculateRouteFare } from './data/tariffs.js';
@@ -892,6 +893,14 @@ export default function App() {
       <HeritageTrailsModal
         isOpen={isTrailsModalOpen}
         onClose={() => setIsTrailsModalOpen(false)}
+      />
+
+      {/* 📻 Desi Neighbourhood Walkie-Talkie Radio (GPS Audio Stories powered by Sarvam AI) */}
+      <NeighbourhoodRadio
+        selectedCity={selectedCity}
+        onFlyToSpot={(spot) => {
+          handleHighlightOnMap(spot);
+        }}
       />
     </div>
   );
