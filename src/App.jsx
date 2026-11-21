@@ -4,8 +4,8 @@ import StatsHeader from './components/StatsHeader.jsx';
 import QuestionsFeed from './components/QuestionsFeed.jsx';
 import MapContainer from './components/MapContainer.jsx';
 import FairPriceEngine from './components/FairPriceEngine.jsx';
-import QuestionDetailModal from './components/QuestionDetailModal.jsx';
-import AskQuestionModal from './components/AskQuestionModal.jsx';
+import QuestionDetailPage from './pages/QuestionDetailPage.jsx';
+import AskQuestionPage from './pages/AskQuestionPage.jsx';
 import VibeEngineModal from './components/VibeEngineModal.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import Neo4jGraphModal from './components/Neo4jGraphModal.jsx';
@@ -62,9 +62,12 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Modals state
+  // View & Full-Page Navigation Routing ('feed' | 'map' | 'post' | 'ask')
+  const [currentView, setCurrentView] = useState('feed');
+  const [previousView, setPreviousView] = useState('feed');
   const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const [isAskModalOpen, setIsAskModalOpen] = useState(false);
+
+  // Tool & Utility Modals state
   const [isFareModalOpen, setIsFareModalOpen] = useState(false);
   const [isVibeModalOpen, setIsVibeModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -73,6 +76,64 @@ export default function App() {
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [isTrailsModalOpen, setIsTrailsModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+
+  // Navigation actions
+  const navigateToPost = (q) => {
+    setPreviousView(currentView === 'ask' ? 'feed' : currentView);
+    setSelectedQuestion(q);
+    setCurrentView('post');
+    window.location.hash = `post/${q.id}`;
+  };
+
+  const navigateToAsk = () => {
+    setPreviousView(currentView);
+    setCurrentView('ask');
+    window.location.hash = 'ask';
+  };
+
+  const navigateToFeed = () => {
+    setSelectedQuestion(null);
+    setCurrentView('feed');
+    setActiveTab('feed');
+    window.location.hash = '';
+  };
+
+  const navigateToMap = (pin = null) => {
+    if (pin) setHighlightedPin(pin);
+    setCurrentView('map');
+    setActiveTab('map');
+    window.location.hash = 'map';
+  };
+
+  // Sync with browser URL hash & Back/Forward buttons
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash.startsWith('post/')) {
+        const qId = hash.replace('post/', '');
+        const matched = questions.find((q) => String(q.id) === String(qId));
+        if (matched) {
+          setSelectedQuestion(matched);
+          setCurrentView('post');
+        }
+      } else if (hash === 'ask') {
+        setCurrentView('ask');
+      } else if (hash === 'map') {
+        setCurrentView('map');
+        setActiveTab('map');
+      } else if (!hash || hash === 'feed') {
+        setSelectedQuestion(null);
+        setCurrentView('feed');
+        setActiveTab('feed');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHash);
+    if (window.location.hash) {
+      handleHash();
+    }
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, [questions]);
 
   const { user, accessToken } = useAuth();
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -312,6 +373,7 @@ export default function App() {
     };
 
     setQuestions([newQuestion, ...questions]);
+    navigateToPost(newQuestion);
 
     fetch('/api/questions', {
       method: 'POST',
@@ -374,7 +436,7 @@ export default function App() {
 
   const handleHighlightOnMap = (target) => {
     setHighlightedPin(target);
-    setActiveTab('map');
+    navigateToMap(target);
   };
 
   // Communities list (Reddit/Quora spaces style)
@@ -387,22 +449,30 @@ export default function App() {
   ];
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#ffffff] dark:bg-[#000000] text-[#1C1917] dark:text-[#E7E5E4] flex flex-col font-sans selection:bg-[#D9532F] selection:text-white transition-colors duration-200">
+    <div className={`w-full bg-[#ffffff] dark:bg-[#000000] text-[#1C1917] dark:text-[#E7E5E4] flex flex-col font-sans selection:bg-[#D9532F] selection:text-white transition-colors duration-200 ${
+      currentView === 'post' || currentView === 'ask' ? 'min-h-screen overflow-y-auto' : 'h-screen overflow-hidden'
+    }`}>
       {/* Navbar */}
       <Navbar
         selectedCity={selectedCity}
         setSelectedCity={(city) => {
           setSelectedCity(city);
           localStorage.setItem('neargo_selected_city', city);
+          if (currentView === 'post' || currentView === 'ask') {
+            navigateToFeed();
+          }
         }}
         onRequestLocation={requestLocation}
         isDetectingLocation={isDetectingLocation}
         locationStatus={locationStatus}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenAskModal={() => setIsAskModalOpen(true)}
+        activeTab={currentView === 'map' ? 'map' : 'feed'}
+        setActiveTab={(tab) => {
+          if (tab === 'map') navigateToMap();
+          else navigateToFeed();
+        }}
+        onOpenAskModal={navigateToAsk}
         onOpenFareModal={() => setIsFareModalOpen(true)}
         onOpenVibeModal={() => setIsVibeModalOpen(true)}
         onOpenAuthModal={(mode) => {
@@ -418,9 +488,46 @@ export default function App() {
         setSidebarOpen={setSidebarOpen}
       />
 
-      {/* Main Reddit/Quora 3-Column Layout: Outer container is strictly fixed/unscrollable */}
-      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 w-full flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
-        {activeTab === 'feed' ? (
+      {/* Dynamic Content Display: Full Pages for Post View and Put Question, or Feed/Map */}
+      {currentView === 'post' && selectedQuestion ? (
+        <QuestionDetailPage
+          question={selectedQuestion}
+          onBack={() => {
+            if (previousView === 'map') {
+              navigateToMap();
+            } else {
+              navigateToFeed();
+            }
+          }}
+          onAddAnswer={handleAddAnswer}
+          onUpvoteQuestion={handleUpvoteQuestion}
+          onUpvoteAnswer={handleUpvoteAnswer}
+          onHighlightOnMap={(pin) => {
+            handleHighlightOnMap(pin);
+          }}
+          relatedQuestions={questions.filter(
+            (q) => q.city === selectedQuestion.city && q.id !== selectedQuestion.id
+          )}
+          onSelectRelatedQuestion={(q) => navigateToPost(q)}
+        />
+      ) : currentView === 'ask' ? (
+        <AskQuestionPage
+          onBack={() => {
+            if (previousView === 'map') {
+              navigateToMap();
+            } else {
+              navigateToFeed();
+            }
+          }}
+          onAddQuestion={(newQ) => {
+            handleAddQuestion(newQ);
+          }}
+          initialCity={selectedCity}
+        />
+      ) : (
+        /* Main Reddit/Quora 3-Column Layout: Outer container is strictly fixed/unscrollable */
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-6 w-full flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
+          {currentView === 'feed' ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full overflow-hidden">
             {/* 1. Left Sidebar: Navigation & Spaces (3 cols) - STRICTLY NON-SCROLLABLE */}
             <aside aria-label="City Spaces and Topic Navigation" className={`lg:col-span-3 h-full overflow-hidden py-4 ${sidebarOpen ? 'flex' : 'hidden lg:flex'} flex-col space-y-2.5 select-none shrink-0`}>
@@ -568,7 +675,7 @@ export default function App() {
                 </div>
 
                 <button
-                  onClick={() => setIsAskModalOpen(true)}
+                  onClick={navigateToAsk}
                   className="px-3.5 py-1.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5"
                 >
                   <MessageSquarePlus className="w-3.5 h-3.5" />
@@ -578,10 +685,10 @@ export default function App() {
 
               <QuestionsFeed
                 questions={displayedQuestions}
-                onSelectQuestion={(q) => setSelectedQuestion(q)}
+                onSelectQuestion={(q) => navigateToPost(q)}
                 onHighlightOnMap={handleHighlightOnMap}
                 onUpvoteQuestion={handleUpvoteQuestion}
-                onOpenAskModal={() => setIsAskModalOpen(true)}
+                onOpenAskModal={navigateToAsk}
                 onOpenFareModal={() => setIsFareModalOpen(true)}
                 selectedVibe={selectedVibe}
                 setSelectedVibe={setSelectedVibe}
@@ -616,7 +723,7 @@ export default function App() {
                     </h3>
                   </div>
                   <button
-                    onClick={() => setActiveTab('map')}
+                    onClick={navigateToMap}
                     className="text-[11px] text-[#D9532F] hover:underline font-bold"
                   >
                     Expand ➔
@@ -626,7 +733,7 @@ export default function App() {
                 <div className="h-[120px] rounded-xl overflow-hidden border border-[#E8E5DF] dark:border-[#1a1a1a]">
                   <MapContainer
                     questions={questions}
-                    onSelectQuestion={(q) => setSelectedQuestion(q)}
+                    onSelectQuestion={(q) => navigateToPost(q)}
                     highlightedPin={highlightedPin}
                     minimal={true}
                     selectedCity={selectedCity}
@@ -713,7 +820,7 @@ export default function App() {
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setIsAskModalOpen(true)}
+                  onClick={navigateToAsk}
                   className="px-3.5 py-1.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-xs"
                 >
                   Pin a Question
@@ -724,7 +831,7 @@ export default function App() {
             <div className="flex-1 rounded-2xl overflow-hidden border border-[#E8E5DF] dark:border-[#1a1a1a] shadow-md">
               <MapContainer
                 questions={questions}
-                onSelectQuestion={(q) => setSelectedQuestion(q)}
+                onSelectQuestion={(q) => navigateToPost(q)}
                 highlightedPin={highlightedPin}
                 selectedCity={selectedCity}
               />
@@ -732,25 +839,9 @@ export default function App() {
           </div>
         )}
       </div>
-
-      {/* Modals */}
-      {selectedQuestion && (
-        <QuestionDetailModal
-          question={selectedQuestion}
-          onClose={() => setSelectedQuestion(null)}
-          onAddAnswer={handleAddAnswer}
-          onUpvoteQuestion={handleUpvoteQuestion}
-          onUpvoteAnswer={handleUpvoteAnswer}
-          onHighlightOnMap={handleHighlightOnMap}
-        />
       )}
 
-      {isAskModalOpen && (
-        <AskQuestionModal
-          onClose={() => setIsAskModalOpen(false)}
-          onAddQuestion={handleAddQuestion}
-        />
-      )}
+      {/* Utility Modals */}
 
       {isFareModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
