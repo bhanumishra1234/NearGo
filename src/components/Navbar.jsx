@@ -54,7 +54,7 @@ export default function Navbar({
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E8E5DF]">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#000000]/95 backdrop-blur-md border-b border-[#E8E5DF] dark:border-[#1a1a1a]">
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6">
         <div className="flex items-center justify-between h-14 gap-3">
           {/* Left: Brand & City Selector */}
@@ -62,7 +62,7 @@ export default function Navbar({
             {setSidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-1.5 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+                className="lg:hidden p-1.5 rounded-lg text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-[#161616] transition-colors"
                 title="Toggle Sidebar"
               >
                 <SlidersHorizontal className="w-4 h-4" />
@@ -73,23 +73,23 @@ export default function Navbar({
               className="flex items-center gap-1 cursor-pointer select-none"
               onClick={() => setActiveTab('feed')}
             >
-              <span className="text-xl font-black tracking-tight text-stone-900 font-sans">
+              <span className="text-xl font-black tracking-tight text-stone-900 dark:text-white font-sans">
                 Near<span className="text-[#D9532F]">Go</span>
               </span>
             </div>
 
             {/* City Dropdown Pill */}
-            <div className="hidden sm:flex items-center ml-1 pl-3 border-l border-stone-200 gap-1">
-              <div className="flex items-center gap-1.5 bg-[#F7F6F3] border border-[#E8E5DF] hover:border-stone-300 px-2.5 py-1 rounded-full text-xs transition-colors">
+            <div className="hidden sm:flex items-center ml-1 pl-3 border-l border-stone-200 dark:border-[#1f1f1f] gap-1">
+              <div className="flex items-center gap-1.5 bg-[#F7F6F3] dark:bg-[#111111] border border-[#E8E5DF] dark:border-[#1e1e1e] hover:border-stone-300 dark:hover:border-stone-600 px-2.5 py-1 rounded-full text-xs transition-colors">
                 <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="bg-transparent text-stone-800 font-semibold outline-none cursor-pointer text-xs pr-1"
+                  className="bg-transparent text-stone-800 dark:text-stone-100 font-semibold outline-none cursor-pointer text-xs pr-1"
                 >
-                  <option value="Delhi NCR">Delhi NCR</option>
-                  <option value="Mumbai">Mumbai</option>
-                  <option value="Bengaluru">Bengaluru</option>
+                  <option value="Delhi NCR" className="bg-white dark:bg-[#111111] text-stone-900 dark:text-stone-100">Delhi NCR</option>
+                  <option value="Mumbai" className="bg-white dark:bg-[#111111] text-stone-900 dark:text-stone-100">Mumbai</option>
+                  <option value="Bengaluru" className="bg-white dark:bg-[#111111] text-stone-900 dark:text-stone-100">Bengaluru</option>
                 </select>
               </div>
 
@@ -100,8 +100,8 @@ export default function Navbar({
                 title="Auto-detect nearest city"
                 className={`p-1.5 rounded-full border text-xs flex items-center transition-all ${
                   isDetectingLocation
-                    ? 'bg-terracotta-50 border-terracotta-300 text-[#D9532F] animate-pulse'
-                    : 'bg-[#F7F6F3] border-[#E8E5DF] text-stone-500 hover:text-[#D9532F] hover:border-stone-300'
+                    ? 'bg-terracotta-50 dark:bg-[#D9532F]/20 border-terracotta-300 dark:border-[#D9532F]/50 text-[#D9532F] animate-pulse'
+                    : 'bg-[#F7F6F3] dark:bg-[#111111] border-[#E8E5DF] dark:border-[#1e1e1e] text-stone-500 dark:text-stone-400 hover:text-[#D9532F] hover:border-stone-300 dark:hover:border-stone-600'
                 }`}
               >
                 <Navigation className={`w-3.5 h-3.5 ${isDetectingLocation ? 'animate-spin' : ''}`} />
@@ -117,18 +117,18 @@ export default function Navbar({
           {/* Center: Search Input */}
           <div className="flex-1 max-w-md mx-2 sm:mx-6">
             <div className="relative w-full">
-              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search local questions, fares, gems..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#F4F1EA] hover:bg-[#EFECE5] focus:bg-white border border-transparent focus:border-stone-300 rounded-full pl-8 pr-7 py-1.5 text-xs text-stone-900 placeholder-stone-400 focus:outline-none transition-all"
+                className="w-full bg-[#F4F1EA] dark:bg-[#111111] hover:bg-[#EFECE5] dark:hover:bg-[#161616] focus:bg-white dark:focus:bg-[#141414] border border-transparent focus:border-stone-300 dark:focus:border-[#2a2a2a] rounded-full pl-8 pr-7 py-1.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -139,13 +139,13 @@ export default function Navbar({
           {/* Right: View Tabs, Ask Button, & Profile */}
           <div className="flex items-center gap-2 shrink-0">
             {/* View Tabs Pill */}
-            <div className="hidden sm:flex items-center bg-[#F4F1EA] p-0.5 rounded-full border border-stone-200/80 text-xs">
+            <div className="hidden sm:flex items-center bg-[#F4F1EA] dark:bg-[#111111] p-0.5 rounded-full border border-stone-200/80 dark:border-[#1e1e1e] text-xs">
               <button
                 onClick={() => setActiveTab('feed')}
                 className={`px-3 py-1 rounded-full font-semibold transition-all ${
                   activeTab === 'feed'
-                    ? 'bg-white text-stone-900 shadow-2xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    ? 'bg-white dark:bg-[#222222] text-stone-900 dark:text-white shadow-2xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 Discussions
@@ -154,8 +154,8 @@ export default function Navbar({
                 onClick={() => setActiveTab('map')}
                 className={`px-3 py-1 rounded-full font-semibold flex items-center gap-1 transition-all ${
                   activeTab === 'map'
-                    ? 'bg-white text-stone-900 shadow-2xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    ? 'bg-white dark:bg-[#222222] text-stone-900 dark:text-white shadow-2xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 <Compass className="w-3.5 h-3.5 text-[#D9532F]" />
@@ -166,7 +166,7 @@ export default function Navbar({
             {/* Minimal Add Question Button */}
             <button
               onClick={onOpenAskModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white text-xs font-bold transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white text-xs font-bold transition-all shadow-xs"
             >
               <MessageSquarePlus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Ask Local</span>
@@ -177,9 +177,9 @@ export default function Navbar({
             <div className="relative ml-0.5" ref={dropdownRef}>
               <button
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="flex items-center gap-1 p-0.5 rounded-full hover:bg-stone-100 transition-colors focus:outline-none"
+                className="flex items-center gap-1 p-0.5 rounded-full hover:bg-stone-100 dark:hover:bg-[#161616] transition-colors focus:outline-none"
               >
-                <div className="w-7 h-7 rounded-full bg-stone-900 text-white font-bold flex items-center justify-center text-[11px]">
+                <div className="w-7 h-7 rounded-full bg-stone-900 dark:bg-stone-800 text-white font-bold flex items-center justify-center text-[11px] border border-stone-700">
                   <span>{initial}</span>
                 </div>
                 <ChevronDown className="w-3 h-3 text-stone-500" />
@@ -187,7 +187,7 @@ export default function Navbar({
 
               {/* Dropdown Menu */}
               {profileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl border border-[#E8E5DF] shadow-lg py-1.5 z-50 text-xs">
+                <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#0c0c0c] rounded-xl border border-[#E8E5DF] dark:border-[#1e1e1e] shadow-lg py-1.5 z-50 text-xs">
                   {user ? (
                     <>
                       <div className="px-3.5 py-2 border-b border-stone-100">

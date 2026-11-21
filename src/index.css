@@ -3,45 +3,133 @@
 @tailwind utilities;
 
 @layer base {
-  body {
+  html, body {
     @apply bg-[#ffffff] text-[#1C1917] font-sans antialiased;
     overflow-x: hidden;
   }
 
-  .dark body {
-    @apply bg-[#0f0f0f] text-[#E7E5E4];
+  html.dark, html.dark body, .dark #root {
+    background-color: #000000 !important;
+    color: #E7E5E4 !important;
   }
 
-  /* Dark mode support for common cards and panels using #0f0f0f theme */
+  /* Universal OLED Pitch Black Theme (#000000 background) */
+  .dark header {
+    background-color: rgba(0, 0, 0, 0.95) !important;
+    border-color: #1a1a1a !important;
+  }
+
   .dark .bg-white {
-    background-color: #1a1a1a !important;
+    background-color: #0a0a0a !important;
     color: #F5F5F4;
   }
-  .dark .bg-\[\#ffffff\], .dark .bg-\[\#F7F6F3\], .dark .bg-\[\#FAF8F5\], .dark .bg-\[\#F4F1EA\] {
-    background-color: #242424 !important;
+  .dark .bg-white\/95 {
+    background-color: rgba(0, 0, 0, 0.95) !important;
+  }
+
+  /* Inner containers, sub-panels, and secondary input surfaces */
+  .dark .bg-\[\#ffffff\],
+  .dark .bg-\[\#F7F6F3\],
+  .dark .bg-\[\#FAF8F5\],
+  .dark .bg-\[\#F4F1EA\],
+  .dark .bg-\[\#F5F1EB\],
+  .dark .bg-\[\#EFECE5\] {
+    background-color: #121212 !important;
     color: #E4E4E7;
   }
-  .dark .border-\[\#E8E5DF\], .dark .border-stone-100, .dark .border-stone-200, .dark .border-stone-200\/80 {
-    border-color: #2e2e2e !important;
+
+  /* Subsurface pill buttons */
+  .dark .bg-stone-100 {
+    background-color: #161616 !important;
+    color: #E4E4E7 !important;
   }
-  .dark .text-stone-900, .dark .text-stone-800, .dark .text-stone-700 {
+  .dark .bg-stone-200 {
+    background-color: #222222 !important;
+    color: #FFFFFF !important;
+  }
+
+  /* Borders: ultra sleek dark charcoal borders */
+  .dark .border-\[\#E8E5DF\],
+  .dark .border-stone-100,
+  .dark .border-stone-200,
+  .dark .border-stone-200\/80,
+  .dark .border-stone-300,
+  .dark .border-terracotta-200,
+  .dark .border-terracotta-200\/80,
+  .dark .border-terracotta-200\/90 {
+    border-color: #1c1c1c !important;
+  }
+
+  /* Text color rules in dark mode */
+  .dark .text-stone-900,
+  .dark .text-stone-800,
+  .dark .text-stone-700 {
     color: #F4F4F5 !important;
   }
-  .dark .text-stone-600, .dark .text-stone-500 {
-    color: #A1A1AA !important;
+  .dark .text-stone-600,
+  .dark .text-stone-500 {
+    color: #9CA3AF !important;
   }
-  .dark .hover\:bg-stone-50:hover, .dark .hover\:bg-stone-100:hover, .dark .hover\:bg-\[\#FAF8F5\]:hover, .dark .hover\:bg-\[\#ECE7DC\]:hover {
-    background-color: #2d2d2d !important;
+  .dark .text-stone-400 {
+    color: #71717A !important;
+  }
+
+  /* Subtle dark pastel chips - eliminate jarring white / light rectangles in dark mode */
+  .dark .bg-emerald-50 {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #34D399 !important;
+    border-color: rgba(16, 185, 129, 0.25) !important;
+  }
+  .dark .bg-amber-50, .dark .bg-amber-50\/90 {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    color: #FBBF24 !important;
+    border-color: rgba(245, 158, 11, 0.25) !important;
+  }
+  .dark .bg-terracotta-50 {
+    background-color: rgba(217, 83, 47, 0.14) !important;
+    color: #FF7B59 !important;
+    border-color: rgba(217, 83, 47, 0.3) !important;
+  }
+
+  /* Hover states */
+  .dark .hover\:bg-stone-50:hover,
+  .dark .hover\:bg-stone-100:hover,
+  .dark .hover\:bg-stone-200:hover,
+  .dark .hover\:bg-\[\#FAF8F5\]:hover,
+  .dark .hover\:bg-\[\#ECE7DC\]:hover,
+  .dark .hover\:bg-\[\#EAE5DC\]:hover,
+  .dark .hover\:bg-\[\#EFECE5\]:hover {
+    background-color: #1a1a1a !important;
+  }
+
+  /* Inputs and selects */
+  .dark input, .dark textarea, .dark select {
+    background-color: #121212 !important;
+    color: #F4F4F5 !important;
+    border-color: #222222 !important;
+  }
+  .dark select option {
+    background-color: #121212 !important;
+    color: #F4F4F5 !important;
   }
 }
 
-/* Custom Leaflet Map styling for clean light / clay aesthetic */
+/* Custom Leaflet Map styling */
 .leaflet-container {
   width: 100%;
   height: 100%;
   border-radius: 0.75rem;
   background-color: #F4F1EA !important;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+}
+
+.dark .leaflet-container {
+  background-color: #080808 !important;
+}
+
+/* In dark mode, slightly dim map tiles for an elegant dark map experience */
+.dark .leaflet-tile-pane {
+  filter: brightness(0.75) contrast(1.15) saturate(0.85) invert(0.88) hue-rotate(180deg);
 }
 
 .leaflet-popup-content-wrapper {
@@ -51,6 +139,12 @@
   border-radius: 0.85rem !important;
   box-shadow: 0 10px 25px -5px rgba(28, 25, 23, 0.12) !important;
   padding: 0 !important;
+}
+
+.dark .leaflet-popup-content-wrapper {
+  background-color: #0d0d0d !important;
+  color: #F4F4F5 !important;
+  border: 1px solid #222222 !important;
 }
 
 .leaflet-popup-content {
@@ -63,11 +157,20 @@
   border: 1px solid #E8E5DF !important;
 }
 
+.dark .leaflet-popup-tip {
+  background-color: #0d0d0d !important;
+  border: 1px solid #222222 !important;
+}
+
 .leaflet-control-zoom {
   border: 1px solid #E8E5DF !important;
   border-radius: 0.5rem !important;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+}
+
+.dark .leaflet-control-zoom {
+  border-color: #222222 !important;
 }
 
 .leaflet-control-zoom a {
@@ -76,9 +179,20 @@
   border-bottom: 1px solid #E8E5DF !important;
 }
 
+.dark .leaflet-control-zoom a {
+  background-color: #111111 !important;
+  color: #FFFFFF !important;
+  border-bottom-color: #222222 !important;
+}
+
 .leaflet-control-zoom a:hover {
   background-color: #F5F1EB !important;
   color: #D9532F !important;
+}
+
+.dark .leaflet-control-zoom a:hover {
+  background-color: #1a1a1a !important;
+  color: #FF7B59 !important;
 }
 
 /* Custom Scrollbars */
@@ -89,12 +203,21 @@
 ::-webkit-scrollbar-track {
   background: #F7F6F3;
 }
+.dark ::-webkit-scrollbar-track {
+  background: #000000;
+}
 ::-webkit-scrollbar-thumb {
   background: #D8D3CA;
   border-radius: 9999px;
 }
+.dark ::-webkit-scrollbar-thumb {
+  background: #262626;
+}
 ::-webkit-scrollbar-thumb:hover {
   background: #B09172;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #383838;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
