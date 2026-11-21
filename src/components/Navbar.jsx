@@ -74,14 +74,14 @@ export default function Navbar({
               onClick={() => setActiveTab('feed')}
             >
               <span className="text-xl font-black tracking-tight text-stone-900 dark:text-white font-sans">
-                Near<span className="text-[#7C3AED]">Go</span>
+                Near<span className="text-[#D9532F]">Go</span>
               </span>
             </div>
 
             {/* City Dropdown Pill */}
             <div className="hidden sm:flex items-center ml-1 pl-3 border-l border-stone-200 dark:border-[#1f1f1f] gap-1">
               <div className="flex items-center gap-1.5 bg-[#F7F6F3] dark:bg-[#111111] border border-[#E8E5DF] dark:border-[#1e1e1e] hover:border-stone-300 dark:hover:border-stone-600 px-2.5 py-1 rounded-full text-xs transition-colors">
-                <MapPin className="w-3.5 h-3.5 text-[#7C3AED]" />
+                <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
@@ -100,13 +100,13 @@ export default function Navbar({
                 title="Auto-detect nearest city"
                 className={`p-1.5 rounded-full border text-xs flex items-center transition-all ${
                   isDetectingLocation
-                    ? 'bg-violet-50 dark:bg-[#7C3AED]/20 border-violet-300 dark:border-[#7C3AED]/50 text-[#7C3AED] animate-pulse'
-                    : 'bg-[#F7F6F3] dark:bg-[#111111] border-[#E8E5DF] dark:border-[#1e1e1e] text-stone-500 dark:text-stone-400 hover:text-[#7C3AED] hover:border-stone-300 dark:hover:border-stone-600'
+                    ? 'bg-terracotta-50 dark:bg-[#D9532F]/20 border-terracotta-300 dark:border-[#D9532F]/50 text-[#D9532F] animate-pulse'
+                    : 'bg-[#F7F6F3] dark:bg-[#111111] border-[#E8E5DF] dark:border-[#1e1e1e] text-stone-500 dark:text-stone-400 hover:text-[#D9532F] hover:border-stone-300 dark:hover:border-stone-600'
                 }`}
               >
                 <Navigation className={`w-3.5 h-3.5 ${isDetectingLocation ? 'animate-spin' : ''}`} />
                 {locationStatus && (
-                  <span className="text-[10px] font-semibold px-1 text-[#7C3AED]">
+                  <span className="text-[10px] font-semibold px-1 text-[#D9532F]">
                     {locationStatus}
                   </span>
                 )}
@@ -158,7 +158,7 @@ export default function Navbar({
                     : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
-                <Compass className="w-3.5 h-3.5 text-[#7C3AED]" />
+                <Compass className="w-3.5 h-3.5 text-[#D9532F]" />
                 <span>Map</span>
               </button>
             </div>
@@ -166,7 +166,7 @@ export default function Navbar({
             {/* Minimal Add Question Button */}
             <button
               onClick={onOpenAskModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold transition-all shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D9532F] hover:bg-[#C2411E] text-white text-xs font-bold transition-all shadow-xs"
             >
               <MessageSquarePlus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Ask Local</span>
@@ -207,7 +207,7 @@ export default function Navbar({
                           }}
                           className="w-full text-left px-3.5 py-1.5 hover:bg-stone-50 flex items-center gap-2 text-stone-700"
                         >
-                          <MessageSquarePlus className="w-3.5 h-3.5 text-[#7C3AED]" />
+                          <MessageSquarePlus className="w-3.5 h-3.5 text-[#D9532F]" />
                           <span>My Questions</span>
                         </button>
                       </div>
@@ -222,7 +222,7 @@ export default function Navbar({
                           type="button"
                           onClick={() => setDarkMode(!darkMode)}
                           className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
-                            darkMode ? 'bg-[#7C3AED]' : 'bg-stone-300 dark:bg-stone-700'
+                            darkMode ? 'bg-[#D9532F]' : 'bg-stone-300 dark:bg-stone-700'
                           }`}
                         >
                           <span
@@ -261,7 +261,7 @@ export default function Navbar({
                             setProfileDropdownOpen(false);
                             onOpenAuthModal('login');
                           }}
-                          className="w-full py-1.5 rounded-lg bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-center flex items-center justify-center gap-1.5 transition-colors"
+                          className="w-full py-1.5 rounded-lg bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-center flex items-center justify-center gap-1.5 transition-colors"
                         >
                           <LogIn className="w-3 h-3" />
                           <span>Sign In</span>
@@ -288,7 +288,7 @@ export default function Navbar({
                           type="button"
                           onClick={() => setDarkMode(!darkMode)}
                           className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
-                            darkMode ? 'bg-[#7C3AED]' : 'bg-stone-300 dark:bg-stone-700'
+                            darkMode ? 'bg-[#D9532F]' : 'bg-stone-300 dark:bg-stone-700'
                           }`}
                         >
                           <span

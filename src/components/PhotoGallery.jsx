@@ -25,7 +25,7 @@ export default function PhotoGallery({ photos = [], title = '' }) {
             />
             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <span className="bg-white/90 text-stone-900 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
-                <ZoomIn className="w-3.5 h-3.5 text-[#7C3AED]" />
+                <ZoomIn className="w-3.5 h-3.5 text-[#D9532F]" />
                 <span>View Fullscreen</span>
               </span>
             </div>
@@ -49,7 +49,7 @@ export default function PhotoGallery({ photos = [], title = '' }) {
                 />
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="bg-white/90 text-stone-900 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-md">
-                    <ZoomIn className="w-3 h-3 text-[#7C3AED]" />
+                    <ZoomIn className="w-3 h-3 text-[#D9532F]" />
                     <span>Zoom</span>
                   </span>
                 </div>
@@ -71,7 +71,7 @@ export default function PhotoGallery({ photos = [], title = '' }) {
           >
             <div className="p-3 bg-stone-900/90 border-b border-stone-800 flex items-center justify-between text-white text-xs">
               <div className="flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-[#7C3AED]" />
+                <ImageIcon className="w-4 h-4 text-[#D9532F]" />
                 <span className="font-semibold truncate max-w-sm">{title || 'Photo Preview'}</span>
               </div>
               <button

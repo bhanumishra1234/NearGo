@@ -31,7 +31,7 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-[#E8E5DF] bg-[#FAF8F5] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-[#7C3AED] text-white font-bold flex items-center justify-center shadow-md shadow-terracotta-500/20">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-[#D9532F] text-white font-bold flex items-center justify-center shadow-md shadow-terracotta-500/20">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -68,7 +68,7 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
             onClick={() => setActiveTab('vibe_spots')}
             className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
               activeTab === 'vibe_spots'
-                ? 'bg-[#7C3AED] text-white shadow-xs'
+                ? 'bg-[#D9532F] text-white shadow-xs'
                 : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
             }`}
           >
@@ -95,7 +95,7 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
                         <div className="text-base font-bold text-stone-900">
                           {item.phrase}
                         </div>
-                        <div className="text-[11px] font-mono text-[#7C3AED] font-semibold">
+                        <div className="text-[11px] font-mono text-[#D9532F] font-semibold">
                           {item.phonetic}
                         </div>
                       </div>
@@ -106,7 +106,7 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
                           className="w-7 h-7 rounded-full bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 flex items-center justify-center transition-colors shadow-xs"
                           title="Listen to pronunciation"
                         >
-                          <Volume2 className="w-3.5 h-3.5 text-[#7C3AED]" />
+                          <Volume2 className="w-3.5 h-3.5 text-[#D9532F]" />
                         </button>
                         <button
                           onClick={() => handleCopy(item.phrase)}
@@ -128,7 +128,7 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
 
                     <div className="pt-2 border-t border-stone-200 flex items-center justify-between text-[10px]">
                       <span className="text-stone-500 font-medium">When to use: {item.situation}</span>
-                      <span className="bg-white border border-stone-200 text-[#7C3AED] px-2 py-0.5 rounded font-mono font-bold shadow-xs">
+                      <span className="bg-white border border-stone-200 text-[#D9532F] px-2 py-0.5 rounded font-mono font-bold shadow-xs">
                         {item.effectivenessScore}
                       </span>
                     </div>
@@ -167,8 +167,8 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
                         <h4 className="text-sm font-bold text-stone-900">{spot.name}</h4>
                         <div className="text-[11px] text-stone-500 font-medium">📍 {spot.neighborhood}</div>
                       </div>
-                      <div className="flex items-center gap-1 bg-terracotta-50 text-[#7C3AED] border border-terracotta-200 px-2 py-0.5 rounded-full font-mono text-xs font-bold">
-                        <Flame className="w-3.5 h-3.5 fill-[#7C3AED]" />
+                      <div className="flex items-center gap-1 bg-terracotta-50 text-[#D9532F] border border-terracotta-200 px-2 py-0.5 rounded-full font-mono text-xs font-bold">
+                        <Flame className="w-3.5 h-3.5 fill-[#D9532F]" />
                         <span>{spot.vibeScore}% Vibe</span>
                       </div>
                     </div>
@@ -192,9 +192,9 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
                         });
                         onClose();
                       }}
-                      className="w-full py-1.5 rounded-full bg-white hover:bg-[#FAF8F5] text-stone-800 hover:text-[#7C3AED] font-bold text-xs border border-stone-200 hover:border-terracotta-300 flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                      className="w-full py-1.5 rounded-full bg-white hover:bg-[#FAF8F5] text-stone-800 hover:text-[#D9532F] font-bold text-xs border border-stone-200 hover:border-terracotta-300 flex items-center justify-center gap-1.5 transition-colors shadow-xs"
                     >
-                      <MapPin className="w-3.5 h-3.5 text-[#7C3AED]" />
+                      <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
                       <span>View Spot on Map</span>
                     </button>
                   </div>

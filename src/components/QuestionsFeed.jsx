@@ -60,7 +60,7 @@ export default function QuestionsFeed({
       {/* 1. Quora / Reddit-Style Composer Box */}
       <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-3.5 sm:p-4 shadow-sm hover:shadow transition-shadow">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-400 to-[#7C3AED] text-white font-bold flex items-center justify-center shrink-0 shadow-inner">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-[#D9532F] text-white font-bold flex items-center justify-center shrink-0 shadow-inner">
             <span>U</span>
           </div>
           <button
@@ -74,21 +74,21 @@ export default function QuestionsFeed({
         <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-stone-100 dark:border-[#1a1a1a] text-xs text-stone-600 dark:text-stone-300 font-semibold">
           <button
             onClick={onOpenAskModal}
-            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg hover:bg-[#FAF8F5] dark:hover:bg-[#141414] hover:text-[#7C3AED] transition-colors"
+            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg hover:bg-[#FAF8F5] dark:hover:bg-[#141414] hover:text-[#D9532F] transition-colors"
           >
-            <HelpCircle className="w-4 h-4 text-[#7C3AED]" />
+            <HelpCircle className="w-4 h-4 text-[#D9532F]" />
             <span>Ask Local</span>
           </button>
           <button
             onClick={onOpenFareModal}
-            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg hover:bg-[#FAF8F5] dark:hover:bg-[#141414] hover:text-[#7C3AED] transition-colors"
+            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg hover:bg-[#FAF8F5] dark:hover:bg-[#141414] hover:text-[#D9532F] transition-colors"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>Fair Fare</span>
           </button>
           <button
             onClick={onOpenAskModal}
-            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg hover:bg-[#FAF8F5] dark:hover:bg-[#141414] hover:text-[#7C3AED] transition-colors"
+            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg hover:bg-[#FAF8F5] dark:hover:bg-[#141414] hover:text-[#D9532F] transition-colors"
           >
             <MapPin className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             <span>Drop Pin</span>
@@ -120,11 +120,11 @@ export default function QuestionsFeed({
             onClick={() => setOnlyFareQuestions(!onlyFareQuestions)}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border flex items-center gap-1.5 transition-colors shrink-0 ml-1 ${
               onlyFareQuestions
-                ? 'bg-violet-50 dark:bg-[#7C3AED]/15 border-violet-400 dark:border-[#7C3AED]/40 text-[#7C3AED]'
+                ? 'bg-terracotta-50 dark:bg-[#D9532F]/15 border-terracotta-400 dark:border-[#D9532F]/40 text-[#D9532F]'
                 : 'bg-white dark:bg-[#121212] border-stone-200 dark:border-[#1e1e1e] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:border-stone-300 dark:hover:border-[#2a2a2a]'
             }`}
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-[#7C3AED]" />
+            <ShieldCheck className="w-3.5 h-3.5 text-[#D9532F]" />
             <span>Fair Price ({questions.filter((q) => q.fareCheck).length})</span>
           </button>
         </div>
@@ -154,12 +154,12 @@ export default function QuestionsFeed({
       <div className="space-y-3.5">
         {filteredQuestions.length === 0 ? (
           <div className="bg-white border border-[#E8E5DF] rounded-2xl p-10 text-center shadow-sm">
-            <Sparkles className="w-8 h-8 text-[#7C3AED] mx-auto mb-2 opacity-60" />
+            <Sparkles className="w-8 h-8 text-[#D9532F] mx-auto mb-2 opacity-60" />
             <h3 className="text-stone-900 font-bold text-sm">No discussions found in this filter</h3>
             <p className="text-stone-500 text-xs mt-1">Be the first to ask a local question or check fair transit prices!</p>
             <button
               onClick={onOpenAskModal}
-              className="mt-4 px-4 py-2 rounded-full bg-[#7C3AED] text-white font-bold text-xs shadow-md shadow-violet-500/20"
+              className="mt-4 px-4 py-2 rounded-full bg-[#D9532F] text-white font-bold text-xs shadow-md shadow-terracotta-500/20"
             >
               Ask the Community
             </button>
@@ -174,7 +174,7 @@ export default function QuestionsFeed({
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex items-center gap-2 flex-wrap text-xs">
                   {/* Community / Subreddit style badge */}
-                  <span className="font-extrabold text-[#7C3AED] bg-violet-50 dark:bg-[#7C3AED]/15 border border-violet-200/80 dark:border-[#7C3AED]/30 px-2.5 py-0.5 rounded-full text-[11px]">
+                  <span className="font-extrabold text-[#D9532F] bg-terracotta-50 dark:bg-[#D9532F]/15 border border-terracotta-200/80 dark:border-[#D9532F]/30 px-2.5 py-0.5 rounded-full text-[11px]">
                     {q.community || 'c/DelhiLocal'}
                   </span>
                   <span className="text-stone-300 dark:text-stone-700">•</span>
@@ -197,16 +197,16 @@ export default function QuestionsFeed({
                 {/* Location indicator */}
                 <button
                   onClick={() => onHighlightOnMap(q)}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-stone-600 dark:text-stone-300 hover:text-[#7C3AED] bg-[#FAF8F5] dark:bg-[#121212] px-2 py-0.5 rounded-full border border-stone-200 dark:border-[#1a1a1a] transition-colors shrink-0"
+                  className="flex items-center gap-1 text-[11px] font-semibold text-stone-600 dark:text-stone-300 hover:text-[#D9532F] bg-[#FAF8F5] dark:bg-[#121212] px-2 py-0.5 rounded-full border border-stone-200 dark:border-[#1a1a1a] transition-colors shrink-0"
                 >
-                  <MapPin className="w-3 h-3 text-[#7C3AED]" />
+                  <MapPin className="w-3 h-3 text-[#D9532F]" />
                   <span>{q.locationName}</span>
                 </button>
               </div>
 
               {/* Title & Body */}
               <div className="cursor-pointer" onClick={() => onSelectQuestion(q)}>
-                <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white group-hover:text-[#7C3AED] dark:group-hover:text-[#7C3AED] transition-colors leading-snug">
+                <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white group-hover:text-[#D9532F] dark:group-hover:text-[#D9532F] transition-colors leading-snug">
                   {q.title}
                 </h2>
                 <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 mt-1.5 leading-relaxed">
@@ -237,10 +237,10 @@ export default function QuestionsFeed({
 
               {/* EMBEDDED FAIR PRICE CARD */}
               {q.fareCheck && (
-                <div className="mt-4 bg-[#FAF8F5] dark:bg-[#0e0e0e] border border-violet-200/90 dark:border-[#1e1e1e] rounded-xl p-3.5 sm:p-4 text-xs">
+                <div className="mt-4 bg-[#FAF8F5] dark:bg-[#0e0e0e] border border-terracotta-200/90 dark:border-[#1e1e1e] rounded-xl p-3.5 sm:p-4 text-xs">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-1.5 text-[#7C3AED] font-bold uppercase tracking-wider text-[11px]">
-                      <ShieldCheck className="w-4 h-4 text-[#7C3AED]" />
+                    <div className="flex items-center gap-1.5 text-[#D9532F] font-bold uppercase tracking-wider text-[11px]">
+                      <ShieldCheck className="w-4 h-4 text-[#D9532F]" />
                       <span>REAL-TIME FAIR FARE BENCHMARK</span>
                     </div>
                     <span className="text-[11px] text-stone-500 dark:text-stone-400 font-mono font-medium">
@@ -249,9 +249,9 @@ export default function QuestionsFeed({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 my-2">
-                    <div className="bg-white dark:bg-[#141414] p-2.5 rounded-lg border border-violet-200 dark:border-[#222222] shadow-xs">
+                    <div className="bg-white dark:bg-[#141414] p-2.5 rounded-lg border border-terracotta-200 dark:border-[#222222] shadow-xs">
                       <div className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold">Official Auto Meter</div>
-                      <div className="text-sm font-extrabold text-[#7C3AED] font-mono">
+                      <div className="text-sm font-extrabold text-[#D9532F] font-mono">
                         {q.fareCheck.officialAutoMeter}
                       </div>
                     </div>
@@ -297,7 +297,7 @@ export default function QuestionsFeed({
                       </div>
                       <button
                         onClick={() => onHighlightOnMap(q.answers[0].pin)}
-                        className="text-[#7C3AED] hover:underline font-bold text-[11px]"
+                        className="text-[#D9532F] hover:underline font-bold text-[11px]"
                       >
                         View on Map ➔
                       </button>
@@ -315,7 +315,7 @@ export default function QuestionsFeed({
                       onClick={() => onUpvoteQuestion(q.id)}
                       className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-bold transition-colors ${
                         q.userUpvoted
-                          ? 'bg-[#7C3AED] text-white'
+                          ? 'bg-[#D9532F] text-white'
                           : 'text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-[#EAE5DC] dark:hover:bg-[#181818]'
                       }`}
                     >
@@ -351,7 +351,7 @@ export default function QuestionsFeed({
                 <div>
                   <button
                     onClick={() => onSelectQuestion(q)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-stone-900 dark:bg-stone-800 hover:bg-[#7C3AED] dark:hover:bg-[#7C3AED] text-white text-xs font-bold transition-all shadow-xs"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-stone-900 dark:bg-stone-800 hover:bg-[#D9532F] dark:hover:bg-[#D9532F] text-white text-xs font-bold transition-all shadow-xs"
                   >
                     <span>Read & Answer</span>
                     <ArrowRight className="w-3 h-3" />

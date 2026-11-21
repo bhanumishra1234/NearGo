@@ -112,12 +112,12 @@ export default function MapContainer({
             <div class="relative flex items-center justify-center cursor-pointer group">
               <div class="w-8 h-8 rounded-full ${
                 isHighlighted
-                  ? 'bg-[#7C3AED] ring-4 ring-terracotta-200 scale-125 shadow-xl animate-pulse'
-                  : 'bg-white border-2 border-[#7C3AED] shadow-md'
+                  ? 'bg-[#D9532F] ring-4 ring-terracotta-200 scale-125 shadow-xl animate-pulse'
+                  : 'bg-white border-2 border-[#D9532F] shadow-md'
               } flex items-center justify-center transition-transform hover:scale-125">
-                <span class="text-xs font-bold ${isHighlighted ? 'text-white' : 'text-[#7C3AED]'}">?</span>
+                <span class="text-xs font-bold ${isHighlighted ? 'text-white' : 'text-[#D9532F]'}">?</span>
               </div>
-              <div class="absolute -bottom-1 w-2 h-2 ${isHighlighted ? 'bg-[#7C3AED]' : 'bg-[#7C3AED]'} rotate-45"></div>
+              <div class="absolute -bottom-1 w-2 h-2 ${isHighlighted ? 'bg-[#D9532F]' : 'bg-[#D9532F]'} rotate-45"></div>
             </div>
           `,
           iconSize: [32, 38],
@@ -134,12 +134,12 @@ export default function MapContainer({
 
         marker.bindPopup(`
           <div style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; padding:2px; min-width:180px;">
-            <div style="font-size:10px; text-transform:uppercase; font-weight:800; color:#7C3AED; margin-bottom:2px;">Traveler Question</div>
+            <div style="font-size:10px; text-transform:uppercase; font-weight:800; color:#D9532F; margin-bottom:2px;">Traveler Question</div>
             <div style="font-weight:700; font-size:13px; color:#1C1917; margin-bottom:4px; line-height:1.3;">${q.title}</div>
             <div style="font-size:11px; color:#6B7280; margin-bottom:6px;">📍 ${q.locationName}</div>
             ${fareTag}
             <div style="margin-top:8px;">
-              <button id="btn-view-${q.id}" style="width:100%; background:#7C3AED; color:#FFFFFF; font-weight:700; padding:6px 10px; border-radius:6px; border:none; cursor:pointer; font-size:11px;">
+              <button id="btn-view-${q.id}" style="width:100%; background:#D9532F; color:#FFFFFF; font-weight:700; padding:6px 10px; border-radius:6px; border:none; cursor:pointer; font-size:11px;">
                 View Answers (${q.answers.length})
               </button>
             </div>
@@ -181,14 +181,14 @@ export default function MapContainer({
               <div class="relative flex items-center justify-center cursor-pointer group">
                 <div class="w-8 h-8 rounded-full ${
                   isHighlighted
-                    ? 'bg-[#7C3AED] ring-4 ring-terracotta-200 scale-125 shadow-xl animate-pulse text-white'
+                    ? 'bg-[#D9532F] ring-4 ring-terracotta-200 scale-125 shadow-xl animate-pulse text-white'
                     : isCustom
                     ? 'bg-amber-600 border-2 border-white shadow-md text-white'
                     : 'bg-emerald-600 border-2 border-white shadow-md text-white'
                 } flex items-center justify-center transition-transform hover:scale-125">
                   <span class="text-xs">${isCustom ? '✨' : '📍'}</span>
                 </div>
-                <div class="absolute -bottom-1 w-2 h-2 ${isHighlighted ? 'bg-[#7C3AED]' : isCustom ? 'bg-amber-600' : 'bg-emerald-600'} rotate-45"></div>
+                <div class="absolute -bottom-1 w-2 h-2 ${isHighlighted ? 'bg-[#D9532F]' : isCustom ? 'bg-amber-600' : 'bg-emerald-600'} rotate-45"></div>
               </div>
             `,
             iconSize: [32, 38],
@@ -289,10 +289,10 @@ export default function MapContainer({
           className: 'custom-active-icon',
           html: `
             <div class="relative flex items-center justify-center cursor-pointer group">
-              <div class="w-10 h-10 rounded-full bg-[#7C3AED] ring-4 ring-terracotta-200 scale-110 shadow-2xl flex items-center justify-center text-white animate-bounce">
+              <div class="w-10 h-10 rounded-full bg-[#D9532F] ring-4 ring-terracotta-200 scale-110 shadow-2xl flex items-center justify-center text-white animate-bounce">
                 <span class="text-sm">📍</span>
               </div>
-              <div class="absolute -bottom-1 w-2.5 h-2.5 bg-[#7C3AED] rotate-45"></div>
+              <div class="absolute -bottom-1 w-2.5 h-2.5 bg-[#D9532F] rotate-45"></div>
             </div>
           `,
           iconSize: [40, 46],
@@ -302,10 +302,10 @@ export default function MapContainer({
         const activeMarker = L.marker([targetLat, targetLng], { icon: customActiveIcon }).addTo(markersLayer.current);
         activeMarker.bindPopup(`
           <div style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; padding:4px; min-width:200px;">
-            <div style="font-size:10px; text-transform:uppercase; font-weight:800; color:#7C3AED; margin-bottom:2px;">📍 Clicked Location</div>
+            <div style="font-size:10px; text-transform:uppercase; font-weight:800; color:#D9532F; margin-bottom:2px;">📍 Clicked Location</div>
             <div style="font-weight:700; font-size:14px; color:#1C1917; margin-bottom:2px;">${highlightedPin.name || 'Suggested Spot'}</div>
             <div style="font-size:11px; color:#6B7280; margin-bottom:4px;">📍 ${highlightedPin.neighborhood || 'Selected Area'}</div>
-            ${highlightedPin.insiderTip ? `<div style="font-size:11px; color:#374151; background:#FAF8F5; padding:6px; border-radius:6px; border-left:3px solid #7C3AED;">"${highlightedPin.insiderTip}"</div>` : ''}
+            ${highlightedPin.insiderTip ? `<div style="font-size:11px; color:#374151; background:#FAF8F5; padding:6px; border-radius:6px; border-left:3px solid #D9532F;">"${highlightedPin.insiderTip}"</div>` : ''}
           </div>
         `);
         matched = { marker: activeMarker };
@@ -353,7 +353,7 @@ export default function MapContainer({
         <div className="absolute top-3 left-3 right-3 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
           {/* Preset Center Navigation Chips */}
           <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-[#E8E5DF] shadow-md pointer-events-auto overflow-x-auto max-w-full">
-            <Navigation className="w-3.5 h-3.5 text-[#7C3AED] ml-1 shrink-0" />
+            <Navigation className="w-3.5 h-3.5 text-[#D9532F] ml-1 shrink-0" />
             <span className="text-[11px] font-bold text-stone-500 hidden sm:inline mr-1">Quick Jump:</span>
             {Object.entries(PRESET_CENTERS)
               .filter(([_, item]) => item.city === selectedCity)
@@ -363,7 +363,7 @@ export default function MapContainer({
                 onClick={() => handleCenterSelect(key)}
                 className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
                   activeCenter === key
-                    ? 'bg-[#7C3AED] text-white shadow-xs'
+                    ? 'bg-[#D9532F] text-white shadow-xs'
                     : 'text-stone-700 hover:bg-stone-100'
                 }`}
               >
@@ -386,7 +386,7 @@ export default function MapContainer({
             <button
               onClick={() => setFilterType('questions')}
               className={`px-2 py-1 rounded-full text-[11px] font-bold transition-colors ${
-                filterType === 'questions' ? 'bg-terracotta-50 text-[#7C3AED]' : 'text-stone-600 hover:text-stone-900'
+                filterType === 'questions' ? 'bg-terracotta-50 text-[#D9532F]' : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               ❓ Questions
@@ -414,8 +414,8 @@ export default function MapContainer({
 
       {/* Floating Active Highlighted Location Toast */}
       {highlightedPin && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] bg-white border-2 border-[#7C3AED] text-stone-900 px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 text-xs font-bold pointer-events-auto animate-pulse">
-          <MapPin className="w-4 h-4 text-[#7C3AED]" />
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] bg-white border-2 border-[#D9532F] text-stone-900 px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 text-xs font-bold pointer-events-auto animate-pulse">
+          <MapPin className="w-4 h-4 text-[#D9532F]" />
           <span>Viewing Spot: {highlightedPin.name || 'Suggested Location'}</span>
           {onClearHighlight && (
             <button
@@ -431,7 +431,7 @@ export default function MapContainer({
 
       {/* Pinning Mode Active Indicator */}
       {isPinningMode && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] bg-[#7C3AED] text-white px-4 py-1.5 rounded-full font-bold text-xs shadow-xl flex items-center gap-2 animate-bounce">
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] bg-[#D9532F] text-white px-4 py-1.5 rounded-full font-bold text-xs shadow-xl flex items-center gap-2 animate-bounce">
           <MapPin className="w-4 h-4" />
           <span>Click anywhere on the map to place your pin!</span>
         </div>
@@ -444,7 +444,7 @@ export default function MapContainer({
       {!minimal && (
         <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8E5DF] shadow-md flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-stone-700 font-medium">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#7C3AED]"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#D9532F]"></span>
             <span>Traveler Questions</span>
           </div>
           <div className="flex items-center gap-1.5">
