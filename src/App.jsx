@@ -951,6 +951,7 @@ export default function App() {
       {/* 📻 Desi Neighbourhood Walkie-Talkie Radio (GPS Audio Stories powered by Sarvam AI) */}
       <NeighbourhoodRadio
         selectedCity={selectedCity}
+        mapCenter={highlightedPin ? { lat: highlightedPin.lat, lng: highlightedPin.lng } : null}
         onFlyToSpot={(spot) => {
           handleHighlightOnMap(spot);
         }}

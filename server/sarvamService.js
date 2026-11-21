@@ -95,7 +95,7 @@ class SarvamService {
           pitch: 0,
           pace: pace || 1.0,
           loudness: 1.5,
-          speech_sample_rate: 8000,
+          speech_sample_rate: 22050,
           enable_preprocessing: true,
           model: 'bulbul:v3',
         }),

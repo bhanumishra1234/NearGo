@@ -22,11 +22,11 @@ const LANGUAGES = [
   { code: 'kn-IN', label: 'KN' },
 ];
 
-export default function NeighbourhoodRadio({ selectedCity = 'Delhi NCR', onFlyToSpot }) {
+export default function NeighbourhoodRadio({ selectedCity = 'Delhi NCR', onFlyToSpot, mapCenter }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loadingAudio, setLoadingAudio] = useState(false);
-  const [selectedLang, setSelectedLang] = useState('hi-IN');
+  const [selectedLang, setSelectedLang] = useState('en-IN');
   const [channelIndex, setChannelIndex] = useState(0);
   const [showTip, setShowTip] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
@@ -37,6 +37,26 @@ export default function NeighbourhoodRadio({ selectedCity = 'Delhi NCR', onFlyTo
   );
   const availableStories = cityStories.length > 0 ? cityStories : NEIGHBOURHOOD_AUDIO_STORIES;
   const currentStory = availableStories[channelIndex % availableStories.length];
+  const totalChannels = availableStories.length;
+
+  // Auto-select nearest story when map center changes
+  useEffect(() => {
+    if (!mapCenter || !mapCenter.lat || !mapCenter.lng) return;
+    let minDist = Infinity;
+    let nearestIdx = 0;
+    availableStories.forEach((s, i) => {
+      const dLat = s.lat - mapCenter.lat;
+      const dLng = s.lng - mapCenter.lng;
+      const dist = dLat * dLat + dLng * dLng;
+      if (dist < minDist) {
+        minDist = dist;
+        nearestIdx = i;
+      }
+    });
+    if (nearestIdx !== channelIndex && !isPlaying) {
+      setChannelIndex(nearestIdx);
+    }
+  }, [mapCenter?.lat, mapCenter?.lng]);
 
   // Reset when city changes
   useEffect(() => {
@@ -159,7 +179,11 @@ export default function NeighbourhoodRadio({ selectedCity = 'Delhi NCR', onFlyTo
                 {currentStory.frequency.split(' ')[0]}
               </span>
 
-              <span className="text-xs text-stone-300 font-medium max-w-[115px] truncate">
+              <span className="text-[9px] font-mono font-semibold px-1 py-0.5 rounded bg-stone-900 border border-stone-800 text-stone-400">
+                CH {(channelIndex % totalChannels) + 1}/{totalChannels}
+              </span>
+
+              <span className="text-xs text-stone-300 font-medium max-w-[105px] truncate">
                 {currentStory.neighborhood.split('&')[0].trim()}
               </span>
 
@@ -270,6 +294,9 @@ export default function NeighbourhoodRadio({ selectedCity = 'Delhi NCR', onFlyTo
                 <span className="text-[11px] font-mono font-bold text-amber-300">
                   {currentStory.frequency}
                 </span>
+                <span className="text-[9px] font-mono font-semibold px-1.5 py-0.2 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded">
+                  CH {(channelIndex % totalChannels) + 1}/{totalChannels}
+                </span>
                 <span className="text-[9px] px-1 py-0.2 bg-stone-800 text-stone-400 rounded font-mono">
                   Sarvam AI
                 </span>
@@ -336,6 +363,40 @@ export default function NeighbourhoodRadio({ selectedCity = 'Delhi NCR', onFlyTo
                   )}
                 </motion.button>
               </div>
+            </div>
+
+            {/* Quick Spots Selector Horizontal Strip */}
+            <div className="flex items-center gap-1 overflow-x-auto py-1 border-t border-b border-stone-850/60 scrollbar-none">
+              {availableStories.map((story, idx) => {
+                const isActive = (channelIndex % totalChannels) === idx;
+                const shortName = story.neighborhood.split('&')[0].replace('Market', '').trim();
+                return (
+                  <button
+                    key={story.id}
+                    onClick={() => {
+                      if (isActive) return;
+                      stopCurrentAudio();
+                      setIsPlaying(false);
+                      setChannelIndex(idx);
+                      if (onFlyToSpot) {
+                        onFlyToSpot({
+                          name: story.neighborhood,
+                          lat: story.lat,
+                          lng: story.lng,
+                          type: 'gem',
+                        });
+                      }
+                    }}
+                    className={`px-2 py-0.5 rounded-full text-[9px] font-medium whitespace-nowrap transition-colors shrink-0 ${
+                      isActive
+                        ? 'bg-[#D9532F] text-white shadow-sm'
+                        : 'bg-stone-900 hover:bg-stone-800 text-stone-400 hover:text-stone-200 border border-stone-800/80'
+                    }`}
+                  >
+                    {shortName}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Languages & Quick Actions */}

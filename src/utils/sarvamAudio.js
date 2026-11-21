@@ -29,7 +29,7 @@ export async function playSarvamSpeech({
     const response = await fetch('/api/sarvam/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, languageCode, speaker }),
+      body: JSON.stringify({ text: text.slice(0, 500), languageCode, speaker }),
     });
 
     if (response.ok) {
@@ -95,7 +95,7 @@ function fallbackBrowserSpeech(text, languageCode = 'hi-IN', onEnd) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.9;
-    utterance.lang = languageCode === 'en-IN' ? 'en-IN' : 'hi-IN';
+    utterance.lang = languageCode || 'hi-IN';
     if (onEnd) {
       utterance.onend = onEnd;
       utterance.onerror = onEnd;
