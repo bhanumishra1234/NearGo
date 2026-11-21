@@ -6,6 +6,32 @@
   html, body {
     @apply bg-[#ffffff] text-[#1C1917] font-sans antialiased;
     overflow-x: hidden;
+    transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1), color 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Silky smooth theme transition across surfaces, cards, text, and borders */
+  header,
+  footer,
+  aside,
+  main,
+  article,
+  section,
+  nav,
+  input,
+  textarea,
+  select,
+  button,
+  .bg-white,
+  .bg-stone-50,
+  .bg-stone-100,
+  .bg-stone-200,
+  .bg-emerald-50,
+  .bg-amber-50,
+  .bg-terracotta-50 {
+    transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   html.dark, html.dark body, .dark #root {
@@ -121,6 +147,7 @@
   border-radius: 0.75rem;
   background-color: #F4F1EA !important;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+  transition: background-color 300ms ease;
 }
 
 .dark .leaflet-container {
@@ -130,6 +157,11 @@
 /* In dark mode, slightly dim map tiles for an elegant dark map experience */
 .dark .leaflet-tile-pane {
   filter: brightness(0.75) contrast(1.15) saturate(0.85) invert(0.88) hue-rotate(180deg);
+  transition: filter 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.leaflet-tile-pane {
+  transition: filter 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .leaflet-popup-content-wrapper {
@@ -139,6 +171,7 @@
   border-radius: 0.85rem !important;
   box-shadow: 0 10px 25px -5px rgba(28, 25, 23, 0.12) !important;
   padding: 0 !important;
+  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease;
 }
 
 .dark .leaflet-popup-content-wrapper {
@@ -177,6 +210,7 @@
   background-color: #FFFFFF !important;
   color: #1C1917 !important;
   border-bottom: 1px solid #E8E5DF !important;
+  transition: background-color 300ms ease, color 300ms ease;
 }
 
 .dark .leaflet-control-zoom a {
@@ -202,6 +236,7 @@
 }
 ::-webkit-scrollbar-track {
   background: #F7F6F3;
+  transition: background-color 300ms ease;
 }
 .dark ::-webkit-scrollbar-track {
   background: #000000;
@@ -209,6 +244,7 @@
 ::-webkit-scrollbar-thumb {
   background: #D8D3CA;
   border-radius: 9999px;
+  transition: background-color 300ms ease;
 }
 .dark ::-webkit-scrollbar-thumb {
   background: #262626;

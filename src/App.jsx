@@ -395,9 +395,9 @@ export default function App() {
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-6 w-full flex-1">
         {activeTab === 'feed' ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* 1. Left Sidebar: Navigation & Spaces (3 cols) */}
+            {/* 1. Left Sidebar: Navigation & Spaces (3 cols) - Fixed / Non-scrollable */}
             <aside className={`lg:col-span-3 ${sidebarOpen ? 'block' : 'hidden lg:block'}`}>
-              <div className="sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar space-y-3 pr-1">
+              <div className="sticky top-20 space-y-2.5 select-none">
                 {/* Primary Feed Navigation */}
                 <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-2.5 shadow-2xs">
                   <div className="space-y-0.5 text-xs font-semibold">
@@ -407,7 +407,7 @@ export default function App() {
                         setSelectedVibe('all');
                         setActiveTab('feed');
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-stone-100 dark:bg-[#1a1a1a] text-stone-900 dark:text-white transition-colors"
+                      className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-[#1a1a1a] text-stone-900 dark:text-white transition-colors"
                     >
                       <Home className="w-4 h-4 text-[#D9532F]" />
                       <span>All City Feed</span>
@@ -415,7 +415,7 @@ export default function App() {
 
                     <button
                       onClick={() => setActiveTab('map')}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors"
+                      className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors"
                     >
                       <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       <span>Explore Spatial Map</span>
@@ -423,7 +423,7 @@ export default function App() {
 
                     <button
                       onClick={() => setIsFareModalOpen(true)}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors"
+                      className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors"
                     >
                       <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       <span>Fair Fare Calculator</span>
@@ -431,7 +431,7 @@ export default function App() {
 
                     <button
                       onClick={() => setIsVibeModalOpen(true)}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors"
+                      className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors"
                     >
                       <Sparkles className="w-4 h-4 text-[#B57850] dark:text-[#d49970]" />
                       <span>Indic Street Slang</span>
@@ -440,7 +440,7 @@ export default function App() {
                 </div>
 
                 {/* Communities / Spaces */}
-                <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-3 shadow-2xs space-y-2">
+                <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-2.5 shadow-2xs space-y-1.5">
                   <div className="text-[10px] font-extrabold text-stone-400 dark:text-stone-500 uppercase tracking-wider px-1">
                     City Spaces & Topics
                   </div>
@@ -467,7 +467,7 @@ export default function App() {
                 </div>
 
                 {/* City Gazette Notice Card */}
-                <div className="bg-[#FAF8F5] dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-3 shadow-2xs text-xs space-y-1.5">
+                <div className="bg-[#FAF8F5] dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-2.5 shadow-2xs text-xs space-y-1">
                   <div className="flex items-center gap-1.5 text-[#D9532F] font-bold text-[11px]">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     <span>Delhi Gazette Meter Notice</span>
@@ -515,11 +515,11 @@ export default function App() {
               />
             </main>
 
-            {/* 3. Right Sidebar: Mini-Map, Quick Scam Auditor, Slang (3 cols) */}
+            {/* 3. Right Sidebar: Mini-Map, Quick Scam Auditor, Slang (3 cols) - Fixed / Non-scrollable */}
             <aside className="hidden lg:block lg:col-span-3">
-              <div className="sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar space-y-3 pr-1">
+              <div className="sticky top-20 space-y-2.5 select-none">
                 {/* Interactive Map Preview Card */}
-                <div className="bg-white dark:bg-[#0a0a0a] border border-[#E8E5DF] dark:border-[#1a1a1a] rounded-2xl p-2.5 shadow-2xs space-y-2">
+                <div className="bg-white dark:bg-[#0a0a0a] border border-[#E8E5DF] dark:border-[#1a1a1a] rounded-2xl p-2.5 shadow-2xs space-y-1.5">
                   <div className="flex items-center justify-between px-0.5">
                     <div className="flex items-center gap-1.5">
                       <Compass className="w-3.5 h-3.5 text-[#D9532F]" />
@@ -535,7 +535,7 @@ export default function App() {
                     </button>
                   </div>
 
-                  <div className="h-[140px] rounded-xl overflow-hidden border border-[#E8E5DF] dark:border-[#1a1a1a]">
+                  <div className="h-[125px] rounded-xl overflow-hidden border border-[#E8E5DF] dark:border-[#1a1a1a]">
                     <MapContainer
                       questions={questions}
                       onSelectQuestion={(q) => setSelectedQuestion(q)}
@@ -552,7 +552,7 @@ export default function App() {
                 </div>
 
                 {/* Quick Fair Fare Calculator Card */}
-                <div className="bg-white dark:bg-[#0a0a0a] border border-terracotta-200 dark:border-[#1a1a1a] rounded-2xl p-3 shadow-2xs space-y-2">
+                <div className="bg-white dark:bg-[#0a0a0a] border border-terracotta-200 dark:border-[#1a1a1a] rounded-2xl p-2.5 shadow-2xs space-y-1.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-[#D9532F]">
                       <ShieldCheck className="w-3.5 h-3.5" />
@@ -562,7 +562,7 @@ export default function App() {
                       Delhi Meter
                     </span>
                   </div>
-                  <p className="text-[11px] text-stone-600 dark:text-stone-400 leading-snug">
+                  <p className="text-[10px] text-stone-600 dark:text-stone-400 leading-snug">
                     Calculate official auto meter rates, compare with cabs, or audit an auto driver quote in seconds.
                   </p>
                   <button

@@ -221,12 +221,12 @@ export default function Navbar({
                         <button
                           type="button"
                           onClick={() => setDarkMode(!darkMode)}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                            darkMode ? 'bg-[#D9532F]' : 'bg-stone-300'
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
+                            darkMode ? 'bg-[#D9532F]' : 'bg-stone-300 dark:bg-stone-700'
                           }`}
                         >
                           <span
-                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-300 ease-in-out ${
                               darkMode ? 'translate-x-4' : 'translate-x-0'
                             }`}
                           />
@@ -287,12 +287,12 @@ export default function Navbar({
                         <button
                           type="button"
                           onClick={() => setDarkMode(!darkMode)}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                            darkMode ? 'bg-[#D9532F]' : 'bg-stone-300'
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
+                            darkMode ? 'bg-[#D9532F]' : 'bg-stone-300 dark:bg-stone-700'
                           }`}
                         >
                           <span
-                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-300 ease-in-out ${
                               darkMode ? 'translate-x-4' : 'translate-x-0'
                             }`}
                           />
