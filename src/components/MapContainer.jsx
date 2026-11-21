@@ -11,6 +11,7 @@ export default function MapContainer({
   isPinningMode = false,
   onMapClickPin = null,
   minimal = false,
+  selectedCity = 'Delhi NCR',
 }) {
   const mapRef = useRef(null);
   const leafletMap = useRef(null);
@@ -19,24 +20,44 @@ export default function MapContainer({
   const [filterType, setFilterType] = useState('all'); // all | questions | gems
   const [activeCenter, setActiveCenter] = useState('southDelhi');
 
-  // Regional quick navigation centers
+  // Regional quick navigation centers per city
   const PRESET_CENTERS = {
-    southDelhi: { name: 'South Delhi (Okhla/Kalkaji)', lat: 28.5459, lng: 77.2732, zoom: 13 },
-    centralDelhi: { name: 'Connaught Place', lat: 28.6315, lng: 77.2167, zoom: 14 },
-    oldDelhi: { name: 'Old Delhi (Chandni Chowk)', lat: 28.6562, lng: 77.2309, zoom: 14 },
-    cyberCity: { name: 'Gurgaon (Cyber City)', lat: 28.4950, lng: 77.0895, zoom: 14 },
-    noida: { name: 'Noida (Sec 18)', lat: 28.5708, lng: 77.3260, zoom: 14 },
-    duNorth: { name: 'North Campus (DU)', lat: 28.6942, lng: 77.2064, zoom: 14 },
-    aerocity: { name: 'Aerocity / T3 Airport', lat: 28.5530, lng: 77.1100, zoom: 13 },
+    // Delhi NCR
+    southDelhi: { name: 'South Delhi (Okhla/Kalkaji)', lat: 28.5459, lng: 77.2732, zoom: 13, city: 'Delhi NCR' },
+    centralDelhi: { name: 'Connaught Place', lat: 28.6315, lng: 77.2167, zoom: 14, city: 'Delhi NCR' },
+    oldDelhi: { name: 'Old Delhi (Chandni Chowk)', lat: 28.6562, lng: 77.2309, zoom: 14, city: 'Delhi NCR' },
+    cyberCity: { name: 'Gurgaon (Cyber City)', lat: 28.4950, lng: 77.0895, zoom: 14, city: 'Delhi NCR' },
+    noida: { name: 'Noida (Sec 18)', lat: 28.5708, lng: 77.3260, zoom: 14, city: 'Delhi NCR' },
+    duNorth: { name: 'North Campus (DU)', lat: 28.6942, lng: 77.2064, zoom: 14, city: 'Delhi NCR' },
+    aerocity: { name: 'Aerocity / T3 Airport', lat: 28.5530, lng: 77.1100, zoom: 13, city: 'Delhi NCR' },
+
+    // Mumbai
+    southMumbai: { name: 'Colaba & Marine Drive', lat: 18.9220, lng: 72.8347, zoom: 14, city: 'Mumbai' },
+    bandra: { name: 'Bandra (West) & Carter Rd', lat: 19.0596, lng: 72.8295, zoom: 14, city: 'Mumbai' },
+    bkcMumbai: { name: 'Bandra Kurla Complex (BKC)', lat: 19.0657, lng: 72.8687, zoom: 14, city: 'Mumbai' },
+    andheriMumbai: { name: 'Andheri & Juhu Beach', lat: 19.1136, lng: 72.8697, zoom: 13, city: 'Mumbai' },
+
+    // Bengaluru
+    mgRoadBlr: { name: 'MG Road & Brigade Rd', lat: 12.9756, lng: 77.6066, zoom: 14, city: 'Bengaluru' },
+    indiranagarBlr: { name: 'Indiranagar 100ft Rd', lat: 12.9784, lng: 77.6408, zoom: 14, city: 'Bengaluru' },
+    koramangalaBlr: { name: 'Koramangala 5th Block', lat: 12.9352, lng: 77.6245, zoom: 14, city: 'Bengaluru' },
+    whitefieldBlr: { name: 'Whitefield (ITPB)', lat: 12.9863, lng: 77.7380, zoom: 13, city: 'Bengaluru' },
   };
 
   useEffect(() => {
     if (!mapRef.current) return;
 
     if (!leafletMap.current) {
-      // Initialize map centered at South Delhi
+      // Map initial coordinates based on selected city
+      const cityCoords = {
+        'Mumbai': [18.9432, 72.8230],
+        'Bengaluru': [12.9716, 77.5946],
+        'Delhi NCR': [28.5459, 77.2732],
+      };
+      const initialCenter = cityCoords[selectedCity] || [28.5459, 77.2732];
+
       const map = L.map(mapRef.current, {
-        center: [28.5459, 77.2732],
+        center: initialCenter,
         zoom: 13,
         zoomControl: true,
       });
@@ -304,7 +325,19 @@ export default function MapContainer({
     }
   }, [questions, filterType, highlightedPin]);
 
-  // Quick preset center jump
+  // Auto re-center when selectedCity changes
+  useEffect(() => {
+    if (!leafletMap.current) return;
+    const cityCoords = {
+      'Mumbai': { lat: 18.9432, lng: 72.8230, zoom: 13 },
+      'Bengaluru': { lat: 12.9716, lng: 77.5946, zoom: 13 },
+      'Delhi NCR': { lat: 28.5459, lng: 77.2732, zoom: 13 },
+    };
+    const target = cityCoords[selectedCity];
+    if (target) {
+      leafletMap.current.flyTo([target.lat, target.lng], target.zoom, { animate: true, duration: 1.2 });
+    }
+  }, [selectedCity]);
   const handleCenterSelect = (key) => {
     setActiveCenter(key);
     const target = PRESET_CENTERS[key];
@@ -322,7 +355,9 @@ export default function MapContainer({
           <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-[#E8E5DF] shadow-md pointer-events-auto overflow-x-auto max-w-full">
             <Navigation className="w-3.5 h-3.5 text-[#D9532F] ml-1 shrink-0" />
             <span className="text-[11px] font-bold text-stone-500 hidden sm:inline mr-1">Quick Jump:</span>
-            {Object.entries(PRESET_CENTERS).map(([key, item]) => (
+            {Object.entries(PRESET_CENTERS)
+              .filter(([_, item]) => item.city === selectedCity)
+              .map(([key, item]) => (
               <button
                 key={key}
                 onClick={() => handleCenterSelect(key)}

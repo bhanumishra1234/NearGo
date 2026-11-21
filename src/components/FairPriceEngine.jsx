@@ -38,8 +38,8 @@ const ALL_DESTINATIONS = [
   })),
 ];
 
-export default function FairPriceEngine({ onClose }) {
-  const [cityKey, setCityKey] = useState('delhi');
+export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
+  const [cityKey, setCityKey] = useState(defaultCity);
   const [originId, setOriginId] = useState('iiitd');
   const [destId, setDestId] = useState('chandni-chowk');
   const [isNight, setIsNight] = useState(false);

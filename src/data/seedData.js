@@ -683,5 +683,235 @@ export const INITIAL_QUESTIONS = [
         createdAt: '3 hours ago',
       }
     ]
+  },
+
+  // ─────────────────────────────────────────────
+  // MUMBAI COMMUNITY QUESTIONS & DISCUSSIONS
+  // ─────────────────────────────────────────────
+  {
+    id: 'q-mumbai-bandra-auto',
+    community: 'c/MumbaiTransit',
+    communityName: 'Mumbai Transit & Auto Fares',
+    title: 'Do auto rickshaws in Mumbai strictly run on meter or quote random prices?',
+    body: 'Traveling to Mumbai for the first time. Landing at T2 and heading to Bandra (West). Will auto drivers run strictly on meter like people say, or do they try to quote fixed tourist fares? What is the fair price?',
+    author: {
+      name: 'Pooja Nair',
+      badge: 'First-time Traveler',
+      badgeColor: 'amber',
+      isVerified: false,
+      reputation: 30,
+    },
+    city: 'Mumbai',
+    locationName: 'CSMIA Terminal 2 to Bandra West',
+    lat: 19.0896,
+    lng: 72.8656,
+    category: 'transport',
+    vibeCategory: 'student_budget',
+    tags: ['#MumbaiAuto', '#MeterStrict', '#Bandra', '#AirportTransit'],
+    createdAt: '25 minutes ago',
+    upvotes: 38,
+    userUpvoted: false,
+    photos: [],
+    fareCheck: {
+      origin: 'Mumbai Airport T2',
+      destination: 'Bandra West (Bandstand)',
+      distanceKm: 12.4,
+      durationMin: 35,
+      officialAutoMeter: '₹230 - ₹255',
+      cabEstimate: '₹320 - ₹380',
+      metroRoute: 'Airport Road Metro Line 1 → Western Line Train to Bandra',
+      metroFare: '₹20 (Metro) + ₹10 (Local Train)',
+      metroDuration: '40 mins',
+      scamWarning: 'Unlike Delhi, autos in Mumbai suburbs (Bandra upwards) legally run 100% on electronic meter! Never accept a flat quote.'
+    },
+    answers: [
+      {
+        id: 'ans-mum-1',
+        author: {
+          name: 'Farhan Merchant',
+          badge: 'Verified Bandra Resident',
+          badgeColor: 'emerald',
+          isVerified: true,
+          reputation: 510,
+        },
+        body: 'Welcome to Mumbai! Autos here are very disciplined compared to other cities. They strictly put the meter down (minimum ₹28 for first 1.5 km, then ₹18.66/km). Just get in the official auto queue at T2 level 1. Do NOT take unmetered private cabs outside!',
+        pin: {
+          lat: 19.0434,
+          lng: 72.8197,
+          name: 'Bandra Bandstand (Chai & Sunset Spot)',
+          neighborhood: 'Bandra West',
+          type: 'gem'
+        },
+        insiderTip: 'Autos cannot enter South Mumbai (past Mahim/Sion). For South Mumbai, use the iconic Black & Yellow (Kaali Peeli) cabs or the Local Train.',
+        upvotes: 52,
+        userUpvoted: false,
+        createdAt: '15 minutes ago',
+      }
+    ]
+  },
+  {
+    id: 'q-mumbai-street-food',
+    community: 'c/StreetFood',
+    communityName: 'Street Food & Vada Pav',
+    title: 'Authentic Vada Pav & Bun Maska spots that locals swear by in South Mumbai?',
+    body: 'Looking for generational Irani cafes and authentic spicy Vada Pav places near CST or Churchgate that are not overpriced tourist traps.',
+    author: {
+      name: 'Aditya Verma',
+      badge: 'Food Explorer',
+      badgeColor: 'amber',
+      isVerified: false,
+      reputation: 45,
+    },
+    city: 'Mumbai',
+    locationName: 'Fort / CST / Colaba',
+    lat: 18.9401,
+    lng: 72.8354,
+    category: 'food',
+    vibeCategory: 'street_food',
+    tags: ['#VadaPav', '#IraniChai', '#CST', '#OldBombay'],
+    createdAt: '1 hour ago',
+    upvotes: 61,
+    userUpvoted: false,
+    photos: [],
+    fareCheck: null,
+    answers: [
+      {
+        id: 'ans-mum-food-1',
+        author: {
+          name: 'Ketaki Joshi',
+          badge: 'South Bombay Local',
+          badgeColor: 'emerald',
+          isVerified: true,
+          reputation: 780,
+        },
+        body: '1) Aram Milk Bar right opposite CST station: Top tier authentic spicy Vada Pav with dry garlic chutney for ₹25. 2) Yazdani Bakery in Fort: 70-year-old Parsi bakery for wood-fired Brun Maska and sweet Chai. 3) Ashok Vada Pav near Kirti College (Dadar) for the original Chura Vada Pav.',
+        pin: {
+          lat: 18.9412,
+          lng: 72.8340,
+          name: 'Aram Vada Pav & Milk Bar (Opposite CST)',
+          neighborhood: 'Fort / CST',
+          type: 'food'
+        },
+        insiderTip: 'Brun Maska is best eaten warm dipped straight into hot cutting chai. Don’t miss Yazdani’s apple pie if it’s fresh out of the oven!',
+        upvotes: 79,
+        userUpvoted: false,
+        createdAt: '45 minutes ago',
+      }
+    ]
+  },
+
+  // ─────────────────────────────────────────────
+  // BENGALURU COMMUNITY QUESTIONS & DISCUSSIONS
+  // ─────────────────────────────────────────────
+  {
+    id: 'q-blr-peak-traffic-auto',
+    community: 'c/BengaluruTransit',
+    communityName: 'Bengaluru Transit & Namma Metro',
+    title: 'How to survive peak 6 PM traffic from Koramangala to Indiranagar without paying ₹400?',
+    body: 'Autos on ride apps are either canceling or charging 3x surge. What is the smartest local transit workaround to commute between Koramangala and Indiranagar during evening hours?',
+    author: {
+      name: 'Nikhil Rathi',
+      badge: 'Tech Commuter',
+      badgeColor: 'amber',
+      isVerified: false,
+      reputation: 35,
+    },
+    city: 'Bengaluru',
+    locationName: 'Koramangala 5th Block to Indiranagar',
+    lat: 12.9352,
+    lng: 77.6245,
+    category: 'transport',
+    vibeCategory: 'student_budget',
+    tags: ['#NammaMetro', '#PeakTraffic', '#Koramangala', '#Indiranagar'],
+    createdAt: '35 minutes ago',
+    upvotes: 49,
+    userUpvoted: false,
+    photos: [],
+    fareCheck: {
+      origin: 'Koramangala 5th Block',
+      destination: 'Indiranagar 100ft Road',
+      distanceKm: 6.8,
+      durationMin: 38,
+      officialAutoMeter: '₹102 - ₹120',
+      cabEstimate: '₹220 - ₹290',
+      metroRoute: 'Quick 10-min bus/bike to Trinity or Halasuru Metro Station → Purple Line to Indiranagar',
+      metroFare: '₹20 (Metro) + ₹15 (Bus)',
+      metroDuration: '24 mins',
+      scamWarning: 'Autos often refuse meter in peak hours. Use Rapido bike taxi or the Purple Line corridor from MG Road/Halasuru to bypass Sony World junction bottlenecks.'
+    },
+    answers: [
+      {
+        id: 'ans-blr-1',
+        author: {
+          name: 'Divya Hegde',
+          badge: 'Verified Bengaluru Resident',
+          badgeColor: 'emerald',
+          isVerified: true,
+          reputation: 630,
+        },
+        body: 'Peak hour Sony World junction and Intermediate Ring Road are total gridlock between 5:30 PM and 8:30 PM. The secret local hack: Hop on a Rapido bike taxi down to Trinity Metro Station (takes 10 mins via inner residential lanes), then take Namma Metro Purple Line directly to Indiranagar Station. Saves 30 mins and under ₹60 total!',
+        pin: {
+          lat: 12.9784,
+          lng: 77.6408,
+          name: 'Indiranagar Metro Station & 100ft Rd',
+          neighborhood: 'Indiranagar',
+          type: 'transit'
+        },
+        insiderTip: 'Namma Metro smart tokens/cards save 5% and let you avoid long token counter queues at interchange stations.',
+        upvotes: 68,
+        userUpvoted: false,
+        createdAt: '20 minutes ago',
+      }
+    ]
+  },
+  {
+    id: 'q-blr-filter-coffee-dosa',
+    community: 'c/StreetFood',
+    communityName: 'Benne Dosa & Filter Coffee',
+    title: 'Top 3 heritage breakfast spots for crispy Benne Masala Dosa & degree filter coffee?',
+    body: 'New to Bangalore and want to experience true traditional breakfast culture before 9 AM. CTR, Vidyarthi Bhavan or hidden neighborhood Darshinis?',
+    author: {
+      name: 'Suhas Kulkarni',
+      badge: 'Early Morning Explorer',
+      badgeColor: 'amber',
+      isVerified: false,
+      reputation: 50,
+    },
+    city: 'Bengaluru',
+    locationName: 'Malleswaram / Basavanagudi',
+    lat: 12.9756,
+    lng: 77.6066,
+    category: 'food',
+    vibeCategory: 'street_food',
+    tags: ['#BenneDosa', '#FilterCoffee', '#Malleswaram', '#Darshini'],
+    createdAt: '2 hours ago',
+    upvotes: 75,
+    userUpvoted: false,
+    photos: [],
+    fareCheck: null,
+    answers: [
+      {
+        id: 'ans-blr-food-1',
+        author: {
+          name: 'Pradeep Gowda',
+          badge: 'Malleswaram Heritage Native',
+          badgeColor: 'emerald',
+          isVerified: true,
+          reputation: 920,
+        },
+        body: '1) CTR (Shri Sagar) in Malleswaram 7th Cross: Unrivaled Benne Masala Dosa, super crispy outer layer with soft cloud interior. 2) Brahmin’s Coffee Bar in Shankarapuram: Softest idlis drowning in spicy coconut chutney + strong froth coffee (no sambar served, pure purity). 3) Taaza Thindi in Jayanagar for ₹30 cleanest crispy dosa in town.',
+        pin: {
+          lat: 12.9982,
+          lng: 77.5702,
+          name: 'CTR Shri Sagar (Malleswaram 7th Cross)',
+          neighborhood: 'Malleswaram',
+          type: 'food'
+        },
+        insiderTip: 'Reach CTR before 8:15 AM on weekends to avoid the 45-minute street waiting queue. Always order Filter Coffee "Medium Sugar".',
+        upvotes: 95,
+        userUpvoted: false,
+        createdAt: '1 hour ago',
+      }
+    ]
   }
 ];

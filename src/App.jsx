@@ -66,8 +66,13 @@ export default function App() {
       });
   }, []);
 
-  // Filter questions based on search query
+  // Filter questions based on selected city and search query
   const displayedQuestions = questions.filter((q) => {
+    // City filter
+    if (selectedCity && q.city && !q.city.toLowerCase().includes(selectedCity.toLowerCase())) {
+      return false;
+    }
+
     if (!searchQuery) return true;
     const s = searchQuery.toLowerCase();
     return (
@@ -443,6 +448,7 @@ export default function App() {
                       onSelectQuestion={(q) => setSelectedQuestion(q)}
                       highlightedPin={highlightedPin}
                       minimal={true}
+                      selectedCity={selectedCity}
                     />
                   </div>
 
@@ -540,6 +546,7 @@ export default function App() {
                 questions={questions}
                 onSelectQuestion={(q) => setSelectedQuestion(q)}
                 highlightedPin={highlightedPin}
+                selectedCity={selectedCity}
               />
             </div>
           </div>
@@ -584,7 +591,10 @@ export default function App() {
       {isFareModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="my-auto w-full max-w-4xl">
-            <FairPriceEngine onClose={() => setIsFareModalOpen(false)} />
+            <FairPriceEngine
+              onClose={() => setIsFareModalOpen(false)}
+              defaultCity={selectedCity === 'Mumbai' ? 'mumbai' : selectedCity === 'Bengaluru' ? 'bengaluru' : 'delhi'}
+            />
           </div>
         </div>
       )}

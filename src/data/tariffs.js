@@ -144,8 +144,32 @@ export const POPULAR_LANDMARKS = [
   { id: 'noida-sec62', name: 'Noida Electronic City (Sector 62)', lat: 28.6280, lng: 77.3649, area: 'Noida' },
 
   // East Delhi Hubs
-  { id: 'akshardham', name: 'Akshardham Temple', lat: 28.6127, lng: 77.2773, area: 'East Delhi' },
-  { id: 'anand-vihar', name: 'Anand Vihar ISBT & Railway Terminal', lat: 28.6469, lng: 77.3160, area: 'East Delhi' }
+  { id: 'akshardham', name: 'Akshardham Temple', lat: 28.6127, lng: 77.2773, area: 'East Delhi', city: 'Delhi NCR' },
+  { id: 'anand-vihar', name: 'Anand Vihar ISBT & Railway Terminal', lat: 28.6469, lng: 77.3160, area: 'East Delhi', city: 'Delhi NCR' },
+
+  // Mumbai Landmarks
+  { id: 'gateway-india', name: 'Gateway of India (Colaba)', lat: 18.9220, lng: 72.8347, area: 'South Mumbai', city: 'Mumbai' },
+  { id: 'marine-drive', name: 'Marine Drive & Nariman Point', lat: 18.9432, lng: 72.8230, area: 'South Mumbai', city: 'Mumbai' },
+  { id: 'cst-station', name: 'Chhatrapati Shivaji Maharaj Terminus (CSTM)', lat: 18.9401, lng: 72.8354, area: 'South Mumbai', city: 'Mumbai' },
+  { id: 'bandra-bandstand', name: 'Bandra Bandstand & Carter Road', lat: 19.0434, lng: 72.8197, area: 'Bandra / Western Suburbs', city: 'Mumbai' },
+  { id: 'juhu-beach', name: 'Juhu Beach & Chowpatty', lat: 19.0988, lng: 72.8264, area: 'Western Suburbs', city: 'Mumbai' },
+  { id: 'mumbai-airport-t2', name: 'CSMIA Mumbai Airport (Terminal 2)', lat: 19.0896, lng: 72.8656, area: 'Andheri', city: 'Mumbai' },
+  { id: 'andheri-station', name: 'Andheri Station & Metro Line 1 Interchange', lat: 19.1197, lng: 72.8464, area: 'Andheri', city: 'Mumbai' },
+  { id: 'dadar-flower-market', name: 'Dadar Central Station & Flower Market', lat: 19.0178, lng: 72.8478, area: 'Central Mumbai', city: 'Mumbai' },
+  { id: 'bkc', name: 'Bandra Kurla Complex (BKC Business Hub)', lat: 19.0657, lng: 72.8687, area: 'BKC', city: 'Mumbai' },
+  { id: 'powai-lake', name: 'Powai Lake & Hiranandani Gardens', lat: 19.1176, lng: 72.9060, area: 'Powai', city: 'Mumbai' },
+
+  // Bengaluru Landmarks
+  { id: 'mg-road-blr', name: 'MG Road & Brigade Road (Metro Interchange)', lat: 12.9756, lng: 77.6066, area: 'Central Bengaluru', city: 'Bengaluru' },
+  { id: 'indiranagar-100ft', name: 'Indiranagar (100ft Road Cafes & Pubs)', lat: 12.9784, lng: 77.6408, area: 'Indiranagar', city: 'Bengaluru' },
+  { id: 'koramangala-5th', name: 'Koramangala (5th Block Startup & Food Hub)', lat: 12.9352, lng: 77.6245, area: 'Koramangala', city: 'Bengaluru' },
+  { id: 'cubbon-park', name: 'Cubbon Park & Vidhana Soudha', lat: 12.9763, lng: 77.5929, area: 'Central Bengaluru', city: 'Bengaluru' },
+  { id: 'commercial-street', name: 'Commercial Street (Bargain Shopping)', lat: 12.9822, lng: 77.6083, area: 'Central Bengaluru', city: 'Bengaluru' },
+  { id: 'majestic-kbs', name: 'Majestic Bus Stand & KSR Bengaluru City Stn', lat: 12.9767, lng: 77.5713, area: 'Majestic', city: 'Bengaluru' },
+  { id: 'electronic-city', name: 'Electronic City Phase 1 (Infy/Wipro Gate)', lat: 12.8452, lng: 77.6602, area: 'South Bengaluru', city: 'Bengaluru' },
+  { id: 'whitefield-itpb', name: 'Whitefield (ITPB Tech Park & Purple Line)', lat: 12.9863, lng: 77.7380, area: 'East Bengaluru', city: 'Bengaluru' },
+  { id: 'hSR-layout', name: 'HSR Layout (Sector 1 Cafes & Co-working)', lat: 12.9121, lng: 77.6446, area: 'HSR Layout', city: 'Bengaluru' },
+  { id: 'kia-airport-blr', name: 'Kempegowda International Airport (BLR T1/T2)', lat: 13.1986, lng: 77.7066, area: 'Airport & Devanahalli', city: 'Bengaluru' }
 ];
 
 // Great-circle Haversine distance with road detour multiplier
