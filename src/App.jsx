@@ -703,20 +703,6 @@ export default function App() {
                   ))}
                 </div>
               </div>
-
-              {/* City Gazette Notice Card */}
-              <div className="bg-[#FAF8F5] dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-2.5 shadow-2xs text-xs space-y-1">
-                <div className="flex items-center gap-1.5 text-[#D9532F] font-bold text-[11px]">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Delhi Gazette Meter Notice</span>
-                </div>
-                <p className="text-[10px] text-stone-600 dark:text-stone-400 leading-relaxed">
-                  Auto drivers in Delhi NCR are legally required to start the electronic meter (₹30 first 1.5 km, ₹11/km). Night tariff applies 11 PM – 5 AM (+25%).
-                </p>
-                <div className="text-[9px] text-stone-400 dark:text-stone-500 pt-1 border-t border-stone-200 dark:border-[#1a1a1a]">
-                  Traffic Police Helpline: 1095
-                </div>
-              </div>
             </aside>
 
             {/* 2. Center Column: Community Feed & Discussions (6 cols) - THE ONLY SCROLLABLE SECTION */}
