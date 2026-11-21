@@ -15,6 +15,8 @@ import { POPULAR_LANDMARKS } from '../data/tariffs.js';
 import PhotoGallery from './PhotoGallery.jsx';
 import PhotoUploader from './PhotoUploader.jsx';
 import LocationPickerMap from './LocationPickerMap.jsx';
+import RideHandoffWidget from './RideHandoffWidget.jsx';
+import StayAndToursWidget from './StayAndToursWidget.jsx';
 
 export default function QuestionDetailModal({
   question,
@@ -195,8 +197,25 @@ export default function QuestionDetailModal({
                 <div className="text-xs text-amber-900 bg-amber-50 p-2.5 rounded-lg border border-amber-200 font-medium">
                   {question.fareCheck.scamWarning}
                 </div>
+
+                {/* 1-Click Ride Booking Handoff */}
+                <RideHandoffWidget
+                  destination={question.fareCheck.destination || question.locationName}
+                  origin={question.fareCheck.origin || 'Current Location'}
+                  destLat={question.lat}
+                  destLng={question.lng}
+                  targetFare={question.fareCheck.officialAutoMeter}
+                  compact={true}
+                />
               </div>
             )}
+
+            {/* Backpacker Hostel & Cultural Walk Affiliate Widget */}
+            <StayAndToursWidget
+              locationName={question.locationName || question.city}
+              city={question.city}
+              category={question.category}
+            />
           </div>
 
           {/* Answers & Local Suggestions List */}

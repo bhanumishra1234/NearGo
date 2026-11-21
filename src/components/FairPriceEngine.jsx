@@ -24,6 +24,7 @@ import {
   evaluateDriverQuote
 } from '../data/tariffs.js';
 import { NCR_METRO_STATIONS } from '../data/metroData.js';
+import RideHandoffWidget from './RideHandoffWidget.jsx';
 
 // Combined destinations registry: Landmarks + All NCR Metro Stations
 const ALL_DESTINATIONS = [
@@ -409,6 +410,15 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
             </div>
           </div>
         </div>
+
+        {/* 1-Click Ride-Hailing Affiliate Handoff (Uber, Rapido, Ola) */}
+        <RideHandoffWidget
+          origin={originLandmark.name}
+          destination={destLandmark.name}
+          destLat={destLandmark.lat}
+          destLng={destLandmark.lng}
+          targetFare={`₹${fareData.auto.min} - ₹${fareData.auto.max}`}
+        />
 
         {/* Interactive Driver Price Gouge & Scam Auditor */}
         <div className="bg-[#FAF8F5] border border-rose-200 rounded-xl p-4 sm:p-5">

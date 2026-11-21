@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { MapPin, Navigation, Filter, CheckCircle2, Sparkles, X, Compass, Train, ShieldCheck } from 'lucide-react';
 import { NCR_METRO_STATIONS, METRO_LINES } from '../data/metroData.js';
 import { INDIA_SOVEREIGN_BOUNDARY } from '../data/indiaBoundary.js';
+import { COMMUNITY_PARTNER_DEALS } from '../utils/monetization.js';
 
 export default function MapContainer({
   questions = [],
@@ -366,6 +367,45 @@ export default function MapContainer({
       });
     }
 
+    // 3.5 Sponsored Promoted Community Partner Pins (B2B Merchant Monetization)
+    COMMUNITY_PARTNER_DEALS
+      .filter((deal) => !selectedCity || deal.city.toLowerCase().includes(selectedCity.toLowerCase().split(' ')[0]))
+      .forEach((deal) => {
+        const partnerIcon = L.divIcon({
+          className: 'partner-deal-pin',
+          html: `
+            <div class="relative flex items-center justify-center cursor-pointer group">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white ring-4 ring-amber-300 dark:ring-amber-900/60 shadow-xl flex items-center justify-center transition-transform hover:scale-125">
+                <span class="text-xs">⭐</span>
+              </div>
+              <div class="absolute -bottom-1 w-2 h-2 bg-orange-500 rotate-45"></div>
+            </div>
+          `,
+          iconSize: [32, 38],
+          iconAnchor: [16, 38],
+        });
+
+        const pMarker = L.marker([deal.lat, deal.lng], { icon: partnerIcon }).addTo(markersLayer.current);
+        pMarker.bindPopup(`
+          <div style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; padding:4px; min-width:210px;">
+            <div style="font-size:10px; font-weight:800; color:#D97706; text-transform:uppercase;">${deal.badge}</div>
+            <div style="font-weight:800; font-size:13px; color:#1C1917; margin:2px 0;">${deal.merchantName}</div>
+            <div style="font-size:11px; color:#6B7280; margin-bottom:6px;">📍 ${deal.area}</div>
+            <div style="background:#FEF3C7; color:#92400E; font-size:11px; font-weight:700; padding:6px 8px; border-radius:6px; margin-bottom:6px; border:1px solid #FDE68A;">
+              🎁 ${deal.perk}
+            </div>
+            <div style="font-size:10px; color:#78716C;">Digital Voucher: <strong style="font-family:monospace; color:#1C1917;">${deal.couponCode}</strong></div>
+          </div>
+        `);
+
+        markersRegistry.current.push({
+          lat: deal.lat,
+          lng: deal.lng,
+          name: deal.merchantName,
+          marker: pMarker,
+        });
+      });
+
     // 4. Handle Highlighted Location Pin Flying & Popup Opening
     if (highlightedPin && highlightedPin.lat && highlightedPin.lng) {
       const targetLat = highlightedPin.lat;
@@ -594,6 +634,10 @@ export default function MapContainer({
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
             <span>Suggested Spots</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
+            <span className="text-xs">⭐</span>
+            <span>Partner Deals</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>

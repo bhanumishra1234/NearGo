@@ -9,6 +9,9 @@ import AskQuestionModal from './components/AskQuestionModal.jsx';
 import VibeEngineModal from './components/VibeEngineModal.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import Neo4jGraphModal from './components/Neo4jGraphModal.jsx';
+import MerchantPartnerModal from './components/MerchantPartnerModal.jsx';
+import CouponRedeemModal from './components/CouponRedeemModal.jsx';
+import HeritageTrailsModal from './components/HeritageTrailsModal.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import { INITIAL_QUESTIONS } from './data/seedData.js';
 import { calculateDistance, calculateRouteFare } from './data/tariffs.js';
@@ -28,7 +31,10 @@ import {
   ChevronRight,
   TrendingUp,
   Volume2,
-  Share2
+  Share2,
+  Gift,
+  Store,
+  Landmark
 } from 'lucide-react';
 
 export default function App() {
@@ -63,6 +69,9 @@ export default function App() {
   const [isVibeModalOpen, setIsVibeModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isGraphModalOpen, setIsGraphModalOpen] = useState(false);
+  const [isMerchantModalOpen, setIsMerchantModalOpen] = useState(false);
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [isTrailsModalOpen, setIsTrailsModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
 
   const { user, accessToken } = useAuth();
@@ -400,6 +409,9 @@ export default function App() {
           setAuthMode(mode || 'login');
           setIsAuthModalOpen(true);
         }}
+        onOpenCouponModal={() => setIsCouponModalOpen(true)}
+        onOpenMerchantModal={() => setIsMerchantModalOpen(true)}
+        onOpenTrailsModal={() => setIsTrailsModalOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         sidebarOpen={sidebarOpen}
@@ -459,6 +471,42 @@ export default function App() {
                     <div className="flex items-center justify-between w-full">
                       <span>Neo4j Transit Graph</span>
                       <span className="text-[9px] bg-[#008CC1]/10 text-[#008CC1] font-mono font-bold px-1.5 py-0.2 rounded border border-[#008CC1]/30">Cypher</span>
+                    </div>
+                  </button>
+
+                  {/* 1. Hyper-Local Flash Deals & Perks */}
+                  <button
+                    onClick={() => setIsCouponModalOpen(true)}
+                    className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors cursor-pointer"
+                  >
+                    <Gift className="w-4 h-4 text-orange-500" />
+                    <div className="flex items-center justify-between w-full">
+                      <span>Community Flash Deals</span>
+                      <span className="text-[9px] bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold px-1.5 py-0.2 rounded border border-orange-500/30">Free Chai</span>
+                    </div>
+                  </button>
+
+                  {/* 2. Merchant Claim & Partner Portal (B2B SaaS) */}
+                  <button
+                    onClick={() => setIsMerchantModalOpen(true)}
+                    className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors cursor-pointer"
+                  >
+                    <Store className="w-4 h-4 text-amber-500" />
+                    <div className="flex items-center justify-between w-full">
+                      <span>Claim Spot (B2B SaaS)</span>
+                      <span className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.2 rounded border border-amber-500/30">₹499/mo</span>
+                    </div>
+                  </button>
+
+                  {/* 3. DMRC & Delhi Tourism Heritage Trails (B2G) */}
+                  <button
+                    onClick={() => setIsTrailsModalOpen(true)}
+                    className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#141414] transition-colors cursor-pointer"
+                  >
+                    <Landmark className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                    <div className="flex items-center justify-between w-full">
+                      <span>DMRC Heritage Trails</span>
+                      <span className="text-[9px] bg-teal-500/10 text-teal-600 dark:text-teal-400 font-bold px-1.5 py-0.2 rounded border border-teal-500/30">Official</span>
                     </div>
                   </button>
                 </div>
@@ -734,6 +782,25 @@ export default function App() {
         isOpen={isGraphModalOpen}
         onClose={() => setIsGraphModalOpen(false)}
         defaultCity={selectedCity}
+      />
+
+      {/* Merchant Partner Claim Modal (B2B SaaS) */}
+      <MerchantPartnerModal
+        isOpen={isMerchantModalOpen}
+        onClose={() => setIsMerchantModalOpen(false)}
+      />
+
+      {/* Community Digital Flash Deals & Coupons */}
+      <CouponRedeemModal
+        isOpen={isCouponModalOpen}
+        onClose={() => setIsCouponModalOpen(false)}
+        selectedCity={selectedCity}
+      />
+
+      {/* DMRC & Delhi Tourism Heritage Trails (B2G) */}
+      <HeritageTrailsModal
+        isOpen={isTrailsModalOpen}
+        onClose={() => setIsTrailsModalOpen(false)}
       />
     </div>
   );

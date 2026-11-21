@@ -274,6 +274,31 @@ export default function QuestionsFeed({
                       <strong>Fair Fare Alert:</strong> {q.fareCheck.scamWarning}
                     </div>
                   )}
+
+                  {/* 1-Click Ride Booking Handoff */}
+                  <div className="mt-2.5 pt-2 border-t border-stone-200/60 dark:border-[#222222] flex items-center justify-between gap-2">
+                    <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium">1-Click Ride Handoff:</span>
+                    <div className="flex items-center gap-1.5">
+                      <a
+                        href={`https://rapido.onelink.me/5vjY?pid=neargo&af_dp=rapido%3A%2F%2Fride%3Fdrop_name%3D${encodeURIComponent(q.fareCheck.destination || q.locationName)}&af_web_dp=https%3A%2F%2Fwww.rapido.bike%2F`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="px-2.5 py-1 rounded-md bg-[#FFDE00] hover:bg-[#ebd000] text-black font-extrabold text-[10px] flex items-center gap-1 shadow-2xs transition-transform active:scale-95"
+                      >
+                        <span>🛺 Book Rapido</span>
+                      </a>
+                      <a
+                        href={`https://m.uber.com/ul/?action=setPickup&client_id=neargo&dropoff[formatted_address]=${encodeURIComponent(q.fareCheck.destination || q.locationName)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="px-2.5 py-1 rounded-md bg-black hover:bg-stone-800 text-white font-extrabold text-[10px] flex items-center gap-1 shadow-2xs transition-transform active:scale-95"
+                      >
+                        <span>🚗 Book Uber</span>
+                      </a>
+                    </div>
+                  </div>
                 </div>
               )}
 

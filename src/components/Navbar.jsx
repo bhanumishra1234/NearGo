@@ -14,7 +14,10 @@ import {
   Moon,
   Sun,
   Sparkles,
-  User
+  User,
+  Gift,
+  Store,
+  Landmark
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -32,6 +35,9 @@ export default function Navbar({
   onOpenFareModal,
   onOpenVibeModal,
   onOpenAuthModal,
+  onOpenCouponModal,
+  onOpenMerchantModal,
+  onOpenTrailsModal,
   searchQuery,
   setSearchQuery,
   sidebarOpen,
@@ -165,6 +171,18 @@ export default function Navbar({
               </button>
             </div>
 
+            {/* Flash Deals & Perks Button */}
+            {onOpenCouponModal && (
+              <button
+                onClick={onOpenCouponModal}
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50 text-xs font-bold hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-all shadow-2xs cursor-pointer"
+                title="Community Flash Deals & Free Chai Perks"
+              >
+                <Gift className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                <span>Deals</span>
+              </button>
+            )}
+
             {/* Minimal Add Question Button */}
             <button
               onClick={onOpenAskModal}
@@ -230,6 +248,45 @@ export default function Navbar({
                           <MessageSquarePlus className="w-3.5 h-3.5 text-[#D9532F]" />
                           <span>My Questions</span>
                         </button>
+
+                        {onOpenCouponModal && (
+                          <button
+                            onClick={() => {
+                              setProfileDropdownOpen(false);
+                              onOpenCouponModal();
+                            }}
+                            className="w-full text-left px-3.5 py-1.5 hover:bg-stone-50 dark:hover:bg-[#161616] flex items-center gap-2 text-stone-700 dark:text-stone-300"
+                          >
+                            <Gift className="w-3.5 h-3.5 text-orange-500" />
+                            <span>Community Flash Deals</span>
+                          </button>
+                        )}
+
+                        {onOpenMerchantModal && (
+                          <button
+                            onClick={() => {
+                              setProfileDropdownOpen(false);
+                              onOpenMerchantModal();
+                            }}
+                            className="w-full text-left px-3.5 py-1.5 hover:bg-stone-50 dark:hover:bg-[#161616] flex items-center gap-2 text-stone-700 dark:text-stone-300"
+                          >
+                            <Store className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Claim Spot (B2B SaaS)</span>
+                          </button>
+                        )}
+
+                        {onOpenTrailsModal && (
+                          <button
+                            onClick={() => {
+                              setProfileDropdownOpen(false);
+                              onOpenTrailsModal();
+                            }}
+                            className="w-full text-left px-3.5 py-1.5 hover:bg-stone-50 dark:hover:bg-[#161616] flex items-center gap-2 text-stone-700 dark:text-stone-300"
+                          >
+                            <Landmark className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                            <span>DMRC Heritage Trails</span>
+                          </button>
+                        )}
                       </div>
 
                       {/* Theme Toggle Slider */}
