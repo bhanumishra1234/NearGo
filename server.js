@@ -372,7 +372,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   return res.json(constantResponse);
 });
 
-// ── Auth Route 4: Rate-Limited Register (Bot Defense) ────────────────────────
+// ── Auth Route 4: Rate-Limited Register with Activation Email ──────────────
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, fullName } = req.body;
 
@@ -401,11 +401,15 @@ app.post('/api/auth/register', async (req, res) => {
 
   const cleanEmail = email.toLowerCase().trim();
   const cleanName = sanitizeInput(fullName || 'Local Traveler', 60);
+  const origin = req.headers.origin || 'http://localhost:3000';
+  const activateUrl = `${origin}/#account-activated&email=${encodeURIComponent(cleanEmail)}`;
 
+  // 1. Create account in Supabase with emailRedirectTo
   const { data, error } = await supabase.auth.signUp({
     email: cleanEmail,
     password,
     options: {
+      emailRedirectTo: activateUrl,
       data: {
         full_name: cleanName,
         badge: 'Verified Local',
@@ -418,12 +422,93 @@ app.post('/api/auth/register', async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 
+  // 2. Dispatch custom branded activation email if SMTP is configured
+  const transporter = getSmtpTransporter();
+  let emailDispatched = false;
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || 'NearGo Welcome <welcome@neargo.in>',
+        to: cleanEmail,
+        subject: '🎉 Welcome to NearGo! Click here to activate your account',
+        html: `
+          <div style="font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; max-width:580px; margin:auto; padding:32px 24px; border:1px solid #E8E5DF; border-radius:18px; background:#FFFFFF;">
+            <div style="margin-bottom:24px;">
+              <span style="font-size:24px; font-weight:800; color:#1C1917; letter-spacing:-0.5px;">Near<span style="color:#D9532F;">Go</span></span>
+            </div>
+            
+            <div style="background:#FAF8F5; border:1px solid #E8E5DF; border-radius:14px; padding:20px; margin-bottom:24px;">
+              <h2 style="color:#1C1917; font-size:18px; font-weight:800; margin:0 0 8px 0;">Activate Your Account 🚀</h2>
+              <p style="color:#57534E; font-size:13px; line-height:1.6; margin:0;">
+                Hi <strong>${cleanName}</strong>, welcome to NearGo! To start exploring verified local advice, asking city questions, and auditing transit fares, please verify your email address.
+              </p>
+            </div>
+
+            <div style="text-align:center; margin:32px 0;">
+              <a href="${activateUrl}" style="background:#D9532F; color:#FFFFFF; padding:14px 32px; border-radius:9999px; text-decoration:none; font-weight:700; font-size:14px; display:inline-block; box-shadow:0 4px 14px rgba(217,83,47,0.35);">
+                Click Here to Activate Account ➔
+              </a>
+            </div>
+
+            <p style="color:#78716C; font-size:12px; line-height:1.5; margin-top:24px; border-top:1px solid #F5F1EB; padding-top:18px;">
+              If the button above does not work, copy and paste this activation link directly into your browser:<br/>
+              <a href="${activateUrl}" style="color:#D9532F; word-break:break-all; font-weight:600;">${activateUrl}</a>
+            </p>
+
+            <div style="margin-top:24px; padding-top:16px; border-top:1px solid #F5F1EB; font-size:11px; color:#A8A29E; text-align:center;">
+              NearGo Community Travel • Hyper-Local Transit & Verified Gems<br/>
+              If you didn't create an account, you can safely disregard this email.
+            </div>
+          </div>
+        `,
+      });
+      emailDispatched = true;
+    } catch (smtpErr) {
+      console.warn('[NearGo SMTP Activation Email Warning]:', smtpErr.message);
+    }
+  }
+
   return res.status(201).json({
     success: true,
+    activationRequired: true,
+    emailDispatched,
+    email: cleanEmail,
+    message: 'Account created! An activation link has been sent to your email. Click on the link to activate your account.',
     user: data.user,
-    accessToken: data.session?.access_token || null,
-    refreshToken: data.session?.refresh_token || null,
   });
+});
+
+// ── Auth Route 4b: Resend Activation Link ────────────────────────────────────
+app.post('/api/auth/resend-activation', async (req, res) => {
+  const { email } = req.body;
+  if (!email || !validateEmail(email)) {
+    return res.status(400).json({ error: 'Valid email required' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  const origin = req.headers.origin || 'http://localhost:3000';
+  const activateUrl = `${origin}/#account-activated&email=${encodeURIComponent(cleanEmail)}`;
+
+  try {
+    const transporter = getSmtpTransporter();
+    if (transporter) {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || 'NearGo Welcome <welcome@neargo.in>',
+        to: cleanEmail,
+        subject: 'NearGo: Your Account Activation Link',
+        html: `
+          <div style="font-family:'Plus Jakarta Sans',sans-serif; max-width:580px; margin:auto; padding:24px; border:1px solid #E8E5DF; border-radius:14px;">
+            <h2 style="color:#D9532F;">Activate Your NearGo Account</h2>
+            <p>Click below to activate your account:</p>
+            <p><a href="${activateUrl}" style="background:#D9532F; color:#fff; padding:12px 24px; border-radius:9999px; text-decoration:none; font-weight:bold; display:inline-block;">Activate Account ➔</a></p>
+          </div>
+        `,
+      });
+    }
+  } catch (_) {}
+
+  return res.json({ success: true, message: 'Activation email re-sent! Please check your inbox.' });
 });
 
 // ── Auth Route 5: Verify JWT Token (Protected Verification) ─────────────────

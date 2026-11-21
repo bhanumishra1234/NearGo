@@ -26,12 +26,15 @@ const AuthContext = createContext({
   isDemoUser: false,
   isPasswordRecovery: false,
   setIsPasswordRecovery: () => {},
+  isAccountActivated: false,
+  setIsAccountActivated: () => {},
   signUp: async () => {},
   signIn: async () => {},
   loginWithRateLimit: async () => {},
   refreshSession: async () => {},
   sendPasswordResetEmail: async () => {},
   updatePassword: async () => {},
+  resendActivationEmail: async () => {},
   signInAsDemo: () => {},
   signOut: async () => {},
 });
@@ -41,14 +44,18 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [isDemoUser, setIsDemoUser] = useState(false);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [isAccountActivated, setIsAccountActivated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check URL hash for recovery tokens (e.g., /#access_token=...&type=recovery)
+  // Check URL hash for recovery tokens (e.g., /#access_token=...&type=recovery) or activation hash
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash;
       if (hash && hash.includes('type=recovery')) {
         setIsPasswordRecovery(true);
+      }
+      if (hash && (hash.includes('account-activated') || hash.includes('type=signup'))) {
+        setIsAccountActivated(true);
       }
     }
   }, []);
@@ -107,29 +114,75 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signUp = async (email, password, fullName) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          badge: 'Verified Local',
-          isVerified: true,
+    try {
+      // 1. Try Express backend endpoint (with rate limiter & SMTP email activation)
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, fullName }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        const err = new Error(result.error || 'Registration failed');
+        err.rateLimited = response.status === 429;
+        throw err;
+      }
+
+      // If backend returned immediate session
+      if (result.session) {
+        setSession(result.session);
+        setUser(result.user);
+        setIsDemoUser(false);
+      }
+
+      return result;
+    } catch (err) {
+      if (err.rateLimited || err.message !== 'Failed to fetch') {
+        throw err;
+      }
+
+      // 2. Direct Supabase Client Fallback with activation redirect
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            badge: 'Verified Local',
+            isVerified: true,
+          },
+          emailRedirectTo: `${window.location.origin}/#account-activated`,
         },
-      },
-    });
+      });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    if (data?.session) {
-      setSession(data.session);
-      setUser(data.user);
-      setIsDemoUser(false);
-      try {
-        localStorage.removeItem(DEMO_USER_STORAGE_KEY);
-      } catch (_) {}
+      if (data?.session) {
+        setSession(data.session);
+        setUser(data.user);
+        setIsDemoUser(false);
+        try {
+          localStorage.removeItem(DEMO_USER_STORAGE_KEY);
+        } catch (_) {}
+      }
+
+      return data;
     }
+  };
 
+  // Resend Activation Email via backend
+  const resendActivationEmail = async (email) => {
+    const res = await fetch('/api/auth/resend-activation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to resend activation email');
+    }
     return data;
   };
 
@@ -313,12 +366,15 @@ export function AuthProvider({ children }) {
         isDemoUser,
         isPasswordRecovery,
         setIsPasswordRecovery,
+        isAccountActivated,
+        setIsAccountActivated,
         signUp,
         signIn,
         loginWithRateLimit,
         refreshSession,
         sendPasswordResetEmail,
         updatePassword,
+        resendActivationEmail,
         signInAsDemo,
         signOut,
       }}

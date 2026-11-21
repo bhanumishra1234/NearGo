@@ -12,7 +12,9 @@ import {
   ArrowLeft,
   CheckCircle2,
   Clock,
-  ShieldAlert
+  ShieldAlert,
+  RefreshCw,
+  SendHorizontal
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -24,12 +26,15 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     signInAsDemo,
     sendPasswordResetEmail,
     updatePassword,
+    resendActivationEmail,
+    isAccountActivated,
+    setIsAccountActivated,
     isPasswordRecovery,
     accessToken,
     refreshToken,
   } = useAuth();
 
-  const [mode, setMode] = useState(initialMode); // 'login' | 'signup' | 'forgot_password' | 'reset_password'
+  const [mode, setMode] = useState(initialMode); // 'login' | 'signup' | 'forgot_password' | 'reset_password' | 'activation_pending'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -39,6 +44,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
   const [rateLimited, setRateLimited] = useState(false);
   const [retryAfter, setRetryAfter] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [successMsg, setSuccessMsg] = useState(null);
   const [showTokenInfo, setShowTokenInfo] = useState(false);
 
@@ -101,10 +108,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
   useEffect(() => {
     if (isPasswordRecovery) {
       setMode('reset_password');
+    } else if (isAccountActivated) {
+      setMode('login');
+      setSuccessMsg('🎉 Account Activated! Your email has been verified successfully. Please sign in to explore NearGo.');
     } else {
       setMode(initialMode);
     }
-  }, [initialMode, isPasswordRecovery]);
+  }, [initialMode, isPasswordRecovery, isAccountActivated]);
 
   if (!isOpen) return null;
 
@@ -131,7 +141,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         setError(err.message || 'Too many failed login attempts. Temporarily locked.');
       } else if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
         setError(
-          'Email not confirmed yet. In your Supabase Dashboard (Auth -> Providers -> Email), toggle off "Confirm email" for instant login, or use 1-Click Evaluator Login.'
+          'Email not confirmed yet. Please check your inbox for the activation link, or click "Resend Activation Email" below.'
         );
       } else {
         setError(err.message || 'Authentication failed');
@@ -160,20 +170,45 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
 
     try {
       const res = await signUp(email, password, fullName);
-      if (!res?.session) {
-        setSuccessMsg(
-          'Account created! Supabase has email confirmation enabled. Turn it off in Supabase Dashboard -> Auth -> Providers -> Email for instant logins, or click Quick Demo Sign In below.'
-        );
-      } else {
+      if (res?.session) {
         setSuccessMsg('Account created & logged in successfully with JWT session!');
         setTimeout(() => {
           onClose();
         }, 1200);
+      } else {
+        // Switch to activation pending screen
+        setMode('activation_pending');
       }
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendActivation = async () => {
+    if (!email || resendingEmail || resendCooldown > 0) return;
+    setError(null);
+    setSuccessMsg(null);
+    setResendingEmail(true);
+
+    try {
+      await resendActivationEmail(email);
+      setSuccessMsg(`Fresh activation link dispatched to ${email}! Please check your inbox and spam folder.`);
+      setResendCooldown(60);
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err) {
+      setError(err.message || 'Could not resend email. Please try again in a few moments.');
+    } finally {
+      setResendingEmail(false);
     }
   };
 
@@ -263,14 +298,29 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
             {mode === 'signup' && 'Join NearGo Community'}
             {mode === 'forgot_password' && 'Reset Your Password'}
             {mode === 'reset_password' && 'Create New Password'}
+            {mode === 'activation_pending' && 'Check Your Email to Activate'}
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
             {mode === 'login' && 'Connect with locals, upvote answers, and ask city questions.'}
             {mode === 'signup' && 'Create an account to share hidden spots and verified advice.'}
             {mode === 'forgot_password' && 'Enter your registered email address and we will send a password recovery link.'}
             {mode === 'reset_password' && 'Choose a new strong password for your verified NearGo account.'}
+            {mode === 'activation_pending' && 'An official account activation link has been sent to your email.'}
           </p>
         </div>
+
+        {/* Celebratory Activation Notification if user just activated */}
+        {isAccountActivated && (
+          <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border-2 border-emerald-500 text-emerald-900 dark:text-emerald-200 text-xs shadow-md animate-fadeIn">
+            <div className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>Account Activated Successfully! 🎉</span>
+            </div>
+            <p className="text-[11px] text-emerald-700 dark:text-emerald-300/80 mt-1">
+              Your email address has been verified. You can now sign in with your credentials and start posting questions or answering spots.
+            </p>
+          </div>
+        )}
 
         {/* Collapsible JWT / Refresh Token Inspector for Judges */}
         {showTokenInfo && (
@@ -581,6 +631,86 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               <span>Update Password</span>
             </button>
           </form>
+        )}
+
+        {/* ── MODE 5: ACTIVATION PENDING ── */}
+        {mode === 'activation_pending' && (
+          <div className="space-y-4 py-2">
+            <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-orange-50/60 dark:bg-[#150f0c] border border-orange-200/70 dark:border-[#2a170f]">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#D9532F] to-[#E06A47] text-white flex items-center justify-center shadow-lg shadow-terracotta-500/20 mb-3 animate-pulse">
+                <SendHorizontal className="w-7 h-7" />
+              </div>
+              <h3 className="text-base font-bold text-stone-900 dark:text-white">Activation Email Dispatched</h3>
+              <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 max-w-xs">
+                We sent an account activation link to:
+              </p>
+              <div className="mt-1.5 px-3 py-1 rounded-full bg-white dark:bg-[#20140e] border border-stone-200 dark:border-[#3a2016] font-mono font-bold text-xs text-[#D9532F]">
+                {email || 'your email'}
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-[#121212] border border-stone-200 dark:border-[#1e1e1e] space-y-2 text-xs text-stone-600 dark:text-stone-400">
+              <div className="font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                <Clock className="w-3.5 h-3.5 text-stone-500" />
+                <span>Next Steps to Activate:</span>
+              </div>
+              <ul className="space-y-1.5 pl-5 list-decimal text-[11px] leading-relaxed">
+                <li>Open your inbox (and check your Spam or Junk folder).</li>
+                <li>Click the <strong>"Activate My NearGo Account"</strong> button in the email.</li>
+                <li>You'll be instantly verified and redirected back to sign in!</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={handleResendActivation}
+                disabled={resendingEmail || resendCooldown > 0}
+                className="w-full py-2.5 rounded-full bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white text-white dark:text-stone-900 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {resendingEmail ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  {resendCooldown > 0
+                    ? `Resend available in ${resendCooldown}s`
+                    : resendingEmail
+                    ? 'Dispatching Email...'
+                    : 'Resend Activation Link'}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('login');
+                  setError(null);
+                  setSuccessMsg(null);
+                }}
+                className="w-full py-2 rounded-full border border-stone-200 dark:border-[#222222] hover:bg-stone-100 dark:hover:bg-[#181818] text-stone-700 dark:text-stone-300 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                <span>Return to Sign In</span>
+              </button>
+            </div>
+
+            {/* Quick Demo Bypass for Hackathon Evaluator */}
+            <div className="pt-2 border-t border-stone-200 dark:border-[#1a1a1a] text-center">
+              <p className="text-[10px] text-stone-400 dark:text-stone-500 mb-1.5">
+                Judging right now without checking inbox?
+              </p>
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>Bypass with 1-Click Evaluator Sign In ➔</span>
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Footer Mode Switcher */}
