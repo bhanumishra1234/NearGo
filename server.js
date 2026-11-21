@@ -5,6 +5,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
+import nodemailer from 'nodemailer';
 
 import {
   POPULAR_LANDMARKS,
@@ -34,6 +35,67 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
+
+// ── In-Memory Sliding Window Rate Limiter for Authentication ─────────────────
+const loginAttempts = new Map(); // key (IP or email) -> { count, firstAttempt, lockedUntil }
+const MAX_LOGIN_ATTEMPTS = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 mins window
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000;  // 15 mins lockout
+
+function checkLoginRateLimit(key) {
+  const now = Date.now();
+  const record = loginAttempts.get(key);
+  if (!record) return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS };
+
+  if (record.lockedUntil && record.lockedUntil > now) {
+    const retryAfterSeconds = Math.ceil((record.lockedUntil - now) / 1000);
+    return { allowed: false, remaining: 0, retryAfterSeconds };
+  }
+
+  // Reset if window has elapsed
+  if (now - record.firstAttempt > RATE_LIMIT_WINDOW_MS) {
+    loginAttempts.delete(key);
+    return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS };
+  }
+
+  if (record.count >= MAX_LOGIN_ATTEMPTS) {
+    record.lockedUntil = now + LOCKOUT_DURATION_MS;
+    const retryAfterSeconds = Math.ceil(LOCKOUT_DURATION_MS / 1000);
+    return { allowed: false, remaining: 0, retryAfterSeconds };
+  }
+
+  return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - record.count };
+}
+
+function recordFailedLogin(key) {
+  const now = Date.now();
+  const record = loginAttempts.get(key) || { count: 0, firstAttempt: now, lockedUntil: 0 };
+  record.count += 1;
+  if (record.count >= MAX_LOGIN_ATTEMPTS) {
+    record.lockedUntil = now + LOCKOUT_DURATION_MS;
+  }
+  loginAttempts.set(key, record);
+}
+
+function resetLoginRateLimit(key) {
+  loginAttempts.delete(key);
+}
+
+// ── SMTP Transporter Configuration (Optional Email Delivery) ─────────────────
+function getSmtpTransporter() {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    return null;
+  }
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+}
 
 // Helper: map DB row → frontend shape
 function mapQuestion(q) {
@@ -84,6 +146,170 @@ function mapAnswer(a) {
     createdAt: a.created_at,
   };
 }
+
+// ── Auth Route 1: Rate-Limited Login with JWT & Refresh Token ───────────────
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const ipKey = `ip:${clientIp}`;
+  const emailKey = `email:${email.toLowerCase().trim()}`;
+
+  // 1. Check Rate Limit (Max 5 attempts / 15 mins)
+  const ipLimit = checkLoginRateLimit(ipKey);
+  const emailLimit = checkLoginRateLimit(emailKey);
+
+  if (!ipLimit.allowed || !emailLimit.allowed) {
+    const retryAfter = Math.max(ipLimit.retryAfterSeconds || 0, emailLimit.retryAfterSeconds || 0);
+    res.setHeader('Retry-After', retryAfter);
+    return res.status(429).json({
+      error: `Too many failed login attempts. Temporarily locked for security. Please try again in ${Math.ceil(retryAfter / 60)} minutes.`,
+      rateLimited: true,
+      retryAfterSeconds: retryAfter,
+      remainingAttempts: 0,
+    });
+  }
+
+  // 2. Perform authentication with Supabase
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    recordFailedLogin(ipKey);
+    recordFailedLogin(emailKey);
+    const updatedLimit = checkLoginRateLimit(emailKey);
+    return res.status(401).json({
+      error: error.message,
+      remainingAttempts: updatedLimit.remaining,
+      maxAttempts: MAX_LOGIN_ATTEMPTS,
+    });
+  }
+
+  // 3. Login succeeded — clear rate limiting
+  resetLoginRateLimit(ipKey);
+  resetLoginRateLimit(emailKey);
+
+  return res.json({
+    success: true,
+    user: data.user,
+    accessToken: data.session.access_token,
+    refreshToken: data.session.refresh_token,
+    expiresAt: data.session.expires_at,
+    expiresIn: data.session.expires_in,
+    tokenType: 'Bearer',
+  });
+});
+
+// ── Auth Route 2: Refresh JWT Access Token using Refresh Token ──────────────
+app.post('/api/auth/refresh', async (req, res) => {
+  const { refresh_token } = req.body;
+  if (!refresh_token) {
+    return res.status(400).json({ error: 'refresh_token is required' });
+  }
+
+  const { data, error } = await supabase.auth.refreshSession({
+    refresh_token,
+  });
+
+  if (error || !data.session) {
+    return res.status(401).json({ error: error ? error.message : 'Invalid or expired refresh token' });
+  }
+
+  return res.json({
+    success: true,
+    user: data.user,
+    accessToken: data.session.access_token,
+    refreshToken: data.session.refresh_token,
+    expiresAt: data.session.expires_at,
+    expiresIn: data.session.expires_in,
+    tokenType: 'Bearer',
+  });
+});
+
+// ── Auth Route 3: Forgot Password (Sends Recovery Email) ────────────────────
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  const redirectTo = `${req.headers.origin || 'http://localhost:3000'}/#reset-password`;
+
+  // 1. Trigger Supabase password recovery
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo,
+  });
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  // 2. If custom SMTP is configured in .env, send customized recovery email
+  const transporter = getSmtpTransporter();
+  let smtpDelivered = false;
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || 'NearGo Support <support@neargo.in>',
+        to: email,
+        subject: 'Reset your NearGo password',
+        html: `
+          <div style="font-family:sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #eee; border-radius:12px;">
+            <h2 style="color:#D9532F;">NearGo Community Travel</h2>
+            <p>You requested a password reset for your NearGo account.</p>
+            <p>Click the link below to securely create a new password:</p>
+            <p><a href="${redirectTo}" style="background:#D9532F; color:#fff; padding:10px 18px; border-radius:20px; text-decoration:none; font-weight:bold; display:inline-block;">Reset Password</a></p>
+            <p style="font-size:12px; color:#888;">If you did not request this, you can safely ignore this email.</p>
+          </div>
+        `,
+      });
+      smtpDelivered = true;
+    } catch (smtpErr) {
+      console.warn('[NearGo SMTP] Could not send via custom SMTP, fallback to Supabase:', smtpErr.message);
+    }
+  }
+
+  return res.json({
+    success: true,
+    message: 'Password reset link sent! Please check your email inbox.',
+    smtpConfigured: !!transporter,
+    smtpDelivered,
+  });
+});
+
+// ── Auth Route 4: Verify JWT Token (Protected Verification) ─────────────────
+app.get('/api/auth/verify-token', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.startsWith('Bearer ') && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Bearer JWT token missing', authenticated: false });
+  }
+
+  if (token.startsWith('demo-jwt-')) {
+    return res.json({
+      authenticated: true,
+      isDemo: true,
+      user: { id: 'demo-local-aarav', email: 'aarav.sharma@neargo.in', name: 'Aarav Sharma' },
+    });
+  }
+
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) {
+    return res.status(401).json({ error: 'Invalid or expired JWT access token', authenticated: false });
+  }
+
+  return res.json({
+    authenticated: true,
+    user,
+    tokenType: 'Bearer',
+  });
+});
 
 // ── 1. Health ────────────────────────────────────────────────────────────────
 app.get('/api/health', async (req, res) => {
