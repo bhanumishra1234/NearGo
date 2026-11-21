@@ -44,11 +44,13 @@ app.use(
           "https://*.tile.openstreetmap.org",
           "https://unpkg.com",
           "https://images.unsplash.com",
+          "https://*.supabase.co",
         ],
         connectSrc: [
           "'self'",
           "https://mcpzrjigpkdtpgezhqnc.supabase.co",
           "https://*.supabase.co",
+          "https://api.sarvam.ai",
         ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -84,6 +86,9 @@ app.use(
       if (
         !origin ||
         ALLOWED_ORIGINS.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com') ||
+        origin.endsWith('.netlify.app') ||
         ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin))
       ) {
         callback(null, true);
