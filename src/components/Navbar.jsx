@@ -20,6 +20,7 @@ import {
   Landmark
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { getUserCredTier } from '../utils/credEngine.js';
 
 export default function Navbar({
   selectedCity,
@@ -60,6 +61,7 @@ export default function Navbar({
 
   const displayName = user ? (user.user_metadata?.full_name || user.email?.split('@')[0] || 'User') : '';
   const initial = user && displayName ? displayName.charAt(0).toUpperCase() : '';
+  const userCred = getUserCredTier(user?.reputation || user?.user_metadata?.reputation || 98);
 
   return (
     <header aria-label="Main Site Navigation" className="sticky top-0 z-[1100] bg-white/95 dark:bg-[#000000]/95 backdrop-blur-md border-b border-[#E8E5DF] dark:border-[#1a1a1a]">
@@ -228,12 +230,31 @@ export default function Navbar({
                 <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#0c0c0c] rounded-xl border border-[#E8E5DF] dark:border-[#1e1e1e] shadow-xl py-1.5 z-50 text-xs animate-fadeIn">
                   {user ? (
                     <>
-                      <div className="px-3.5 py-2 border-b border-stone-100 dark:border-[#1a1a1a]">
+                      <div className="px-3.5 py-2.5 border-b border-stone-100 dark:border-[#1a1a1a] space-y-1.5">
                         <div className="font-bold text-stone-900 dark:text-white truncate">{displayName}</div>
-                        <div className="text-[10px] text-stone-400 dark:text-stone-500 truncate mt-0.5">{user.email}</div>
-                        <div className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold text-[9px] border border-emerald-200/60 dark:border-emerald-800/40">
-                          <ShieldCheck className="w-2.5 h-2.5" />
-                          <span>Verified Local</span>
+                        <div className="text-[10px] text-stone-400 dark:text-stone-500 truncate">{user.email}</div>
+                        
+                        {/* Local Cred Tier Badge & Score */}
+                        <div className="pt-1">
+                          <div className="flex items-center justify-between text-[10px] font-bold">
+                            <span className="text-[#D9532F] flex items-center gap-1">
+                              ⭐ {userCred.score} Local Cred
+                            </span>
+                            <span className="text-stone-500 font-semibold">{userCred.tier.name}</span>
+                          </div>
+                          {userCred.nextTier && (
+                            <div className="mt-1">
+                              <div className="w-full bg-stone-100 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
+                                <div
+                                  className="bg-[#D9532F] h-full rounded-full transition-all duration-500"
+                                  style={{ width: `${userCred.progressPercent}%` }}
+                                />
+                              </div>
+                              <div className="text-[9px] text-stone-400 mt-0.5">
+                                {userCred.pointsToNextTier} Cred to unlock {userCred.nextTier.name}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 

@@ -435,12 +435,42 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
             {transitPath && (
               <div className="space-y-4">
                 <div className="p-3.5 rounded-xl bg-stone-900 text-white font-mono text-xs">
-                  <span className="text-stone-400">Algorithm:</span> <span>{transitPath.query}</span>
+                  <span className="text-stone-400">Graph Algorithm:</span> <span>{transitPath.query}</span>
                 </div>
+
+                {/* Multi-Modal Metrics Grid */}
+                {transitPath.multiModalSummary && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/40">
+                      <div className="text-[10px] text-blue-700 dark:text-blue-300 font-bold uppercase">Total Time</div>
+                      <div className="text-base font-extrabold text-blue-900 dark:text-white mt-0.5">
+                        {transitPath.multiModalSummary.totalTimeMinutes} mins
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40">
+                      <div className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase">Transit Fare</div>
+                      <div className="text-base font-extrabold text-emerald-900 dark:text-white mt-0.5">
+                        {transitPath.multiModalSummary.totalEstimatedFare}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40">
+                      <div className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase">Traffic Avoided</div>
+                      <div className="text-base font-extrabold text-amber-900 dark:text-white mt-0.5">
+                        {transitPath.multiModalSummary.trafficDelayAvoidedMinutes} mins
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/40">
+                      <div className="text-[10px] text-purple-700 dark:text-purple-300 font-bold uppercase">CO2 Saved</div>
+                      <div className="text-base font-extrabold text-purple-900 dark:text-white mt-0.5">
+                        {transitPath.multiModalSummary.carbonKgSaved} kg
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2.5">
                   <div className="text-xs font-extrabold uppercase text-stone-400 tracking-wider">
-                    Calculated Graph Itinerary:
+                    Multi-Modal Intermodal Route Legs:
                   </div>
                   {transitPath.optimalRoute.map((step) => (
                     <div
@@ -450,16 +480,21 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
                       <div className="w-7 h-7 rounded-full bg-[#008CC1] text-white font-black flex items-center justify-center shrink-0">
                         {step.step}
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <div className="font-bold text-stone-900 dark:text-white">{step.type}</div>
                         <div className="text-[11px] text-stone-600 dark:text-stone-400 mt-0.5">{step.instruction}</div>
+                        {step.tip && (
+                          <div className="text-[10px] text-[#D9532F] font-medium mt-1">
+                            💡 {step.tip}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
 
                 <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center justify-between">
-                  <span>Official Benchmarked Fare:</span>
+                  <span>Official Multi-Modal Tariff:</span>
                   <span>{transitPath.estimatedOfficialFare}</span>
                 </div>
               </div>

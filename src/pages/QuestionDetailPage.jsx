@@ -512,6 +512,11 @@ export default function QuestionDetailPage({
                               <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50 font-semibold">
                                 {ans.author?.badge}
                               </span>
+                              {ans.author?.reputation && (
+                                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold font-mono">
+                                  ⭐ {ans.author.reputation} Cred
+                                </span>
+                              )}
                               {ans.isAccepted && (
                                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-600 text-white font-extrabold flex items-center gap-1 shadow-2xs">
                                   <Check className="w-3 h-3" />
