@@ -122,16 +122,22 @@ export function AuthProvider({ children }) {
         body: JSON.stringify({ email, password, fullName }),
       });
 
-      const result = await response.json();
+      let result = null;
+      try {
+        result = await response.json();
+      } catch (_) {
+        throw new Error('BACKEND_UNAVAILABLE');
+      }
 
       if (!response.ok) {
-        const err = new Error(result.error || 'Registration failed');
-        err.rateLimited = response.status === 429;
-        throw err;
+        if (response.status >= 400 && response.status < 500 && result?.error) {
+          throw new Error(result.error);
+        }
+        throw new Error('BACKEND_UNAVAILABLE');
       }
 
       // If backend returned immediate session
-      if (result.session) {
+      if (result?.session) {
         setSession(result.session);
         setUser(result.user);
         setIsDemoUser(false);
@@ -139,7 +145,7 @@ export function AuthProvider({ children }) {
 
       return result;
     } catch (err) {
-      if (err.rateLimited || err.message !== 'Failed to fetch') {
+      if (err.rateLimited || (err.message && err.message !== 'BACKEND_UNAVAILABLE' && err.message !== 'Failed to fetch' && !err.message.includes('not valid JSON') && !err.message.includes('server error') && !err.message.includes('Unexpected token'))) {
         throw err;
       }
 
@@ -179,11 +185,20 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Failed to resend activation email');
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (_) {}
+    if (res.ok && data) {
+      return data;
     }
-    return data;
+    // Direct Supabase fallback
+    return await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/#account-activated` },
+    });
+
   };
 
   // Direct Supabase Sign In
@@ -216,7 +231,12 @@ export function AuthProvider({ children }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const result = await response.json();
+      let result = null;
+      try {
+        result = await response.json();
+      } catch (_) {
+        throw new Error('BACKEND_UNAVAILABLE');
+      }
 
       if (response.status === 429) {
         const err = new Error(result.error || 'Too many login attempts.');
@@ -226,9 +246,12 @@ export function AuthProvider({ children }) {
       }
 
       if (!response.ok) {
-        const err = new Error(result.error || 'Authentication failed');
-        err.remainingAttempts = result.remainingAttempts;
-        throw err;
+        if (response.status >= 400 && response.status < 500 && result?.error) {
+          const err = new Error(result.error);
+          err.remainingAttempts = result.remainingAttempts;
+          throw err;
+        }
+        throw new Error('BACKEND_UNAVAILABLE');
       }
 
       // Sync Supabase client session if access & refresh tokens are returned
@@ -248,13 +271,10 @@ export function AuthProvider({ children }) {
       return result;
     } catch (err) {
       // If network fetch fails (e.g. backend offline in dev), fallback to direct Supabase login
-      if (!err.rateLimited && err.message !== 'Failed to fetch') {
+      if (err.rateLimited || (err.message && err.message !== 'BACKEND_UNAVAILABLE' && err.message !== 'Failed to fetch' && !err.message.includes('not valid JSON') && !err.message.includes('server error') && !err.message.includes('Unexpected token'))) {
         throw err;
       }
-      if (err.message === 'Failed to fetch') {
-        return await signIn(email, password);
-      }
-      throw err;
+      return await signIn(email, password);
     }
   };
 

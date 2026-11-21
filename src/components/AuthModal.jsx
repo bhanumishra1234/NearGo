@@ -180,7 +180,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         setMode('activation_pending');
       }
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      let msg = err.message || 'Registration failed';
+      if (msg.includes('not valid JSON') || msg.includes('Unexpected token')) {
+        msg = 'Unable to reach backend registration service. Falling back to direct secure signup...';
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

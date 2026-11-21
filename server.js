@@ -60,7 +60,7 @@ app.use(
       ) {
         callback(null, true);
       } else {
-        callback(new Error('Blocked by NearGo CORS security policy'));
+        callback(null, false);
       }
     },
     credentials: true,
@@ -74,8 +74,8 @@ app.use(express.json({ limit: '50kb' })); // Block large payload memory exhausti
 
 // ── Supabase Client ──────────────────────────────────────────────────────────
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  process.env.SUPABASE_URL || 'https://mcpzrjigpkdtpgezhqnc.supabase.co',
+  process.env.SUPABASE_ANON_KEY || 'sb_publishable_Giy7_is6Wmq3VP_9Gt_FuA_BoRi1FLt'
 );
 
 // ── Cyber Defense: Input Sanitization & Anti-Injection Defense ──────────────
@@ -718,6 +718,14 @@ app.get('*', (req, res, next) => {
   const indexPath = path.join(distPath, 'index.html');
   if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
   res.json({ app: 'NearGo REST API (Supabase Edition)', status: 'online' });
+});
+
+// ── Global Error Handling Middleware (Always JSON) ──────────────────────────
+app.use((err, req, res, next) => {
+  console.error('[NearGo Server Error]', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'An unexpected server error occurred',
+  });
 });
 
 if (process.env.VERCEL !== '1') {
