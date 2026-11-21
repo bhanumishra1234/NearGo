@@ -116,11 +116,6 @@ export default function MapContainer({
         },
       }).addTo(map);
 
-      soiLayerRef.current.bindTooltip(
-        '🇮🇳 Sovereign Boundary of India (Survey of India Compliant: Complete J&K, Ladakh & Arunachal Pradesh)',
-        { sticky: true }
-      );
-
       markersLayer.current = L.layerGroup().addTo(map);
       leafletMap.current = map;
 
