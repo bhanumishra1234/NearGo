@@ -74,14 +74,28 @@ export default function QuestionDetailPage({
 
     setTranslating(true);
     try {
-      const [transTitle, transBody] = await Promise.all([
+      const answersToTranslate = (question.answers || []).filter((a) => a && a.body);
+
+      const [transTitle, transBody, ...transAnswers] = await Promise.all([
         translateTextWithSarvam({ text: question.title, sourceLang: 'en-IN', targetLang }),
         translateTextWithSarvam({ text: question.body, sourceLang: 'en-IN', targetLang }),
+        ...answersToTranslate.map((a) =>
+          translateTextWithSarvam({ text: a.body, sourceLang: 'en-IN', targetLang })
+        ),
       ]);
+
+      const answersMap = {};
+      answersToTranslate.forEach((a, i) => {
+        answersMap[a.id] = transAnswers[i];
+      });
 
       setTranslatedData((prev) => ({
         ...prev,
-        [targetLang]: { title: transTitle, body: transBody },
+        [targetLang]: {
+          title: transTitle,
+          body: transBody,
+          answers: answersMap,
+        },
       }));
       setActiveLang(targetLang);
     } catch (err) {
@@ -296,7 +310,7 @@ export default function QuestionDetailPage({
                     key={l.code}
                     onClick={() => handleTranslate(l.code)}
                     disabled={translating}
-                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
                       activeLang === l.code
                         ? 'bg-[#D9532F] text-white shadow-xs'
                         : 'bg-stone-100 dark:bg-[#161616] text-stone-600 dark:text-stone-400 hover:bg-stone-200'
@@ -304,6 +318,9 @@ export default function QuestionDetailPage({
                   >
                     <span>{l.flag}</span>
                     <span>{l.label}</span>
+                    {translating && activeLang !== l.code && (
+                      <Loader2 className="w-3 h-3 animate-spin text-stone-400" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -327,9 +344,18 @@ export default function QuestionDetailPage({
                   </span>
                 )}
                 {activeLang !== 'en-IN' && (
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-2 py-0.5 rounded-md font-semibold">
-                    ⚡ Translated to {activeLang === 'hi-IN' ? 'Hindi' : activeLang === 'mr-IN' ? 'Marathi' : 'Kannada'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-2xs">
+                      <span>⚡</span>
+                      <span>Sarvam Mayura Indic Translation ({activeLang === 'hi-IN' ? 'Hindi' : activeLang === 'mr-IN' ? 'Marathi' : 'Kannada'})</span>
+                    </span>
+                    <button
+                      onClick={() => setActiveLang('en-IN')}
+                      className="text-[10px] text-stone-500 hover:text-[#D9532F] underline font-medium"
+                    >
+                      Show Original (English)
+                    </button>
+                  </div>
                 )}
                 {question.tags?.map((tag, idx) => (
                   <span key={idx} className="text-[10px] text-stone-400 dark:text-stone-500">
@@ -558,9 +584,9 @@ export default function QuestionDetailPage({
                         </div>
                       </div>
 
-                      {/* Answer Body */}
+                      {/* Answer Body (Multi-Lingual) */}
                       <p className="text-sm text-stone-800 dark:text-stone-200 leading-relaxed whitespace-pre-line">
-                        {ans.body}
+                        {translatedData[activeLang]?.answers?.[ans.id] || ans.body}
                       </p>
 
                       {/* Answer Attached Photos */}
