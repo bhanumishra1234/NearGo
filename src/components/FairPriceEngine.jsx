@@ -14,8 +14,11 @@ import {
   ArrowRight,
   Sparkles,
   HelpCircle,
-  X
+  X,
+  Volume2,
+  Square
 } from 'lucide-react';
+import { playSarvamSpeech, stopCurrentAudio } from '../utils/sarvamAudio.js';
 import {
   CITY_TARIFFS,
   POPULAR_LANDMARKS,
@@ -48,6 +51,7 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
   const [customDistance, setCustomDistance] = useState(null);
   const [driverQuoteInput, setDriverQuoteInput] = useState('500');
   const [auditResult, setAuditResult] = useState(null);
+  const [playingAudioType, setPlayingAudioType] = useState(null); // 'fare' | 'route' | 'audit' | null
 
   // Location objects (Selected from Landmarks or Metro Stations)
   const originLandmark = ALL_DESTINATIONS.find((l) => l.id === originId) || ALL_DESTINATIONS[0];
@@ -73,6 +77,90 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
       luggageCount,
     });
   }, [cityKey, computedDistance, isNight, luggageCount]);
+
+  // Clean location labels for speech
+  const cleanOrigin = (originLandmark.name || '').replace(/^🚇\s*/, '').replace(/\s*\([^)]*\)$/, '');
+  const cleanDest = (destLandmark.name || '').replace(/^🚇\s*/, '').replace(/\s*\([^)]*\)$/, '');
+
+  // Recommended Transit Route formulation
+  const routeRecommendation = useMemo(() => {
+    if (cityKey === 'mumbai') {
+      return `Take the Western Line local train or Mumbai Metro towards ${cleanDest}. Estimated transit time is ${fareData.metro.estimatedTimeMin} minutes. Smart card fare is ₹${fareData.metro.smartCardFare}.`;
+    }
+    if (cityKey === 'bengaluru') {
+      return `Take Namma Metro Purple or Green Line towards ${cleanDest}. Change at Nadaprabhu Kempegowda Majestic if switching corridors. Fare is ₹${fareData.metro.smartCardFare}.`;
+    }
+    // Delhi NCR
+    let interchange = 'Take the metro from Rajiv Chowk and change at Central Secretariat.';
+    if (cleanOrigin.toLowerCase().includes('rajiv') || cleanDest.toLowerCase().includes('secretariat')) {
+      interchange = 'Take the metro from Rajiv Chowk and change at Central Secretariat.';
+    } else if (cleanOrigin.toLowerCase().includes('noida') || cleanDest.toLowerCase().includes('noida')) {
+      interchange = 'Take the Blue Line towards Noida and change at Botanical Garden for Magenta Line.';
+    } else if (cleanOrigin.toLowerCase().includes('gurugram') || cleanDest.toLowerCase().includes('gurugram')) {
+      interchange = 'Take the Yellow Line direct to Millennium City Centre Gurugram, or interchange at Sikanderpur.';
+    } else {
+      interchange = `Take the metro from ${cleanOrigin} and change at Rajiv Chowk or Central Secretariat towards ${cleanDest}.`;
+    }
+    return `${interchange} Estimated travel time is ${fareData.metro.estimatedTimeMin} minutes. Official token fare is ${fareData.metro.tokenFare} rupees, smart card fare is ${fareData.metro.smartCardFare} rupees.`;
+  }, [cityKey, cleanOrigin, cleanDest, fareData.metro]);
+
+  // Audio Handlers powered by Sarvam Bulbul Indic TTS
+  const handlePlayFareAudio = async () => {
+    if (playingAudioType === 'fare') {
+      stopCurrentAudio();
+      setPlayingAudioType(null);
+      return;
+    }
+    stopCurrentAudio();
+    setPlayingAudioType('fare');
+    const fareSpeech = `Your estimated auto fare from ${cleanOrigin} to ${cleanDest} is ${fareData.auto.min} to ${fareData.auto.max} rupees by legal meter. ${isNight ? 'Night surcharge of 25 percent is included.' : ''}`;
+    await playSarvamSpeech({
+      text: fareSpeech,
+      languageCode: 'en-IN',
+      speaker: 'meera',
+      onStart: () => setPlayingAudioType('fare'),
+      onEnd: () => setPlayingAudioType(null),
+      onError: () => setPlayingAudioType(null),
+    });
+  };
+
+  const handlePlayRouteAudio = async () => {
+    if (playingAudioType === 'route') {
+      stopCurrentAudio();
+      setPlayingAudioType(null);
+      return;
+    }
+    stopCurrentAudio();
+    setPlayingAudioType('route');
+    await playSarvamSpeech({
+      text: routeRecommendation,
+      languageCode: 'en-IN',
+      speaker: 'priya',
+      onStart: () => setPlayingAudioType('route'),
+      onEnd: () => setPlayingAudioType(null),
+      onError: () => setPlayingAudioType(null),
+    });
+  };
+
+  const handlePlayAuditAudio = async () => {
+    if (!auditResult) return;
+    if (playingAudioType === 'audit') {
+      stopCurrentAudio();
+      setPlayingAudioType(null);
+      return;
+    }
+    stopCurrentAudio();
+    setPlayingAudioType('audit');
+    const auditSpeech = `Driver quote audit result: ${auditResult.badge}. Driver quoted ${driverQuoteInput} rupees. ${auditResult.message}. Advice: ${auditResult.advice}`;
+    await playSarvamSpeech({
+      text: auditSpeech,
+      languageCode: 'en-IN',
+      speaker: 'meera',
+      onStart: () => setPlayingAudioType('audit'),
+      onEnd: () => setPlayingAudioType(null),
+      onError: () => setPlayingAudioType(null),
+    });
+  };
 
   // Run audit on driver quote
   const handleAuditQuote = () => {
@@ -338,6 +426,44 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
           </div>
         </div>
 
+        {/* Recommended Route Banner (Bulbul Voice Enabled) */}
+        <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-2.5">
+            <Navigation className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+            <div>
+              <div className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                <span>🚇 Recommended Route</span>
+                <span className="text-[10px] bg-emerald-200/80 text-emerald-900 px-1.5 py-0.2 rounded font-mono font-bold">Bulbul Voice Enabled</span>
+              </div>
+              <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
+                {routeRecommendation}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handlePlayRouteAudio}
+            className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer ${
+              playingAudioType === 'route'
+                ? 'bg-rose-600 text-white animate-pulse'
+                : 'bg-emerald-700 hover:bg-emerald-800 text-white'
+            }`}
+            title="Listen to recommended transit route with Sarvam Bulbul AI"
+          >
+            {playingAudioType === 'route' ? (
+              <>
+                <Square className="w-3.5 h-3.5 fill-current" />
+                <span>Stop</span>
+              </>
+            ) : (
+              <>
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>Listen to Route</span>
+              </>
+            )}
+          </button>
+        </div>
+
         {/* Multi-Modal Comparison Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* 1. Official Auto Meter (Highlight) */}
@@ -357,6 +483,28 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
             <div className="mt-2.5 pt-2 border-t border-terracotta-200 text-[11px] text-[#A03216] font-semibold">
               💡 Say: "Bhaiya meter se chalo"
             </div>
+            <button
+              type="button"
+              onClick={handlePlayFareAudio}
+              className={`mt-2.5 w-full flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-lg text-xs font-bold transition-all shadow-2xs ${
+                playingAudioType === 'fare'
+                  ? 'bg-rose-600 text-white animate-pulse'
+                  : 'bg-white text-[#D9532F] border border-terracotta-200 hover:bg-terracotta-50'
+              }`}
+              title="Listen to official auto fare estimate with Sarvam Bulbul AI"
+            >
+              {playingAudioType === 'fare' ? (
+                <>
+                  <Square className="w-3.5 h-3.5 fill-current" />
+                  <span>Stop Fare Audio</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-3.5 h-3.5" />
+                  <span>Listen to Fare</span>
+                </>
+              )}
+            </button>
           </div>
 
           {/* 2. Cab Aggregator (Uber / Ola Mini) */}
@@ -392,6 +540,28 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
             <div className="mt-2.5 pt-2 border-t border-emerald-100 text-[11px] text-stone-500 font-medium">
               Est. time: ~{fareData.metro.estimatedTimeMin} mins
             </div>
+            <button
+              type="button"
+              onClick={handlePlayRouteAudio}
+              className={`mt-2.5 w-full flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-lg text-xs font-bold transition-all shadow-2xs ${
+                playingAudioType === 'route'
+                  ? 'bg-emerald-700 text-white animate-pulse'
+                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+              }`}
+              title="Listen to recommended transit route with Sarvam Bulbul AI"
+            >
+              {playingAudioType === 'route' ? (
+                <>
+                  <Square className="w-3.5 h-3.5 fill-current" />
+                  <span>Stop Route Audio</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-3.5 h-3.5" />
+                  <span>Listen to Route</span>
+                </>
+              )}
+            </button>
           </div>
 
           {/* 4. Bike Taxi (Rapido) */}
@@ -460,15 +630,35 @@ export default function FairPriceEngine({ onClose, defaultCity = 'delhi' }) {
                 ? 'bg-amber-50 border-amber-300 text-amber-950'
                 : 'bg-emerald-50 border-emerald-300 text-emerald-950'
             }`}>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
                 <span className="font-bold text-sm flex items-center gap-2">
                   {auditResult.status === 'severe_gouge' && <AlertTriangle className="w-4 h-4 text-rose-600" />}
                   {auditResult.status === 'fair' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                   {auditResult.badge}
                 </span>
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-white border border-stone-200">
-                  {auditResult.percentageDiff > 0 ? `+${auditResult.percentageDiff}% over meter` : 'Within Legal Meter'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePlayAuditAudio}
+                    className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-white border border-stone-300 text-stone-800 hover:bg-stone-50 transition-colors shadow-2xs"
+                    title="Listen to auditor verdict with Bulbul AI"
+                  >
+                    {playingAudioType === 'audit' ? (
+                      <>
+                        <Square className="w-3 h-3 text-rose-500 fill-current" />
+                        <span className="text-rose-600 font-semibold">Stop</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3 h-3 text-[#D9532F]" />
+                        <span>Listen to Verdict</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-white border border-stone-200">
+                    {auditResult.percentageDiff > 0 ? `+${auditResult.percentageDiff}% over meter` : 'Within Legal Meter'}
+                  </span>
+                </div>
               </div>
               <p className="text-xs font-medium mb-2">{auditResult.message}</p>
               <div className="text-xs bg-white p-2.5 rounded-lg border border-stone-200 text-stone-800">

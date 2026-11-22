@@ -226,7 +226,7 @@ export default function App() {
       });
   }, []);
 
-  // Filter questions based on selected city and search query
+  // Filter questions based on selected city, search query, and voice intent
   const displayedQuestions = questions.filter((q) => {
     // City filter
     if (selectedCity && q.city && !q.city.toLowerCase().includes(selectedCity.toLowerCase())) {
@@ -234,14 +234,35 @@ export default function App() {
     }
 
     if (!searchQuery) return true;
-    const s = searchQuery.toLowerCase();
-    return (
+    const s = searchQuery.toLowerCase().trim();
+
+    // 1. Direct match
+    const directMatch = (
       q.title.toLowerCase().includes(s) ||
       q.body.toLowerCase().includes(s) ||
       q.locationName.toLowerCase().includes(s) ||
       (q.community && q.community.toLowerCase().includes(s)) ||
       q.tags.some((t) => t.toLowerCase().includes(s))
     );
+    if (directMatch) return true;
+
+    // 2. Voice search keyword extraction (e.g. "Find the nearest metro station" -> matches "metro", "station")
+    const cleanWords = s
+      .replace(/^(find|search|show|where is|how to get to|tell me about|nearest|best)\s+/gi, '')
+      .split(/\s+/)
+      .filter((w) => w.length > 2);
+
+    if (cleanWords.length > 0) {
+      return cleanWords.some((w) =>
+        q.title.toLowerCase().includes(w) ||
+        q.body.toLowerCase().includes(w) ||
+        q.locationName.toLowerCase().includes(w) ||
+        (q.community && q.community.toLowerCase().includes(w)) ||
+        q.tags.some((t) => t.toLowerCase().includes(w))
+      );
+    }
+
+    return false;
   });
 
   // Calculate total pinned spots

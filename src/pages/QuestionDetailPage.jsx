@@ -21,7 +21,8 @@ import {
   Award,
   Languages,
   Volume2,
-  Loader2
+  Loader2,
+  Square
 } from 'lucide-react';
 import { POPULAR_LANDMARKS } from '../data/tariffs.js';
 import PhotoGallery from '../components/PhotoGallery.jsx';
@@ -29,7 +30,7 @@ import PhotoUploader from '../components/PhotoUploader.jsx';
 import LocationPickerMap from '../components/LocationPickerMap.jsx';
 import RideHandoffWidget from '../components/RideHandoffWidget.jsx';
 import StayAndToursWidget from '../components/StayAndToursWidget.jsx';
-import { translateTextWithSarvam, playSarvamSpeech } from '../utils/sarvamAudio.js';
+import { translateTextWithSarvam, playSarvamSpeech, stopCurrentAudio } from '../utils/sarvamAudio.js';
 
 export default function QuestionDetailPage({
   question,
@@ -59,6 +60,27 @@ export default function QuestionDetailPage({
   const [translating, setTranslating] = useState(false);
   const [translatedData, setTranslatedData] = useState({}); // { [lang]: { title, body } }
   const [playingTariffAudio, setPlayingTariffAudio] = useState(false);
+  const [playingAnswerId, setPlayingAnswerId] = useState(null);
+
+  const handlePlayAnswer = async (ans) => {
+    if (playingAnswerId === ans.id) {
+      stopCurrentAudio();
+      setPlayingAnswerId(null);
+      return;
+    }
+    stopCurrentAudio();
+    setPlayingAnswerId(ans.id);
+    const text = translatedData[activeLang]?.answers?.[ans.id] || ans.body;
+    const speech = `Local advice from ${ans.author?.name || 'Local Guide'}: ${text}`;
+    await playSarvamSpeech({
+      text: speech,
+      languageCode: activeLang || 'en-IN',
+      speaker: 'meera',
+      onStart: () => setPlayingAnswerId(ans.id),
+      onEnd: () => setPlayingAnswerId(null),
+      onError: () => setPlayingAnswerId(null),
+    });
+  };
 
   const handleTranslate = async (targetLang) => {
     if (targetLang === activeLang) return;
@@ -554,7 +576,31 @@ export default function QuestionDetailPage({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Bulbul Indic TTS Speaker Button for Community Answers */}
+                          <button
+                            type="button"
+                            onClick={() => handlePlayAnswer(ans)}
+                            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
+                              playingAnswerId === ans.id
+                                ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 animate-pulse'
+                                : 'bg-white dark:bg-[#181818] border-stone-200 dark:border-[#262626] text-stone-700 dark:text-stone-300 hover:text-emerald-600 hover:border-emerald-300'
+                            }`}
+                            title="Listen to this community answer with Sarvam Bulbul AI"
+                          >
+                            {playingAnswerId === ans.id ? (
+                              <>
+                                <Square className="w-3 h-3 fill-current" />
+                                <span>Stop</span>
+                              </>
+                            ) : (
+                              <>
+                                <Volume2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                <span>Listen</span>
+                              </>
+                            )}
+                          </button>
+
                           {onAcceptAnswer && (
                             <button
                               onClick={() => onAcceptAnswer(question.id, ans.id)}

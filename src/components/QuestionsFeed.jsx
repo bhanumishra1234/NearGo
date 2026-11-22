@@ -15,10 +15,13 @@ import {
   Navigation,
   Check,
   Flame,
-  Tag
+  Tag,
+  Volume2,
+  Square
 } from 'lucide-react';
 import { VIBE_CATEGORIES } from '../data/vibeData.js';
 import PhotoGallery from './PhotoGallery.jsx';
+import { playSarvamSpeech, stopCurrentAudio } from '../utils/sarvamAudio.js';
 
 export default function QuestionsFeed({
   questions = [],
@@ -33,6 +36,48 @@ export default function QuestionsFeed({
   const [activeCategory, setActiveCategory] = useState('all');
   const [onlyFareQuestions, setOnlyFareQuestions] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  const [playingAnswerId, setPlayingAnswerId] = useState(null);
+  const [playingFareId, setPlayingFareId] = useState(null);
+
+  const handlePlayAnswer = async (qId, answer) => {
+    if (playingAnswerId === qId) {
+      stopCurrentAudio();
+      setPlayingAnswerId(null);
+      return;
+    }
+    stopCurrentAudio();
+    setPlayingFareId(null);
+    setPlayingAnswerId(qId);
+    const speech = `Local advice from ${answer.author?.name || 'Local Guide'}: ${answer.body}`;
+    await playSarvamSpeech({
+      text: speech,
+      languageCode: 'en-IN',
+      speaker: 'meera',
+      onStart: () => setPlayingAnswerId(qId),
+      onEnd: () => setPlayingAnswerId(null),
+      onError: () => setPlayingAnswerId(null),
+    });
+  };
+
+  const handlePlayFare = async (q) => {
+    if (playingFareId === q.id) {
+      stopCurrentAudio();
+      setPlayingFareId(null);
+      return;
+    }
+    stopCurrentAudio();
+    setPlayingAnswerId(null);
+    setPlayingFareId(q.id);
+    const fareSpeech = `Estimated fare for ${q.fareCheck.distanceKm} kilometers: Official auto meter is ${q.fareCheck.officialAutoMeter}. Cab aggregators estimate ${q.fareCheck.cabEstimate}. Metro fare is ${q.fareCheck.metroFare}.`;
+    await playSarvamSpeech({
+      text: fareSpeech,
+      languageCode: 'en-IN',
+      speaker: 'meera',
+      onStart: () => setPlayingFareId(q.id),
+      onEnd: () => setPlayingFareId(null),
+      onError: () => setPlayingFareId(null),
+    });
+  };
 
   const CATEGORIES = [
     { id: 'all', label: 'All Discussions' },
@@ -239,14 +284,41 @@ export default function QuestionsFeed({
               {/* EMBEDDED FAIR PRICE CARD */}
               {q.fareCheck && (
                 <div className="mt-4 bg-[#FAF8F5] dark:bg-[#0e0e0e] border border-terracotta-200/90 dark:border-[#1e1e1e] rounded-xl p-3.5 sm:p-4 text-xs">
-                  <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                     <div className="flex items-center gap-1.5 text-[#D9532F] font-bold uppercase tracking-wider text-[11px]">
                       <ShieldCheck className="w-4 h-4 text-[#D9532F]" />
                       <span>REAL-TIME FAIR FARE BENCHMARK</span>
                     </div>
-                    <span className="text-[11px] text-stone-500 dark:text-stone-400 font-mono font-medium">
-                      {q.fareCheck.distanceKm} km route
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayFare(q);
+                        }}
+                        className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+                          playingFareId === q.id
+                            ? 'bg-rose-600 text-white animate-pulse'
+                            : 'bg-white dark:bg-[#181818] text-[#D9532F] border-terracotta-200 dark:border-terracotta-900/60 hover:bg-terracotta-50'
+                        }`}
+                        title="Listen to fare estimate with Bulbul AI"
+                      >
+                        {playingFareId === q.id ? (
+                          <>
+                            <Square className="w-2.5 h-2.5 fill-current" />
+                            <span>Stop</span>
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="w-2.5 h-2.5" />
+                            <span>Listen to Fare</span>
+                          </>
+                        )}
+                      </button>
+                      <span className="text-[11px] text-stone-500 dark:text-stone-400 font-mono font-medium">
+                        {q.fareCheck.distanceKm} km route
+                      </span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 my-2">
@@ -313,9 +385,36 @@ export default function QuestionsFeed({
               {/* Verified Local Answer Preview */}
               {q.answers.length > 0 && (
                 <div className="mt-3.5 pt-3 border-t border-stone-100 dark:border-[#1a1a1a] space-y-2">
-                  <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span>Top Local Advice • {q.answers[0].author.name} ({q.answers[0].author.badge})</span>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Top Local Advice • {q.answers[0].author.name} ({q.answers[0].author.badge})</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlayAnswer(q.id, q.answers[0]);
+                      }}
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+                        playingAnswerId === q.id
+                          ? 'bg-rose-600 text-white animate-pulse'
+                          : 'bg-white dark:bg-[#181818] border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+                      }`}
+                      title="Listen to this local advice with Bulbul AI"
+                    >
+                      {playingAnswerId === q.id ? (
+                        <>
+                          <Square className="w-2.5 h-2.5 fill-current" />
+                          <span>Stop</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+                          <span>Listen</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                   <p className="text-xs sm:text-sm text-stone-700 dark:text-stone-300 leading-relaxed bg-[#FAF8F5] dark:bg-[#111111] p-3 rounded-xl border border-[#E8E5DF] dark:border-[#1a1a1a]">
                     "{q.answers[0].body}"

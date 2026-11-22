@@ -18,10 +18,14 @@ import {
   Gift,
   Store,
   Landmark,
-  Award
+  Award,
+  Mic,
+  MicOff,
+  Volume2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getUserCredTier } from '../utils/credEngine.js';
+import { transcribeAudioWithSarvam } from '../utils/sarvamAudio.js';
 
 export default function Navbar({
   selectedCity,
@@ -48,6 +52,128 @@ export default function Navbar({
   const { user, signOut, signInAsDemo } = useAuth();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Saaras AI Voice Search State
+  const [isListening, setIsListening] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState('');
+  const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const audioStreamRef = useRef(null);
+  const capturedTextRef = useRef('');
+
+  const stopVoiceSearch = () => {
+    setIsListening(false);
+    setVoiceStatus('');
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+      recognitionRef.current = null;
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {}
+      mediaRecorderRef.current = null;
+    }
+    if (audioStreamRef.current) {
+      try {
+        audioStreamRef.current.getTracks().forEach((t) => t.stop());
+      } catch (e) {}
+      audioStreamRef.current = null;
+    }
+  };
+
+  const handleToggleVoiceSearch = async () => {
+    if (isListening) {
+      stopVoiceSearch();
+      return;
+    }
+
+    capturedTextRef.current = '';
+    audioChunksRef.current = [];
+    setIsListening(true);
+    setVoiceStatus('Listening... Speak now (e.g. "Find the nearest metro station")');
+
+    // 1. Browser Speech Recognition (Instant streaming transcript)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-IN';
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event) => {
+          let currentTranscript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            currentTranscript += event.results[i][0].transcript;
+          }
+          if (currentTranscript.trim()) {
+            capturedTextRef.current = currentTranscript.trim();
+            setSearchQuery(currentTranscript.trim());
+            if (setActiveTab) setActiveTab('feed');
+          }
+        };
+
+        recognition.onerror = (e) => {
+          console.warn('[Navbar SpeechRecognition error]:', e.error);
+        };
+
+        recognition.onend = () => {
+          stopVoiceSearch();
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+      } catch (err) {
+        console.warn('[Navbar SpeechRecognition init error]:', err);
+      }
+    }
+
+    // 2. MediaRecorder + Sarvam Saaras AI Speech-to-Text Fallback/Parallel
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioStreamRef.current = stream;
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          if (!capturedTextRef.current && audioChunksRef.current.length > 0) {
+            setVoiceStatus('Transcribing with Sarvam Saaras AI...');
+            const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            try {
+              const transcript = await transcribeAudioWithSarvam({ audioBlob: blob, languageCode: 'hi-IN' });
+              if (transcript && transcript.trim()) {
+                setSearchQuery(transcript.trim());
+                if (setActiveTab) setActiveTab('feed');
+              }
+            } catch (err) {
+              console.warn('[Navbar Sarvam Saaras STT Error]:', err);
+            }
+          }
+          stopVoiceSearch();
+        };
+
+        mediaRecorder.start();
+      } catch (err) {
+        console.warn('[Navbar Mic Access Error]:', err);
+        setVoiceStatus('Microphone permission required');
+        setTimeout(() => stopVoiceSearch(), 2500);
+      }
+    } else if (!SpeechRecognition) {
+      setVoiceStatus('Audio recording not supported');
+      setTimeout(() => stopVoiceSearch(), 2500);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -125,26 +251,64 @@ export default function Navbar({
             </div>
           </div>
 
-          {/* Center: Search Input */}
-          <div className="flex-1 max-w-md mx-2 sm:mx-6">
+          {/* Center: Search Input & Saaras Voice Search */}
+          <div className="flex-1 max-w-md mx-2 sm:mx-6 relative">
             <div className="relative w-full">
               <Search className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search local questions, fares, gems..."
+                placeholder={isListening ? 'Listening... Speak (e.g. "Find nearest metro")' : 'Search local questions, fares, gems...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#F4F1EA] dark:bg-[#111111] hover:bg-[#EFECE5] dark:hover:bg-[#161616] focus:bg-white dark:focus:bg-[#141414] border border-transparent focus:border-stone-300 dark:focus:border-[#2a2a2a] rounded-full pl-8 pr-7 py-1.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none transition-all"
+                className={`w-full bg-[#F4F1EA] dark:bg-[#111111] hover:bg-[#EFECE5] dark:hover:bg-[#161616] focus:bg-white dark:focus:bg-[#141414] border rounded-full pl-8 pr-16 py-1.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none transition-all ${
+                  isListening
+                    ? 'border-rose-400 ring-2 ring-rose-200 dark:ring-rose-950/60 bg-rose-50/50'
+                    : 'border-transparent focus:border-stone-300 dark:focus:border-[#2a2a2a]'
+                }`}
               />
-              {searchQuery && (
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
+                    title="Clear search"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
                 <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
+                  type="button"
+                  onClick={handleToggleVoiceSearch}
+                  className={`p-1.5 rounded-full transition-all flex items-center justify-center cursor-pointer ${
+                    isListening
+                      ? 'bg-rose-600 text-white animate-pulse shadow-md'
+                      : 'text-stone-500 hover:text-[#D9532F] hover:bg-stone-200/60 dark:hover:bg-[#202020]'
+                  }`}
+                  title={isListening ? 'Stop voice listening' : 'Voice Search with Sarvam Saaras AI (e.g. "Find nearest metro station")'}
+                  aria-label="Voice Search with Sarvam Saaras"
                 >
-                  <X className="w-3 h-3" />
+                  <Mic className={`w-3.5 h-3.5 ${isListening ? 'animate-bounce' : ''}`} />
                 </button>
-              )}
+              </div>
             </div>
+
+            {/* Live Voice Search Transcription Status Pill */}
+            {isListening && (
+              <div className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-stone-900 text-white text-[11px] font-semibold py-1 px-3 rounded-full shadow-lg flex items-center justify-between border border-stone-700 animate-fadeIn">
+                <span className="flex items-center gap-1.5 truncate">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0" />
+                  <span className="truncate">{voiceStatus || 'Listening... Speak now (e.g. "Find the nearest metro station")'}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={stopVoiceSearch}
+                  className="ml-2 text-stone-300 hover:text-white underline text-[10px] uppercase font-bold shrink-0"
+                >
+                  Done
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right: View Tabs, Ask Button, & Profile */}
