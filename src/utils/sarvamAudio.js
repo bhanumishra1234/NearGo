@@ -36,7 +36,8 @@ export async function playSarvamSpeech({
       const data = await response.json();
 
       if (data.audioBase64) {
-        const audio = new Audio(`data:audio/wav;base64,${data.audioBase64}`);
+        const mime = data.format === 'mp3' ? 'audio/mp3' : 'audio/wav';
+        const audio = new Audio(`data:${mime};base64,${data.audioBase64}`);
         currentAudioInstance = audio;
 
         audio.onended = () => {

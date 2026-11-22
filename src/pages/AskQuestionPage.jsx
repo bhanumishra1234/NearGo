@@ -45,6 +45,10 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
   const [isRecording, setIsRecording] = useState(null); // 'title' | 'body' | null
   const [recordingStatus, setRecordingStatus] = useState('');
   const recognitionRef = React.useRef(null);
+  const mediaRecorderRef = React.useRef(null);
+  const audioStreamRef = React.useRef(null);
+  const audioChunksRef = React.useRef([]);
+  const capturedTextRef = React.useRef('');
   const [selectedCity, setSelectedCity] = useState(initialCity);
   const [authorName, setAuthorName] = useState('Traveler ' + Math.floor(100 + Math.random() * 900));
   const [category, setCategory] = useState('transport');
@@ -70,59 +74,112 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const handleToggleVoice = (field) => {
+  const stopVoiceCapture = () => {
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch (e) {}
+      recognitionRef.current = null;
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try { mediaRecorderRef.current.stop(); } catch (e) {}
+    }
+    if (audioStreamRef.current) {
+      try { audioStreamRef.current.getTracks().forEach(t => t.stop()); } catch (e) {}
+      audioStreamRef.current = null;
+    }
+    setIsRecording(null);
+    setRecordingStatus('');
+  };
+
+  const handleToggleVoice = async (field) => {
     if (isRecording) {
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch (e) {}
-      }
-      setIsRecording(null);
-      setRecordingStatus('');
+      stopVoiceCapture();
       return;
     }
 
+    setIsRecording(field);
+    setRecordingStatus('Listening... Speak now');
+    capturedTextRef.current = '';
+    audioChunksRef.current = [];
+
+    // 1. Start browser SpeechRecognition for live interim preview
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRec) {
-      alert('Speech recognition is not supported in this browser. Please type your text.');
-      return;
+    if (SpeechRec) {
+      try {
+        const recognition = new SpeechRec();
+        recognition.lang = 'hi-IN';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event) => {
+          let currentTranscript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            currentTranscript += event.results[i][0].transcript;
+          }
+          if (currentTranscript.trim()) {
+            capturedTextRef.current = currentTranscript.trim();
+            if (field === 'title') {
+              setTitle(currentTranscript.trim());
+            } else {
+              setBody(currentTranscript.trim());
+            }
+          }
+        };
+
+        recognition.onerror = (e) => {
+          console.warn('[SpeechRecognition notice]:', e.error);
+        };
+
+        recognition.onend = () => {
+          // Handled on stop
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+      } catch (err) {
+        console.warn('[SpeechRecognition initialization error]:', err);
+      }
     }
 
-    try {
-      const recognition = new SpeechRec();
-      recognition.lang = 'hi-IN'; // Sarvam Indic primary
-      recognition.continuous = false;
-      recognition.interimResults = false;
+    // 2. Start MediaRecorder as backup & for Sarvam Saaras AI
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioStreamRef.current = stream;
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
 
-      recognition.onstart = () => {
-        setIsRecording(field);
-        setRecordingStatus('Listening in Hindi/English (Sarvam AI)...');
-      };
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
 
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        if (field === 'title') {
-          setTitle((prev) => (prev ? prev + ' ' + transcript : transcript));
-        } else {
-          setBody((prev) => (prev ? prev + ' ' + transcript : transcript));
+        mediaRecorder.onstop = async () => {
+          if (!capturedTextRef.current && audioChunksRef.current.length > 0) {
+            const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            try {
+              const transcribed = await transcribeAudioWithSarvam({ audioBlob: blob, languageCode: 'hi-IN' });
+              if (transcribed && transcribed.trim()) {
+                if (field === 'title') {
+                  setTitle(prev => prev ? prev + ' ' + transcribed.trim() : transcribed.trim());
+                } else {
+                  setBody(prev => prev ? prev + ' ' + transcribed.trim() : transcribed.trim());
+                }
+              }
+            } catch (err) {
+              console.warn('[Sarvam STT failed]:', err);
+            }
+          }
+        };
+
+        mediaRecorder.start(250);
+      } catch (micErr) {
+        console.warn('[Mic permission or access issue]:', micErr);
+        if (!SpeechRec) {
+          alert('Microphone access is needed for voice dictation. Please allow microphone permissions in your browser.');
+          stopVoiceCapture();
         }
-        setIsRecording(null);
-        setRecordingStatus('');
-      };
-
-      recognition.onerror = () => {
-        setIsRecording(null);
-        setRecordingStatus('');
-      };
-
-      recognition.onend = () => {
-        setIsRecording(null);
-        setRecordingStatus('');
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch {
-      setIsRecording(null);
-      setRecordingStatus('');
+      }
     }
   };
 
@@ -279,8 +336,8 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                       }`}
                       title="Speak title in Hindi/English (Sarvam Saaras AI)"
                     >
-                      <Mic className="w-2.5 h-2.5" />
-                      <span>{isRecording === 'title' ? 'Listening...' : 'Speak (Sarvam)'}</span>
+                      <Mic className={`w-2.5 h-2.5 ${isRecording === 'title' ? 'animate-bounce' : ''}`} />
+                      <span>{isRecording === 'title' ? '🔴 Stop Listening' : '🎙️ Speak (Sarvam)'}</span>
                     </button>
                     <span className="text-[10px] text-stone-400 font-mono">
                       {title.length}/100
@@ -296,6 +353,12 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl px-3.5 py-2 text-xs sm:text-sm text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-terracotta-400 font-medium"
                 />
+                {isRecording === 'title' && (
+                  <p className="text-[10px] text-red-600 dark:text-red-400 font-semibold animate-pulse mt-1 flex items-center gap-1">
+                    <span>🔴</span>
+                    <span>Listening in Hindi or English... Speak into your mic, then tap Stop.</span>
+                  </p>
+                )}
               </div>
 
               {/* Body / Context (Compact) */}
@@ -309,13 +372,13 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                     onClick={() => handleToggleVoice('body')}
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all ${
                       isRecording === 'body'
-                        ? 'bg-red-500 text-white animate-pulse'
+                        ? 'bg-red-600 text-white animate-pulse'
                         : 'bg-stone-100 dark:bg-[#1c1c1c] text-[#D9532F] hover:bg-stone-200'
                     }`}
                     title="Speak details in Hindi/English (Sarvam Saaras AI)"
                   >
-                    <Mic className="w-2.5 h-2.5" />
-                    <span>{isRecording === 'body' ? 'Listening...' : 'Speak (Sarvam)'}</span>
+                    <Mic className={`w-2.5 h-2.5 ${isRecording === 'body' ? 'animate-bounce' : ''}`} />
+                    <span>{isRecording === 'body' ? '🔴 Stop Listening' : '🎙️ Speak (Sarvam)'}</span>
                   </button>
                 </div>
                 <textarea
@@ -326,6 +389,12 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                   onChange={(e) => setBody(e.target.value)}
                   className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl p-2.5 text-xs text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-terracotta-400 leading-relaxed"
                 />
+                {isRecording === 'body' && (
+                  <p className="text-[10px] text-red-600 dark:text-red-400 font-semibold animate-pulse mt-1 flex items-center gap-1">
+                    <span>🔴</span>
+                    <span>Listening in Hindi or English... Speak into your mic, then tap Stop.</span>
+                  </p>
+                )}
               </div>
 
               {/* Location Pinning (Compact Row) */}

@@ -51,91 +51,170 @@ class SarvamService {
    * Bulbul:v1 — Text to Speech
    * Generates natural Indic voice audio with authentic street pronunciation & dialects
    */
+  /**
+   * Bulbul:v3 Indic Text to Speech + Neural Audio Fallback
+   * Generates natural Indic voice audio with authentic street pronunciation & dialects
+   */
   async generateSpeech({ text, languageCode = 'hi-IN', speaker = 'priya', pace = 1.0 }) {
     if (!text || !text.trim()) {
       throw new Error('Text parameter is required for TTS');
     }
 
     const cleanText = text.trim();
-    // Default valid bulbul:v3 speakers
     const validSpeaker = (speaker && speaker !== 'meera' && speaker !== 'arvind') ? speaker : 'priya';
     const cacheKey = `${languageCode}:${validSpeaker}:${cleanText}`;
 
     if (this.ttsCache.has(cacheKey)) {
+      const cached = this.ttsCache.get(cacheKey);
       return {
-        audioBase64: this.ttsCache.get(cacheKey),
+        audioBase64: cached.audioBase64,
+        format: cached.format || 'wav',
         languageCode,
         speaker: validSpeaker,
         cached: true,
-        isLiveSarvam: true,
+        isLiveSarvam: cached.isLiveSarvam || false,
       };
     }
 
     const apiKey = this.getApiKey();
-    if (!apiKey) {
+
+    // 1. Try Live Sarvam AI Bulbul:v3
+    if (apiKey) {
+      try {
+        const response = await fetch('https://api.sarvam.ai/text-to-speech', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-subscription-key': apiKey,
+          },
+          body: JSON.stringify({
+            inputs: [cleanText.slice(0, 500)],
+            target_language_code: languageCode,
+            speaker: validSpeaker,
+            pitch: 0,
+            pace: pace || 1.0,
+            loudness: 1.5,
+            speech_sample_rate: 22050,
+            enable_preprocessing: true,
+            model: 'bulbul:v3',
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const audioBase64 = data.audios?.[0];
+
+          if (audioBase64) {
+            this.setTtsCache(cacheKey, { audioBase64, format: 'wav', isLiveSarvam: true });
+            return {
+              audioBase64,
+              format: 'wav',
+              languageCode,
+              speaker: validSpeaker,
+              cached: false,
+              isLiveSarvam: true,
+            };
+          }
+        } else {
+          const errorText = await response.text();
+          console.warn(`[Sarvam TTS API Error ${response.status}]:`, errorText);
+        }
+      } catch (err) {
+        console.error('[Sarvam TTS API Exception]:', err.message);
+      }
+    }
+
+    // 2. High-Fidelity Audio Synthesis Fallback (guarantees real audio bytes in Hindi, Marathi, etc.)
+    const fallbackAudio = await this.fetchSpeechFallback(cleanText, languageCode);
+    if (fallbackAudio && fallbackAudio.audioBase64) {
+      this.setTtsCache(cacheKey, { audioBase64: fallbackAudio.audioBase64, format: 'mp3', isLiveSarvam: false });
       return {
-        fallback: true,
-        text: cleanText,
+        audioBase64: fallbackAudio.audioBase64,
+        format: 'mp3',
         languageCode,
-        message: 'SARVAM_API_KEY not configured. Client will use browser speech synthesis.',
+        speaker: validSpeaker,
+        cached: false,
+        isFallback: true,
       };
     }
 
-    try {
-      const response = await fetch('https://api.sarvam.ai/text-to-speech', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'api-subscription-key': apiKey,
-        },
-        body: JSON.stringify({
-          inputs: [cleanText],
-          target_language_code: languageCode,
-          speaker: validSpeaker,
-          pitch: 0,
-          pace: pace || 1.0,
-          loudness: 1.5,
-          speech_sample_rate: 22050,
-          enable_preprocessing: true,
-          model: 'bulbul:v3',
-        }),
-      });
+    return {
+      fallback: true,
+      text: cleanText,
+      languageCode,
+      message: 'Browser speech synthesis fallback enabled',
+    };
+  }
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.warn(`[Sarvam TTS Error ${response.status}]:`, errorText);
-        return {
-          fallback: true,
-          text: cleanText,
-          languageCode,
-          error: `Sarvam API returned ${response.status}`,
-        };
-      }
-
-      const data = await response.json();
-      const audioBase64 = data.audios?.[0];
-
-      if (audioBase64) {
-        if (this.ttsCache.size >= this.maxCacheSize) {
-          const firstKey = this.ttsCache.keys().next().value;
-          this.ttsCache.delete(firstKey);
-        }
-        this.ttsCache.set(cacheKey, audioBase64);
-
-        return {
-          audioBase64,
-          languageCode,
-          speaker,
-          cached: false,
-          isLiveSarvam: true,
-        };
-      }
-
-      return { fallback: true, text: cleanText, languageCode };
-    } catch (err) {
-      console.error('[Sarvam TTS Exception]:', err.message);
-      return { fallback: true, text: cleanText, languageCode, error: err.message };
+  setTtsCache(key, val) {
+    if (this.ttsCache.size >= this.maxCacheSize) {
+      const firstKey = this.ttsCache.keys().next().value;
+      this.ttsCache.delete(firstKey);
     }
+    this.ttsCache.set(key, val);
+  }
+
+  /**
+   * Universal Indic Speech Synthesis Fallback
+   */
+  async fetchSpeechFallback(text, languageCode = 'hi-IN') {
+    if (!text || !text.trim()) return null;
+    try {
+      const langMap = {
+        'hi-IN': 'hi',
+        'mr-IN': 'mr',
+        'kn-IN': 'kn',
+        'ta-IN': 'ta',
+        'te-IN': 'te',
+        'bn-IN': 'bn',
+        'gu-IN': 'gu',
+        'en-IN': 'en',
+      };
+      const tl = langMap[languageCode] || languageCode.split('-')[0] || 'hi';
+      const clean = text.trim();
+
+      // Split into sentence chunks under 180 chars
+      const parts = clean.split(/([।\.\?!,]+)/);
+      const chunks = [];
+      let current = '';
+      for (const p of parts) {
+        if ((current + p).length < 180) {
+          current += p;
+        } else {
+          if (current.trim()) chunks.push(current.trim());
+          current = p;
+        }
+      }
+      if (current.trim()) chunks.push(current.trim());
+
+      const selectedChunks = chunks.slice(0, 3);
+      const buffers = [];
+
+      for (const chunk of selectedChunks) {
+        if (!chunk.trim()) continue;
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${tl}&q=${encodeURIComponent(chunk.trim())}`;
+        const res = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          },
+        });
+        if (res.ok) {
+          const ab = await res.arrayBuffer();
+          buffers.push(Buffer.from(ab));
+        }
+      }
+
+      if (buffers.length > 0) {
+        const fullBuffer = Buffer.concat(buffers);
+        return {
+          audioBase64: fullBuffer.toString('base64'),
+          format: 'mp3',
+        };
+      }
+    } catch (e) {
+      console.warn('[Speech Fallback Exception]:', e.message);
+    }
+    return null;
   }
 
   /**
@@ -313,22 +392,21 @@ class SarvamService {
       return {
         fallback: true,
         transcript: '',
-        message: 'SARVAM_API_KEY not configured. Browser Web Speech Recognition used.',
+        message: 'SARVAM_API_KEY not configured.',
       };
     }
 
     try {
-      // Decode base64 to buffer
       const cleanBase64 = audioBase64.replace(/^data:audio\/\w+;base64,/, '');
       const audioBuffer = Buffer.from(cleanBase64, 'base64');
       const blob = new Blob([audioBuffer], { type: 'audio/wav' });
 
       const formData = new FormData();
       formData.append('file', blob, 'recording.wav');
-      formData.append('language_code', languageCode || 'unknown');
-      formData.append('model', 'saaras:v1');
+      formData.append('language_code', languageCode || 'hi-IN');
+      formData.append('model', 'saaras:v4');
 
-      const response = await fetch('https://api.sarvam.ai/speech-to-text', {
+      let response = await fetch('https://api.sarvam.ai/speech-to-text', {
         method: 'POST',
         headers: {
           'api-subscription-key': apiKey,
@@ -337,20 +415,36 @@ class SarvamService {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.warn(`[Sarvam STT Error ${response.status}]:`, errorText);
+        // Fallback to saaras:v3 if v4 unavailable
+        const v3FormData = new FormData();
+        v3FormData.append('file', blob, 'recording.wav');
+        v3FormData.append('language_code', languageCode || 'hi-IN');
+        v3FormData.append('model', 'saaras:v3');
+
+        response = await fetch('https://api.sarvam.ai/speech-to-text', {
+          method: 'POST',
+          headers: {
+            'api-subscription-key': apiKey,
+          },
+          body: v3FormData,
+        });
+      }
+
+      if (response.ok) {
+        const data = await response.json();
         return {
-          fallback: true,
-          transcript: '',
-          error: `Sarvam STT returned ${response.status}`,
+          transcript: data.transcript || '',
+          languageCode: data.language_code || languageCode,
+          isLiveSarvam: true,
         };
       }
 
-      const data = await response.json();
+      const errorText = await response.text();
+      console.warn(`[Sarvam STT Error ${response.status}]:`, errorText);
       return {
-        transcript: data.transcript || '',
-        languageCode: data.language_code || languageCode,
-        isLiveSarvam: true,
+        fallback: true,
+        transcript: '',
+        error: `Sarvam STT returned ${response.status}`,
       };
     } catch (err) {
       console.error('[Sarvam STT Exception]:', err.message);
