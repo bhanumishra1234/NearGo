@@ -21,11 +21,14 @@ import {
   Award,
   Mic,
   MicOff,
-  Volume2
+  Volume2,
+  Zap,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getUserCredTier } from '../utils/credEngine.js';
 import { transcribeAudioWithSarvam } from '../utils/sarvamAudio.js';
+import { executeVoiceTask } from '../utils/voiceTaskEngine.js';
 
 export default function Navbar({
   selectedCity,
@@ -44,6 +47,8 @@ export default function Navbar({
   onOpenCouponModal,
   onOpenMerchantModal,
   onOpenTrailsModal,
+  onHighlightOnMap,
+  questions,
   searchQuery,
   setSearchQuery,
   sidebarOpen,
@@ -53,18 +58,53 @@ export default function Navbar({
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Saaras AI Voice Search State
+  // Saaras AI Voice Search & Action Execution State
   const [isListening, setIsListening] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('');
+  const [voiceToast, setVoiceToast] = useState(null);
   const recognitionRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const audioStreamRef = useRef(null);
   const capturedTextRef = useRef('');
 
-  const stopVoiceSearch = () => {
+  const triggerVoiceTask = async (text) => {
+    if (!text || !text.trim()) return;
+    try {
+      setVoiceStatus('⚡ Executing task...');
+      await executeVoiceTask({
+        transcript: text,
+        searchQuery,
+        setSearchQuery,
+        selectedCity,
+        setSelectedCity,
+        activeTab,
+        setActiveTab,
+        onOpenAskModal,
+        onOpenFareModal,
+        onOpenVibeModal,
+        onOpenCouponModal,
+        onOpenMerchantModal,
+        onOpenTrailsModal,
+        darkMode,
+        setDarkMode,
+        onRequestLocation,
+        onHighlightOnMap,
+        questions,
+        onShowToast: (msg) => {
+          setVoiceToast(msg);
+          setTimeout(() => setVoiceToast(null), 4500);
+        },
+      });
+    } catch (err) {
+      console.warn('[Voice Task Execution Error]:', err);
+    }
+  };
+
+  const stopVoiceSearch = (executeImmediately = false) => {
     setIsListening(false);
     setVoiceStatus('');
+    const textToExecute = capturedTextRef.current;
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -83,11 +123,14 @@ export default function Navbar({
       } catch (e) {}
       audioStreamRef.current = null;
     }
+    if (executeImmediately && textToExecute && textToExecute.trim()) {
+      triggerVoiceTask(textToExecute.trim());
+    }
   };
 
   const handleToggleVoiceSearch = async () => {
     if (isListening) {
-      stopVoiceSearch();
+      stopVoiceSearch(true);
       return;
     }
 
@@ -122,7 +165,11 @@ export default function Navbar({
         };
 
         recognition.onend = () => {
+          const text = capturedTextRef.current;
           stopVoiceSearch();
+          if (text && text.trim()) {
+            triggerVoiceTask(text.trim());
+          }
         };
 
         recognitionRef.current = recognition;
@@ -147,20 +194,25 @@ export default function Navbar({
         };
 
         mediaRecorder.onstop = async () => {
-          if (!capturedTextRef.current && audioChunksRef.current.length > 0) {
+          let text = capturedTextRef.current;
+          if (!text && audioChunksRef.current.length > 0) {
             setVoiceStatus('Transcribing with Sarvam Saaras AI...');
             const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
             try {
               const transcript = await transcribeAudioWithSarvam({ audioBlob: blob, languageCode: 'hi-IN' });
               if (transcript && transcript.trim()) {
-                setSearchQuery(transcript.trim());
-                if (setActiveTab) setActiveTab('feed');
+                text = transcript.trim();
+                capturedTextRef.current = text;
+                setSearchQuery(text);
               }
             } catch (err) {
               console.warn('[Navbar Sarvam Saaras STT Error]:', err);
             }
           }
           stopVoiceSearch();
+          if (text && text.trim()) {
+            triggerVoiceTask(text.trim());
+          }
         };
 
         mediaRecorder.start();
@@ -192,6 +244,20 @@ export default function Navbar({
 
   return (
     <header aria-label="Main Site Navigation" className="sticky top-0 z-[1100] bg-white/95 dark:bg-[#000000]/95 backdrop-blur-md border-b border-[#E8E5DF] dark:border-[#1a1a1a]">
+      {/* Interactive Voice Task Execution Toast */}
+      {voiceToast && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[2000] bg-stone-900/95 dark:bg-stone-100/95 text-white dark:text-stone-900 px-4 py-2 rounded-full shadow-2xl border border-stone-700 dark:border-stone-300 flex items-center gap-2.5 text-xs font-bold animate-fadeIn backdrop-blur-md pointer-events-auto">
+          <Zap className="w-4 h-4 text-amber-400 animate-bounce" />
+          <span>{voiceToast}</span>
+          <button
+            type="button"
+            onClick={() => setVoiceToast(null)}
+            className="ml-2 text-stone-400 hover:text-white dark:hover:text-stone-900 text-xs font-bold"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6">
         <div className="flex items-center justify-between h-14 gap-3">
           {/* Left: Brand & City Selector */}
