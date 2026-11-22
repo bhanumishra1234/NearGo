@@ -124,25 +124,40 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 4d. Anti-Tampering Trigger: Disallow client modification of verified status directly
+-- 4d. Anti-Tampering Trigger: Disallow client modification of verified status or reputation directly on INSERT or UPDATE
 CREATE OR REPLACE FUNCTION protect_verified_credentials()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF (OLD.author_verified IS FALSE AND NEW.author_verified IS TRUE AND auth.role() = 'anon') THEN
-    NEW.author_verified = FALSE;
+  -- Prevent anonymous callers from claiming verified badges or arbitrary reputation on INSERT
+  IF (auth.role() = 'anon' OR auth.role() IS NULL) THEN
+    IF (NEW.author_verified IS TRUE) THEN
+      NEW.author_verified = FALSE;
+      NEW.author_badge = 'Community Traveler';
+    END IF;
+    IF (NEW.author_reputation > 50) THEN
+      NEW.author_reputation = 10;
+    END IF;
   END IF;
+
+  -- On UPDATE: Disallow untrusted elevation from false to true
+  IF (TG_OP = 'UPDATE') THEN
+    IF (OLD.author_verified IS FALSE AND NEW.author_verified IS TRUE AND (auth.role() = 'anon' OR auth.role() IS NULL)) THEN
+      NEW.author_verified = FALSE;
+    END IF;
+  END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_protect_question_verified ON questions;
 CREATE TRIGGER trg_protect_question_verified
-  BEFORE UPDATE ON questions
+  BEFORE INSERT OR UPDATE ON questions
   FOR EACH ROW EXECUTE FUNCTION protect_verified_credentials();
 
 DROP TRIGGER IF EXISTS trg_protect_answer_verified ON answers;
 CREATE TRIGGER trg_protect_answer_verified
-  BEFORE UPDATE ON answers
+  BEFORE INSERT OR UPDATE ON answers
   FOR EACH ROW EXECUTE FUNCTION protect_verified_credentials();
 
 -- ─────────────────────────────────────────────

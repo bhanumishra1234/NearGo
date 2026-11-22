@@ -31,6 +31,14 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// ── Cyber Defense: Trust Proxy Configuration (Enables Secure Client IP Parsing) ──
+app.set('trust proxy', 1);
+
+// Helper: Safely resolve client IP address from trusted reverse proxy
+function getClientIp(req) {
+  return req.ip || req.socket.remoteAddress || 'unknown-ip';
+}
+
 // ── Cyber Defense: Information Disclosure Hardening ─────────────────────────
 app.disable('x-powered-by'); // Prevent server fingerprinting
 
@@ -40,7 +48,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"], // Removed 'unsafe-eval' for defense-in-depth against code injection
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         imgSrc: [
@@ -96,6 +104,7 @@ const ALLOWED_ORIGINS = [
 ].filter(Boolean);
 
 const ALLOWED_ORIGIN_PATTERNS = [
+  /^https:\/\/([a-zA-Z0-9_-]+\.)?neargo\.in$/,
   /^https:\/\/(near-?go|neargo-[a-zA-Z0-9_-]+)\.vercel\.app$/,
   /^https:\/\/neargo-app\.onrender\.com$/,
 ];
@@ -103,12 +112,10 @@ const ALLOWED_ORIGIN_PATTERNS = [
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Secure check: only allow exact matches or specific verified regex patterns
       if (
         !origin ||
         ALLOWED_ORIGINS.includes(origin) ||
-        origin.endsWith('.vercel.app') ||
-        origin.endsWith('.onrender.com') ||
-        origin.endsWith('.netlify.app') ||
         ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin))
       ) {
         callback(null, true);
@@ -193,14 +200,20 @@ function validatePasswordStrength(password) {
 
 function sanitizeInput(str, maxLen = 500) {
   if (typeof str !== 'string') return '';
-  return str
-    .trim()
-    .slice(0, maxLen)
-    .replace(/<[^>]*>?/gm, '') // Strip HTML tags against stored XSS
-    .replace(/javascript:/gi, '') // Strip javascript: execution schemes
-    .replace(/data:text\/html/gi, '') // Block data URI HTML injection
-    .replace(/vbscript:/gi, '') // Block VBScript
-    .replace(/on\w+\s*=/gi, ''); // Strip inline event handlers
+  let sanitized = str.trim().slice(0, maxLen);
+  // Recursive HTML tag stripping to prevent nested tag bypasses (e.g. <<script>script>)
+  let prev;
+  do {
+    prev = sanitized;
+    sanitized = sanitized.replace(/<[^>]*>?/gm, '');
+  } while (sanitized !== prev);
+
+  return sanitized
+    .replace(/javascript\s*:/gi, '')
+    .replace(/vbscript\s*:/gi, '')
+    .replace(/data\s*:\s*text\/html/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F]/g, '');
 }
 
 // ── Cyber Defense: Anti-SSRF URL Sanitizer (OWASP A10) ──────────────────────
@@ -231,11 +244,15 @@ async function getAuthenticatedUser(req) {
   const token = authHeader.split(' ')[1];
   if (!token) return null;
 
+  // Cyber Defense: Strictly reject mock/demo tokens in production to prevent privilege escalation / bypass
   if (token.startsWith('demo-jwt-') || token.startsWith('local-token-')) {
+    if (process.env.NODE_ENV === 'production') {
+      return null;
+    }
     return {
       id: 'demo-local-guide',
       name: 'Aarav Sharma',
-      badge: 'Verified Local',
+      badge: 'Verified Local (Dev Mode)',
       isVerified: true,
       reputation: 98,
     };
@@ -401,7 +418,7 @@ app.post('/api/auth/login', async (req, res) => {
     return res.status(400).json({ error: 'Please provide a valid email address format' });
   }
 
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const clientIp = getClientIp(req);
   const ipKey = `ip:${clientIp}`;
   const emailKey = `email:${cleanEmail}`;
 
@@ -485,7 +502,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     return res.status(400).json({ error: 'A valid email address is required' });
   }
 
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const clientIp = getClientIp(req);
   const ipKey = `ip:${clientIp}`;
 
   // Rate Limit: Max 3 recovery attempts per 15 minutes per IP
@@ -549,7 +566,7 @@ app.post('/api/auth/register', async (req, res) => {
     });
   }
 
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const clientIp = getClientIp(req);
   const ipKey = `ip:${clientIp}`;
 
   const regLimit = signupLimiter.check(ipKey);
@@ -739,6 +756,9 @@ app.get('/api/auth/verify-token', async (req, res) => {
   }
 
   if (token.startsWith('demo-jwt-')) {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(401).json({ error: 'Demo mock authentication is disabled in production', authenticated: false });
+    }
     return res.json({
       authenticated: true,
       isDemo: true,
@@ -811,7 +831,7 @@ app.get('/api/questions', async (req, res) => {
 
 // ── 4. Create Question (OWASP Hardened: Rate-Limited, Sanitized & Identity Verified) ──
 app.post('/api/questions', async (req, res) => {
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const clientIp = getClientIp(req);
   const postLimit = postLimiter.check(`post:${clientIp}`);
   if (!postLimit.allowed) {
     return res.status(429).json({
@@ -892,7 +912,7 @@ app.post('/api/questions', async (req, res) => {
 // ── 5. Post Answer (OWASP Hardened: Rate-Limited, Sanitized & Identity Verified) ──
 app.post('/api/questions/:id/answers', async (req, res) => {
   const { id } = req.params;
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const clientIp = getClientIp(req);
   const postLimit = postLimiter.check(`ans:${clientIp}`);
   if (!postLimit.allowed) {
     return res.status(429).json({
@@ -944,7 +964,7 @@ app.post('/api/questions/:id/answers', async (req, res) => {
 // ── 6. Upvote Question (Anti-Sybil Deduplicated & Rate-Limited) ──────────────
 app.post('/api/questions/:id/upvote', async (req, res) => {
   const { id } = req.params;
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const clientIp = getClientIp(req);
   const voteKey = `vote:q:${id}:${clientIp}`;
 
   // Check rate limiter
@@ -979,7 +999,7 @@ app.post('/api/questions/:id/upvote', async (req, res) => {
 // ── 7. Upvote Answer (Anti-Sybil Deduplicated & Rate-Limited) ────────────────
 app.post('/api/questions/:qId/answers/:ansId/upvote', async (req, res) => {
   const { ansId } = req.params;
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  const clientIp = getClientIp(req);
   const voteKey = `vote:ans:${ansId}:${clientIp}`;
 
   const limitCheck = upvoteLimiter.check(`upv:${clientIp}`);
