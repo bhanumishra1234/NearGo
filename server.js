@@ -1085,8 +1085,10 @@ app.get('/api/graph/explore', async (req, res) => {
 // Multi-Hop Shortest Transit Path Calculation
 app.get('/api/graph/shortest-transit', async (req, res) => {
   try {
-    const { origin = 'Kashmere Gate', destination = 'Majnu Ka Tilla' } = req.query;
-    const route = await neo4jService.getShortestTransitRoute(origin, destination);
+    const { origin, destination, city } = req.query;
+    const defaultOrigin = city === 'Mumbai' ? 'Andheri' : city === 'Bengaluru' ? 'Majestic' : 'Kashmere Gate';
+    const defaultDest = city === 'Mumbai' ? 'Prithvi Theatre Juhu' : city === 'Bengaluru' ? 'VV Puram Food Street' : 'Majnu Ka Tilla';
+    const route = await neo4jService.getShortestTransitRoute(origin || defaultOrigin, destination || defaultDest, city);
     res.json({ success: true, route });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

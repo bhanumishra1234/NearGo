@@ -561,6 +561,7 @@ export default function App() {
         onOpenCouponModal={() => setIsCouponModalOpen(true)}
         onOpenMerchantModal={() => setIsMerchantModalOpen(true)}
         onOpenTrailsModal={() => setIsTrailsModalOpen(true)}
+        onOpenGraphModal={() => setIsGraphModalOpen(true)}
         onHighlightOnMap={handleHighlightOnMap}
         questions={questions}
         searchQuery={searchQuery}

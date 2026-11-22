@@ -30,6 +30,7 @@ export async function executeVoiceTask({
   onOpenCouponModal,
   onOpenMerchantModal,
   onOpenTrailsModal,
+  onOpenGraphModal,
   darkMode,
   setDarkMode,
   onRequestLocation,
@@ -203,6 +204,24 @@ export async function executeVoiceTask({
       executedTask = 'OPEN_MERCHANT_MODAL';
       toastMessage = '⚡ Voice Task: Opening Local Merchant Guild';
       feedbackSpoken = 'Opening Verified Local Merchant Guild.';
+    }
+  }
+
+  // 7b. NEO4J KNOWLEDGE GRAPH INTENT
+  // "Show knowledge graph", "open neo4j", "graph database", "cypher query", "transit graph"
+  else if (
+    lower.includes('knowledge graph') ||
+    lower.includes('neo4j') ||
+    lower.includes('cypher') ||
+    lower.includes('show graph') ||
+    lower.includes('open graph') ||
+    lower.includes('transit graph')
+  ) {
+    if (onOpenGraphModal) {
+      onOpenGraphModal();
+      executedTask = 'OPEN_GRAPH_MODAL';
+      toastMessage = '⚡ Voice Task: Opening Neo4j Knowledge Graph';
+      feedbackSpoken = 'Opening NearGo Neo4j Knowledge Graph and Cypher Playground.';
     }
   }
 

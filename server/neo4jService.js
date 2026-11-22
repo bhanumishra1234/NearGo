@@ -32,15 +32,22 @@ const SEED_NODES = [
 
   // ── Mumbai Nodes ──
   { id: 'city:mumbai', label: 'City', properties: { name: 'Mumbai', state: 'Maharashtra', activeGems: 34, activeMetro: 42 } },
-  { id: 'metro:ghatkopar', label: 'MetroStation', properties: { name: 'Ghatkopar', line: 'Line 1 (Blue)', isInterchange: true, city: 'Mumbai', lat: 19.0864, lng: 77.9092 } },
+  { id: 'metro:ghatkopar', label: 'MetroStation', properties: { name: 'Ghatkopar', line: 'Line 1 (Blue)', isInterchange: true, city: 'Mumbai', lat: 19.0864, lng: 72.9082 } },
   { id: 'metro:andheri', label: 'MetroStation', properties: { name: 'Andheri', line: 'Line 1 / Western Railway', isInterchange: true, city: 'Mumbai', lat: 19.1197, lng: 72.8468 } },
+  { id: 'metro:bandra', label: 'MetroStation', properties: { name: 'Bandra West (Linking Road)', line: 'Western Railway Suburb', isInterchange: false, city: 'Mumbai', lat: 19.0544, lng: 72.8402 } },
   { id: 'place:prithvi-cafe', label: 'SecretSpot', properties: { name: 'Prithvi Theatre & Chai Adda', category: 'Arts & Irish Chai', neighborhood: 'Juhu', city: 'Mumbai', lat: 19.1068, lng: 72.8258, fairAutoMeter: 40 } },
+  { id: 'place:bandra-fort-sunset', label: 'SecretSpot', properties: { name: 'Castella de Aguada (Bandra Fort)', category: 'Sea View & Heritage', neighborhood: 'Bandstand', city: 'Mumbai', lat: 19.0416, lng: 72.8189, fairAutoMeter: 35 } },
   { id: 'user:kunal-patil', label: 'LocalGuide', properties: { name: 'Kunal Patil', reputation: 96, badge: 'Bandra Local Guide', city: 'Mumbai' } },
+  { id: 'scam:bandra-terminus', label: 'ScamWarningZone', properties: { name: 'Bandra Terminus Fixed-Rate Auto Drivers', riskLevel: 'Medium', advice: 'Walk out to the main road; auto drivers must run on electronic meter by law.', city: 'Mumbai' } },
 
   // ── Bengaluru Nodes ──
   { id: 'city:bengaluru', label: 'City', properties: { name: 'Bengaluru', state: 'Karnataka', activeGems: 29, activeMetro: 66 } },
   { id: 'metro:majestic', label: 'MetroStation', properties: { name: 'Nadaprabhu Kempegowda (Majestic)', line: 'Purple / Green Line', isInterchange: true, city: 'Bengaluru', lat: 12.9756, lng: 77.5728 } },
+  { id: 'metro:indiranagar', label: 'MetroStation', properties: { name: 'Indiranagar 100ft Road', line: 'Purple Line', isInterchange: false, city: 'Bengaluru', lat: 12.9783, lng: 77.6408 } },
   { id: 'place:vv-puram-food', label: 'SecretSpot', properties: { name: 'VV Puram Thindi Beedi (Food Street)', category: 'South Indian Night Food', neighborhood: 'Sajjan Rao Circle', city: 'Bengaluru', lat: 12.9515, lng: 77.5786, fairAutoMeter: 30 } },
+  { id: 'place:lalbagh-botanical', label: 'SecretSpot', properties: { name: 'Lalbagh Glass House Morning Trail', category: 'Nature & Heritage', neighborhood: 'Mavalli', city: 'Bengaluru', lat: 12.9507, lng: 77.5848, fairAutoMeter: 25 } },
+  { id: 'user:rohan-rao', label: 'LocalGuide', properties: { name: 'Rohan Rao', reputation: 97, badge: 'Indiranagar Local Guide', city: 'Bengaluru' } },
+  { id: 'scam:majestic-night-autos', label: 'ScamWarningZone', properties: { name: 'Majestic Bus Stand 3x Night Surge Autos', riskLevel: 'High', advice: 'Use prepaid auto booth near platform 1 or Namma Metro Green Line.', city: 'Bengaluru' } },
 ];
 
 const SEED_EDGES = [
@@ -51,6 +58,7 @@ const SEED_EDGES = [
   { id: 'e:rc-hk', source: 'metro:rajiv-chowk', target: 'metro:hauz-khas', type: 'CONNECTS_TO', properties: { line: 'Yellow Line', durationMin: 18, fareRs: 40 } },
   { id: 'e:rc-mh', source: 'metro:rajiv-chowk', target: 'metro:mandi-house', type: 'CONNECTS_TO', properties: { line: 'Blue Line', durationMin: 4, fareRs: 15 } },
   { id: 'e:ghat-andheri', source: 'metro:ghatkopar', target: 'metro:andheri', type: 'CONNECTS_TO', properties: { line: 'Metro Line 1', durationMin: 21, fareRs: 30 } },
+  { id: 'e:maj-indira', source: 'metro:majestic', target: 'metro:indiranagar', type: 'CONNECTS_TO', properties: { line: 'Purple Line', durationMin: 18, fareRs: 30 } },
 
   // Last-Mile Transit Connections
   { id: 'e:mkt-vs', source: 'place:majnu-ka-tilla', target: 'metro:vidhan-sabha', type: 'LAST_MILE_ACCESS', properties: { mode: 'E-Rickshaw (Sharing)', distanceKm: 1.4, fairFare: 20, tip: 'Take e-rickshaw from Gate 2 for flat ₹20' } },
@@ -64,9 +72,14 @@ const SEED_EDGES = [
   { id: 'e:priya-pwg', source: 'user:priya-desai', target: 'place:paranthe-wali-gali', type: 'ENDORSED_BY_LOCAL', properties: { rating: 4.8, quote: 'Go before 1 PM to Pandit Gaya Prasad shop for authentic khoya parantha.' } },
   { id: 'e:aarav-mkt', source: 'user:aarav-sharma', target: 'place:majnu-ka-tilla', type: 'ENDORSED_BY_LOCAL', properties: { rating: 5.0, quote: 'AMA Cafe mud cake is famous, but try laphing at the central monastery square.' } },
   { id: 'e:kunal-pc', source: 'user:kunal-patil', target: 'place:prithvi-cafe', type: 'ENDORSED_BY_LOCAL', properties: { rating: 4.9, quote: 'Sit by the outdoor bookshop on Tuesday evenings for poetry sessions.' } },
+  { id: 'e:kunal-bf', source: 'user:kunal-patil', target: 'place:bandra-fort-sunset', type: 'ENDORSED_BY_LOCAL', properties: { rating: 4.8, quote: 'Watch the sunset over the Sea Link away from city chaos.' } },
+  { id: 'e:rohan-vv', source: 'user:rohan-rao', target: 'place:vv-puram-food', type: 'ENDORSED_BY_LOCAL', properties: { rating: 4.9, quote: 'Try the hot Congress bun and benne dose on winter nights.' } },
+  { id: 'e:rohan-lb', source: 'user:rohan-rao', target: 'place:lalbagh-botanical', type: 'ENDORSED_BY_LOCAL', properties: { rating: 4.7, quote: 'Visit before 8 AM for free entry and peaceful bird watching.' } },
 
   // Fraud / Scam Warnings
   { id: 'e:warn-ndls', source: 'metro:rajiv-chowk', target: 'scam:ndls-paharganj', type: 'FLAGGED_RISK_ZONE', properties: { complaintsThisWeek: 42, severity: 'High' } },
+  { id: 'e:warn-bandra', source: 'metro:andheri', target: 'scam:bandra-terminus', type: 'FLAGGED_RISK_ZONE', properties: { complaintsThisWeek: 28, severity: 'Medium' } },
+  { id: 'e:warn-majestic', source: 'metro:majestic', target: 'scam:majestic-night-autos', type: 'FLAGGED_RISK_ZONE', properties: { complaintsThisWeek: 51, severity: 'High' } },
 ];
 
 class Neo4jGraphManager {
@@ -124,6 +137,18 @@ class Neo4jGraphManager {
       console.warn('[NearGo Neo4j Schema Warning]:', e.message);
     } finally {
       await session.close();
+    }
+  }
+
+  async close() {
+    if (this.driver) {
+      try {
+        await this.driver.close();
+      } catch (e) {
+        console.warn('[Neo4j Driver Close Warning]:', e.message);
+      }
+      this.driver = null;
+      this.isConnected = false;
     }
   }
 
@@ -242,26 +267,38 @@ class Neo4jGraphManager {
   }
 
   // 3. Multi-Modal Shortest Transit Route Pathfinding (Auto + Metro + Walk)
-  async getShortestTransitRoute(originName, destName) {
+  async getShortestTransitRoute(originName, destName, cityName) {
     const cleanOrigin = (originName || '').replace(/[^a-zA-Z0-9\s\-_.,]/g, '').slice(0, 80) || 'Connaught Place';
     const cleanDest = (destName || '').replace(/[^a-zA-Z0-9\s\-_.,]/g, '').slice(0, 80) || 'Majnu Ka Tilla';
 
-    // Graph node matching for origin & destination
-    const allStations = Array.from(this.inMemoryNodes.values()).filter((n) => n.label === 'MetroStation');
-    const allGems = Array.from(this.inMemoryNodes.values()).filter((n) => n.label === 'SecretSpot');
+    // Auto-detect target city from inputs or param
+    let activeCity = cityName;
+    if (!activeCity) {
+      const lowerCombo = (cleanOrigin + ' ' + cleanDest).toLowerCase();
+      if (lowerCombo.includes('mumbai') || lowerCombo.includes('andheri') || lowerCombo.includes('juhu') || lowerCombo.includes('bandra') || lowerCombo.includes('ghatkopar') || lowerCombo.includes('prithvi')) {
+        activeCity = 'Mumbai';
+      } else if (lowerCombo.includes('bengaluru') || lowerCombo.includes('bangalore') || lowerCombo.includes('majestic') || lowerCombo.includes('indiranagar') || lowerCombo.includes('vv puram') || lowerCombo.includes('lalbagh')) {
+        activeCity = 'Bengaluru';
+      } else {
+        activeCity = 'Delhi NCR';
+      }
+    }
 
-    const originSpot = allGems.find(g => cleanOrigin.toLowerCase().includes(g.properties.name.toLowerCase().split(' ')[0]));
-    const destSpot = allGems.find(g => cleanDest.toLowerCase().includes(g.properties.name.toLowerCase().split(' ')[0]));
+    // Graph node matching for origin & destination within city network
+    const cityStations = Array.from(this.inMemoryNodes.values()).filter((n) => n.label === 'MetroStation' && (!activeCity || n.properties.city === activeCity));
+    const allStations = cityStations.length > 0 ? cityStations : Array.from(this.inMemoryNodes.values()).filter((n) => n.label === 'MetroStation');
 
-    // Determine nearest boarding metro station
-    const boardingStation = allStations.find(s => 
-      cleanOrigin.toLowerCase().includes(s.properties.name.toLowerCase().split(' ')[0])
-    ) || allStations[0]; // defaults to Rajiv Chowk
+    // Boarding & Deboarding station
+    let boardingStation = allStations.find(s => cleanOrigin.toLowerCase().includes(s.properties.name.toLowerCase().split(' ')[0]));
+    if (!boardingStation) boardingStation = allStations[0];
 
-    // Determine nearest deboarding metro station
-    const deboardingStation = allStations.find(s => 
-      cleanDest.toLowerCase().includes(s.properties.name.toLowerCase().split(' ')[0])
-    ) || allStations[3] || allStations[1]; // defaults to Vidhan Sabha / Kashmere Gate
+    let deboardingStation = allStations.find(s => cleanDest.toLowerCase().includes(s.properties.name.toLowerCase().split(' ')[0]));
+    if (!deboardingStation) deboardingStation = allStations.length > 1 ? allStations[allStations.length - 1] : allStations[0];
+
+    // City-Specific Transit Details
+    const transitType = activeCity === 'Mumbai' ? 'Mumbai Metro / Western Suburban Line' : activeCity === 'Bengaluru' ? 'Namma Metro Corridor' : 'Delhi Metro Rapid Transit';
+    const firstMileMode = activeCity === 'Mumbai' ? 'Metered Auto Rickshaw' : activeCity === 'Bengaluru' ? 'Namma Auto or Walking' : 'Metered E-Rickshaw / Auto';
+    const firstMileTip = activeCity === 'Mumbai' ? 'Meters are strictly enforced; ensure driver starts the meter at ₹28.' : activeCity === 'Bengaluru' ? 'Insist on meter rate or use standard ₹30 minimum tariff.' : 'Insist on official ₹30 base meter or ₹15 sharing e-rickshaw.';
 
     // Calculate Multi-Modal Journey Legs
     const multiModalLegs = [
@@ -270,33 +307,33 @@ class Neo4jGraphManager {
         mode: 'First-Mile Access',
         icon: '🛺',
         from: cleanOrigin,
-        to: `${boardingStation.properties.name} Metro Station`,
-        travelMethod: 'Walk 350m or take metered E-Rickshaw',
-        estimatedTimeMin: 6,
-        costRs: 15,
-        tip: 'Insist on starting the meter or standard ₹15-₹20 sharing rickshaw tariff.',
+        to: `${boardingStation.properties.name} Station`,
+        travelMethod: firstMileMode,
+        estimatedTimeMin: 7,
+        costRs: activeCity === 'Mumbai' ? 28 : 20,
+        tip: firstMileTip,
       },
       {
         legNumber: 2,
-        mode: 'Rapid Metro Transit',
+        mode: `${activeCity} Metro Transit`,
         icon: '🚇',
         from: `${boardingStation.properties.name} (${boardingStation.properties.line.split('/')[0].trim()})`,
-        to: `${deboardingStation.properties.name} Metro Station`,
-        travelMethod: `High-speed Metro via ${boardingStation.properties.isInterchange ? 'Interchange Station' : 'Direct Line'}`,
-        estimatedTimeMin: 18,
+        to: `${deboardingStation.properties.name} Station`,
+        travelMethod: `${transitType} via ${boardingStation.properties.isInterchange ? 'Interchange Hub' : 'Direct Corridor'}`,
+        estimatedTimeMin: 19,
         costRs: 30,
-        tip: 'Smart Card saves 10% on fare; avoids peak-hour highway congestion.',
+        tip: 'Smart Card saves 10% on fare; zero highway gridlock delay.',
       },
       {
         legNumber: 3,
         mode: 'Last-Mile Micro-Transit',
         icon: '🚶',
-        from: `${deboardingStation.properties.name} Metro Station (Gate 2)`,
+        from: `${deboardingStation.properties.name} Station Exit`,
         to: cleanDest,
-        travelMethod: 'Pedestrian Heritage Boulevard or E-Rickshaw',
-        estimatedTimeMin: 8,
-        costRs: 20,
-        tip: `Take exit gate 2 for shortest direct alley into ${cleanDest}.`,
+        travelMethod: 'Pedestrian Alley or Feeder Rickshaw',
+        estimatedTimeMin: 6,
+        costRs: 15,
+        tip: `Follow signs to exit gate nearest to ${cleanDest} to avoid tourist touts.`,
       },
     ];
 
@@ -379,7 +416,22 @@ class Neo4jGraphManager {
       const session = this.driver.session({ defaultAccessMode: neo4j.session.READ });
       try {
         const result = await session.run(cypher);
-        const records = result.records.map((r) => r.toObject());
+        const records = result.records.map((r) => {
+          const raw = r.toObject();
+          // Convert Neo4j Integer instances into plain JS numbers for JSON serialization
+          const sanitized = {};
+          for (const key of Object.keys(raw)) {
+            const val = raw[key];
+            if (val && typeof val === 'object' && 'low' in val && 'high' in val) {
+              sanitized[key] = neo4j.integer.toNumber(val);
+            } else if (val && typeof val === 'object' && val.properties) {
+              sanitized[key] = { ...val.properties };
+            } else {
+              sanitized[key] = val;
+            }
+          }
+          return sanitized;
+        });
         return { success: true, count: records.length, records };
       } catch (err) {
         return { success: false, error: err.message };
@@ -390,17 +442,118 @@ class Neo4jGraphManager {
 
     // High-fidelity Cypher simulation for In-Memory Engine
     const trimmed = (cypher || '').trim().toLowerCase();
-    if (trimmed.includes('secretspot') || trimmed.includes('spot')) {
-      const results = Array.from(this.inMemoryNodes.values())
-        .filter((n) => n.label === 'SecretSpot')
-        .map((n) => ({ spot: n.properties.name, neighborhood: n.properties.neighborhood, fairAuto: `₹${n.properties.fairAutoMeter}` }));
+
+    // 1. Template: SecretSpot -> MetroStation (Last Mile Access)
+    if (trimmed.includes('last_mile_access') || (trimmed.includes('secretspot') && trimmed.includes('metro'))) {
+      const results = [];
+      for (const e of this.inMemoryEdges.values()) {
+        if (e.type === 'LAST_MILE_ACCESS') {
+          const spot = this.inMemoryNodes.get(e.source);
+          const metro = this.inMemoryNodes.get(e.target);
+          if (spot && metro) {
+            results.push({
+              secretSpot: spot.properties.name,
+              neighborhood: spot.properties.neighborhood,
+              city: spot.properties.city,
+              nearestMetro: metro.properties.name,
+              accessMode: e.properties.mode,
+              distanceKm: e.properties.distanceKm,
+              fairFare: `₹${e.properties.fairFare}`,
+              insiderTip: e.properties.tip,
+            });
+          }
+        }
+      }
       return { success: true, count: results.length, records: results, simulated: true };
     }
 
+    // 2. Template: LocalGuide -> SecretSpot (Local Endorsements)
+    if (trimmed.includes('endorsed_by_local') || (trimmed.includes('localguide') && (trimmed.includes('spot') || trimmed.includes('secretspot')))) {
+      const results = [];
+      for (const e of this.inMemoryEdges.values()) {
+        if (e.type === 'ENDORSED_BY_LOCAL') {
+          const guide = this.inMemoryNodes.get(e.source);
+          const spot = this.inMemoryNodes.get(e.target);
+          if (guide && spot) {
+            results.push({
+              localGuide: guide.properties.name,
+              guideBadge: guide.properties.badge,
+              reputation: guide.properties.reputation,
+              endorsedSpot: spot.properties.name,
+              city: spot.properties.city,
+              rating: e.properties.rating,
+              insiderQuote: e.properties.quote,
+            });
+          }
+        }
+      }
+      return { success: true, count: results.length, records: results, simulated: true };
+    }
+
+    // 3. Template: MetroStation -> ScamWarningZone
+    if (trimmed.includes('flagged_risk_zone') || trimmed.includes('scam') || trimmed.includes('risk')) {
+      const results = [];
+      for (const e of this.inMemoryEdges.values()) {
+        if (e.type === 'FLAGGED_RISK_ZONE') {
+          const metro = this.inMemoryNodes.get(e.source);
+          const scam = this.inMemoryNodes.get(e.target);
+          if (metro && scam) {
+            results.push({
+              metroHub: metro.properties.name,
+              scamWarningZone: scam.properties.name,
+              city: scam.properties.city,
+              riskSeverity: scam.properties.riskLevel,
+              complaintsThisWeek: e.properties.complaintsThisWeek,
+              trafficPoliceAdvice: scam.properties.advice,
+            });
+          }
+        }
+      }
+      return { success: true, count: results.length, records: results, simulated: true };
+    }
+
+    // 4. Template: MetroStation connectivity
+    if (trimmed.includes('connects_to') || (trimmed.includes('metro') && trimmed.includes('line'))) {
+      const results = [];
+      for (const e of this.inMemoryEdges.values()) {
+        if (e.type === 'CONNECTS_TO') {
+          const m1 = this.inMemoryNodes.get(e.source);
+          const m2 = this.inMemoryNodes.get(e.target);
+          if (m1 && m2) {
+            results.push({
+              fromStation: m1.properties.name,
+              toStation: m2.properties.name,
+              line: e.properties.line,
+              travelTime: `${e.properties.durationMin} mins`,
+              tokenFare: `₹${e.properties.fareRs}`,
+            });
+          }
+        }
+      }
+      return { success: true, count: results.length, records: results, simulated: true };
+    }
+
+    // 5. SecretSpot query
+    if (trimmed.includes('secretspot') || trimmed.includes('spot')) {
+      const results = Array.from(this.inMemoryNodes.values())
+        .filter((n) => n.label === 'SecretSpot')
+        .map((n) => ({ spot: n.properties.name, category: n.properties.category, neighborhood: n.properties.neighborhood, city: n.properties.city, fairAuto: `₹${n.properties.fairAutoMeter}` }));
+      return { success: true, count: results.length, records: results, simulated: true };
+    }
+
+    // 6. MetroStation query
     if (trimmed.includes('metrostation') || trimmed.includes('metro')) {
       const results = Array.from(this.inMemoryNodes.values())
         .filter((n) => n.label === 'MetroStation')
-        .map((n) => ({ metroStation: n.properties.name, line: n.properties.line, isInterchange: n.properties.isInterchange }));
+        .map((n) => ({ metroStation: n.properties.name, line: n.properties.line, city: n.properties.city, isInterchange: n.properties.isInterchange }));
+      return { success: true, count: results.length, records: results, simulated: true };
+    }
+
+    // 7. LocalGuide query
+    if (trimmed.includes('localguide') || trimmed.includes('guide')) {
+      const results = Array.from(this.inMemoryNodes.values())
+        .filter((n) => n.label === 'LocalGuide')
+        .map((n) => ({ name: n.properties.name, badge: n.properties.badge, reputation: n.properties.reputation, city: n.properties.city }));
       return { success: true, count: results.length, records: results, simulated: true };
     }
 
@@ -412,6 +565,7 @@ class Neo4jGraphManager {
         id: n.id,
         label: n.label,
         name: n.properties.name,
+        city: n.properties.city || n.properties.state,
       })),
       simulated: true,
     };

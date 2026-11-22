@@ -35,6 +35,7 @@ export default function VoiceAssistantHUD({
   onOpenCouponModal,
   onOpenMerchantModal,
   onOpenTrailsModal,
+  onOpenGraphModal,
   darkMode,
   setDarkMode,
   onRequestLocation,
@@ -63,6 +64,7 @@ export default function VoiceAssistantHUD({
     { label: '🎁 Flash Deals', command: 'Show deals and free chai perks' },
     { label: '✨ Vibe Check', command: 'Explore neighbourhood vibes' },
     { label: '🏛️ Heritage Trails', command: 'Show DMRC heritage trails' },
+    { label: '🌐 Neo4j Graph', command: 'Show Neo4j knowledge graph' },
     { label: darkMode ? '☀️ Light Mode' : '🌙 Dark Mode', command: darkMode ? 'Switch to light mode' : 'Turn on dark mode' },
     { label: '🏙️ Switch City', command: selectedCity === 'Mumbai' ? 'Switch city to Delhi NCR' : 'Switch city to Mumbai' },
   ];
@@ -114,6 +116,7 @@ export default function VoiceAssistantHUD({
         onOpenCouponModal,
         onOpenMerchantModal,
         onOpenTrailsModal,
+        onOpenGraphModal,
         darkMode,
         setDarkMode,
         onRequestLocation,
@@ -431,3 +434,4 @@ export default function VoiceAssistantHUD({
     </div>
   );
 }
+

@@ -48,6 +48,7 @@ export default function Navbar({
   onOpenCouponModal,
   onOpenMerchantModal,
   onOpenTrailsModal,
+  onOpenGraphModal,
   onHighlightOnMap,
   questions,
   searchQuery,
@@ -262,6 +263,7 @@ export default function Navbar({
         onOpenCouponModal={onOpenCouponModal}
         onOpenMerchantModal={onOpenMerchantModal}
         onOpenTrailsModal={onOpenTrailsModal}
+        onOpenGraphModal={onOpenGraphModal}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         onRequestLocation={onRequestLocation}

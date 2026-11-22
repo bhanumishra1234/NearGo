@@ -42,10 +42,28 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
   const [cypherResults, setCypherResults] = useState(null);
   const [cypherRunning, setCypherRunning] = useState(false);
 
-  // Shortest Path state
+  // Shortest Path state & custom calculator
   const [transitPath, setTransitPath] = useState(null);
+  const [customOrigin, setCustomOrigin] = useState('Kashmere Gate');
+  const [customDest, setCustomDest] = useState('Majnu Ka Tilla');
+  const [transitLoading, setTransitLoading] = useState(false);
+  const [viewMode, setViewMode] = useState('canvas'); // 'canvas' | 'cards'
 
   const canvasRef = useRef(null);
+
+  // Set city defaults
+  useEffect(() => {
+    if (selectedCity === 'Mumbai') {
+      setCustomOrigin('Andheri Station');
+      setCustomDest('Prithvi Theatre Juhu');
+    } else if (selectedCity === 'Bengaluru') {
+      setCustomOrigin('Majestic Station');
+      setCustomDest('VV Puram Food Street');
+    } else {
+      setCustomOrigin('Kashmere Gate');
+      setCustomDest('Majnu Ka Tilla');
+    }
+  }, [selectedCity]);
 
   // Fetch Graph Data and Overview
   useEffect(() => {
@@ -53,10 +71,13 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
     let isMounted = true;
     setLoading(true);
 
+    const orig = selectedCity === 'Mumbai' ? 'Andheri' : selectedCity === 'Bengaluru' ? 'Majestic' : 'Kashmere Gate';
+    const dest = selectedCity === 'Mumbai' ? 'Prithvi Theatre Juhu' : selectedCity === 'Bengaluru' ? 'VV Puram Food Street' : 'Majnu Ka Tilla';
+
     Promise.all([
       fetch(`/api/graph/overview`).then((r) => r.json()).catch(() => ({})),
       fetch(`/api/graph/explore?city=${encodeURIComponent(selectedCity)}`).then((r) => r.json()).catch(() => ({})),
-      fetch(`/api/graph/shortest-transit?origin=Kashmere Gate&destination=Majnu Ka Tilla`).then((r) => r.json()).catch(() => ({})),
+      fetch(`/api/graph/shortest-transit?city=${encodeURIComponent(selectedCity)}&origin=${encodeURIComponent(orig)}&destination=${encodeURIComponent(dest)}`).then((r) => r.json()).catch(() => ({})),
     ]).then(([ov, gd, tp]) => {
       if (!isMounted) return;
       if (ov.success) setOverview(ov);
@@ -72,6 +93,24 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
       isMounted = false;
     };
   }, [isOpen, selectedCity]);
+
+  // Custom route calculation
+  const handleCalculateTransit = async (origToUse, destToUse) => {
+    const o = origToUse || customOrigin;
+    const d = destToUse || customDest;
+    setTransitLoading(true);
+    try {
+      const res = await fetch(`/api/graph/shortest-transit?city=${encodeURIComponent(selectedCity)}&origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}`);
+      const data = await res.json();
+      if (data.success && data.route) {
+        setTransitPath(data.route);
+      }
+    } catch (e) {
+      console.warn('[Transit Calculation Exception]:', e);
+    } finally {
+      setTransitLoading(false);
+    }
+  };
 
   // Run custom Cypher Query
   const handleExecuteCypher = async (queryToRun) => {
@@ -190,21 +229,124 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
           <div className="flex-1 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
             {/* Visual Graph View Area */}
             <div className="md:col-span-8 bg-[#FAF8F5] dark:bg-[#070707] relative p-4 flex flex-col justify-between overflow-hidden">
-              {/* Legend Badges */}
-              <div className="flex flex-wrap items-center gap-2 z-10">
-                {Object.entries(LABEL_COLORS).map(([key, meta]) => (
-                  <div
-                    key={key}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 dark:bg-[#141414]/90 border border-stone-200 dark:border-[#222222] shadow-2xs text-[10px] font-semibold text-stone-700 dark:text-stone-300"
+              {/* Legend Badges & View Switcher */}
+              <div className="flex items-center justify-between flex-wrap gap-2 z-10 pb-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  {Object.entries(LABEL_COLORS).map(([key, meta]) => (
+                    <div
+                      key={key}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 dark:bg-[#141414]/90 border border-stone-200 dark:border-[#222222] shadow-2xs text-[10px] font-semibold text-stone-700 dark:text-stone-300"
+                    >
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: meta.bg }}></span>
+                      <span>{meta.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1 bg-white/90 dark:bg-[#161616]/90 p-1 rounded-xl border border-stone-200 dark:border-[#222] text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('canvas')}
+                    className={`px-2 py-0.5 rounded-lg transition-all ${
+                      viewMode === 'canvas' ? 'bg-[#008CC1] text-white' : 'text-stone-600 dark:text-stone-300 hover:text-stone-900'
+                    }`}
                   >
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: meta.bg }}></span>
-                    <span>{meta.name}</span>
-                  </div>
-                ))}
+                    Interactive Topology
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('cards')}
+                    className={`px-2 py-0.5 rounded-lg transition-all ${
+                      viewMode === 'cards' ? 'bg-[#008CC1] text-white' : 'text-stone-600 dark:text-stone-300 hover:text-stone-900'
+                    }`}
+                  >
+                    Card Cloud
+                  </button>
+                </div>
               </div>
 
-              {/* Node Cards Cloud */}
-              <div className="flex-1 overflow-y-auto no-scrollbar py-4 grid grid-cols-2 sm:grid-cols-3 gap-3 content-start">
+              {/* Visual Graph Area (Interactive Canvas Topology or Card Cloud) */}
+              {viewMode === 'canvas' ? (
+                <div className="flex-1 my-2 relative rounded-2xl bg-white/90 dark:bg-[#0c0c0c]/90 border border-stone-200/90 dark:border-[#1e1e1e] overflow-hidden flex flex-col items-center justify-center">
+                  <svg className="w-full h-full min-h-[300px]">
+                    <defs>
+                      <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#008CC1" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="#10B981" stopOpacity="0.4" />
+                      </linearGradient>
+                    </defs>
+                    {/* Render Relationship Edges */}
+                    {graphData.links.map((link, idx) => {
+                      const total = graphData.nodes.length || 1;
+                      const sIdx = graphData.nodes.findIndex((n) => n.id === link.source);
+                      const tIdx = graphData.nodes.findIndex((n) => n.id === link.target);
+                      if (sIdx === -1 || tIdx === -1) return null;
+                      const sAngle = (sIdx / total) * 2 * Math.PI;
+                      const tAngle = (tIdx / total) * 2 * Math.PI;
+                      const cx = 250;
+                      const cy = 160;
+                      const rx = 180;
+                      const ry = 110;
+                      const x1 = cx + rx * Math.cos(sAngle);
+                      const y1 = cy + ry * Math.sin(sAngle);
+                      const x2 = cx + rx * Math.cos(tAngle);
+                      const y2 = cy + ry * Math.sin(tAngle);
+                      return (
+                        <g key={link.id || idx}>
+                          <line
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke="url(#edgeGrad)"
+                            strokeWidth={selectedNode && (selectedNode.id === link.source || selectedNode.id === link.target) ? '2.5' : '1.2'}
+                            strokeDasharray={link.type === 'LAST_MILE_ACCESS' ? '4 3' : 'none'}
+                          />
+                        </g>
+                      );
+                    })}
+
+                    {/* Render Circular Nodes in Circular Force Layout */}
+                    {graphData.nodes.map((node, idx) => {
+                      const total = graphData.nodes.length || 1;
+                      const angle = (idx / total) * 2 * Math.PI;
+                      const cx = 250;
+                      const cy = 160;
+                      const rx = 180;
+                      const ry = 110;
+                      const x = cx + rx * Math.cos(angle);
+                      const y = cy + ry * Math.sin(angle);
+                      const meta = LABEL_COLORS[node.label] || { bg: '#6B7280', name: node.label };
+                      const isSelected = selectedNode?.id === node.id;
+                      return (
+                        <g
+                          key={node.id}
+                          className="cursor-pointer transition-transform"
+                          onClick={() => setSelectedNode(node)}
+                        >
+                          {isSelected && (
+                            <circle cx={x} cy={y} r={16} fill="none" stroke="#008CC1" strokeWidth="3" className="animate-pulse" />
+                          )}
+                          <circle cx={x} cy={y} r={isSelected ? 11 : 8} fill={meta.bg} stroke="#ffffff" strokeWidth="2" />
+                          <text
+                            x={x}
+                            y={y + 18}
+                            textAnchor="middle"
+                            fontSize="9"
+                            fontWeight="bold"
+                            className="fill-stone-800 dark:fill-stone-200 select-none pointer-events-none"
+                          >
+                            {node.name.length > 14 ? node.name.slice(0, 12) + '…' : node.name}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                  <div className="absolute bottom-2 left-3 text-[10px] text-stone-400 font-mono">
+                    💡 Click any circle or edge to inspect graph properties & Cypher hops
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto no-scrollbar py-4 grid grid-cols-2 sm:grid-cols-3 gap-3 content-start">
                 {graphData.nodes.map((node) => {
                   const meta = LABEL_COLORS[node.label] || { bg: '#6B7280', name: node.label };
                   const isSelected = selectedNode?.id === node.id;
@@ -241,6 +383,7 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
                   );
                 })}
               </div>
+              )}
 
               {/* Bottom Quick Cypher Hint */}
               <div className="z-10 p-2.5 rounded-xl bg-white/90 dark:bg-[#141414]/90 border border-stone-200 dark:border-[#222222] text-[11px] font-mono text-stone-600 dark:text-stone-300 flex items-center justify-between">
@@ -430,6 +573,45 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
               <p className="text-[11px] text-blue-800/80 dark:text-blue-300/80 leading-relaxed">
                 NearGo traverses the Indian urban graph across Metro corridors, verified E-rickshaw stands, and footpaths while strictly computing legal meter tariffs and routing around reported auto tout zones.
               </p>
+            </div>
+
+            {/* Interactive Origin/Destination Query Bar */}
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#111] border border-stone-200 dark:border-[#222] shadow-xs space-y-3">
+              <div className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                <Navigation className="w-3.5 h-3.5 text-[#008CC1]" />
+                <span>Calculate Any Multi-Hop Graph Transit Route ({selectedCity}):</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+                <div className="sm:col-span-5">
+                  <input
+                    type="text"
+                    value={customOrigin}
+                    onChange={(e) => setCustomOrigin(e.target.value)}
+                    placeholder="Origin (e.g. Connaught Place)"
+                    className="w-full px-3 py-1.5 rounded-xl bg-stone-50 dark:bg-[#1a1a1a] border border-stone-200 dark:border-[#2c2c2c] text-xs font-semibold outline-none focus:border-[#008CC1]"
+                  />
+                </div>
+                <div className="sm:col-span-5">
+                  <input
+                    type="text"
+                    value={customDest}
+                    onChange={(e) => setCustomDest(e.target.value)}
+                    placeholder="Destination (e.g. Majnu Ka Tilla)"
+                    className="w-full px-3 py-1.5 rounded-xl bg-stone-50 dark:bg-[#1a1a1a] border border-stone-200 dark:border-[#2c2c2c] text-xs font-semibold outline-none focus:border-[#008CC1]"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCalculateTransit(customOrigin, customDest)}
+                    disabled={transitLoading}
+                    className="w-full py-1.5 px-3 rounded-xl bg-[#008CC1] hover:bg-[#007ba8] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                  >
+                    {transitLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
+                    <span>Traverse</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {transitPath && (
