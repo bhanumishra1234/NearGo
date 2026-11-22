@@ -340,17 +340,21 @@ class Neo4jGraphManager {
     const totalTimeMin = multiModalLegs.reduce((sum, l) => sum + l.estimatedTimeMin, 0);
     const totalCostRs = multiModalLegs.reduce((sum, l) => sum + l.costRs, 0);
 
-    return {
-      query: `MATCH path = shortestPath((orig:Location {name: $origin})-[:CONNECTS_TO|LAST_MILE_ACCESS*..6]-(dest:Location {name: $dest})) RETURN path`,
-      params: { origin: cleanOrigin, dest: cleanDest },
-      origin: cleanOrigin,
-      destination: cleanDest,
-      multiModalSummary: {
+    // ── Path 1: 🚇 Metro Trunk Express (Fastest Transit Corridor) ──
+    const path1 = {
+      id: 'path-metro',
+      title: 'Metro Trunk Express',
+      badge: '⚡ Fastest Transit',
+      badgeColor: 'bg-blue-600 text-white',
+      icon: '🚇',
+      tagline: 'Zero highway traffic delays via rapid rail corridor & first-mile rickshaw',
+      summary: {
         totalTimeMinutes: totalTimeMin,
         totalEstimatedFare: `₹${totalCostRs}`,
-        carbonKgSaved: 2.4,
-        trafficDelayAvoidedMinutes: 35,
-        scamRiskLevel: 'Zero (Official Municipal & DMRC Tariffs)',
+        carbonKgSaved: 2.8,
+        trafficDelayAvoidedMinutes: 38,
+        scamRiskLevel: 'Zero (Official DMRC / Municipal Tariffs)',
+        hopsCount: 3,
       },
       optimalRoute: multiModalLegs.map((l) => ({
         step: l.legNumber,
@@ -359,7 +363,195 @@ class Neo4jGraphManager {
         tip: l.tip,
       })),
       legs: multiModalLegs,
-      estimatedOfficialFare: `₹${totalCostRs} total (₹15 Rickshaw + ₹30 Metro + ₹20 Last Mile)`,
+      estimatedOfficialFare: `₹${totalCostRs} total (₹${multiModalLegs[0].costRs} Rickshaw + ₹30 Metro + ₹15 Last-Mile)`,
+      query: `MATCH path = shortestPath((orig:Location {name: "${cleanOrigin}"})-[:LAST_MILE_ACCESS|CONNECTS_TO*..6]-(dest:Location {name: "${cleanDest}"})) RETURN path`,
+    };
+
+    // ── Path 2: 🛺 Direct Municipal Auto Corridor (Door-to-Door Single Ride) ──
+    const directAutoFare = activeCity === 'Mumbai' ? 115 : activeCity === 'Bengaluru' ? 120 : 85;
+    const directAutoTime = totalTimeMin + 14;
+    const path2Legs = [
+      {
+        legNumber: 1,
+        mode: 'Direct Electronic Meter Auto',
+        icon: '🛺',
+        from: cleanOrigin,
+        to: cleanDest,
+        travelMethod: 'Single non-stop metered auto ride via arterial corridor',
+        estimatedTimeMin: directAutoTime,
+        costRs: directAutoFare,
+        tip: `Say "Bhaiya meter se chalo". Gazette mandate: ₹${activeCity === 'Mumbai' ? '28 base' : '30 base'}. Avoid flat-rate touts.`,
+      },
+    ];
+    const path2 = {
+      id: 'path-auto',
+      title: 'Direct Auto Meter',
+      badge: '🛺 Door-to-Door',
+      badgeColor: 'bg-amber-600 text-white',
+      icon: '🛺',
+      tagline: 'Continuous single ride without station transfers — ideal with bags or rain',
+      summary: {
+        totalTimeMinutes: directAutoTime,
+        totalEstimatedFare: `₹${directAutoFare}`,
+        carbonKgSaved: 0.8,
+        trafficDelayAvoidedMinutes: 0,
+        scamRiskLevel: 'Medium (Insist on legal electronic meter)',
+        hopsCount: 1,
+      },
+      optimalRoute: path2Legs.map((l) => ({
+        step: l.legNumber,
+        type: l.mode,
+        instruction: `${l.icon} ${l.mode}: ${l.from} ➔ ${l.to} (${l.travelMethod}, ₹${l.costRs}, ${l.estimatedTimeMin} mins)`,
+        tip: l.tip,
+      })),
+      legs: path2Legs,
+      estimatedOfficialFare: `₹${directAutoFare} (Exact legal electronic meter reading)`,
+      query: `MATCH path = (orig:Location {name: "${cleanOrigin}"})-[:DIRECT_ROAD_CORRIDOR]->(dest:Location {name: "${cleanDest}"}) RETURN path`,
+    };
+
+    // ── Path 3: 🌿 Eco-Transit & Heritage Walking Trail (Greenest & Cultural) ──
+    const ecoTime = totalTimeMin + 8;
+    const ecoFare = 20;
+    const path3Legs = [
+      {
+        legNumber: 1,
+        mode: 'Pedestrian Heritage Boulevard',
+        icon: '🚶',
+        from: cleanOrigin,
+        to: `${boardingStation.properties.name} Station`,
+        travelMethod: 'Shaded pedestrian heritage walkway via historic market',
+        estimatedTimeMin: 12,
+        costRs: 0,
+        tip: 'Zero carbon footprint; explore street art and local morning stalls.',
+      },
+      {
+        legNumber: 2,
+        mode: 'Eco Metro Electric Rail',
+        icon: '🚇',
+        from: `${boardingStation.properties.name} Station`,
+        to: `${deboardingStation.properties.name} Station`,
+        travelMethod: `${transitType} via regenerative braking train`,
+        estimatedTimeMin: 18,
+        costRs: 20,
+        tip: 'Solar powered DMRC / Metro network saves 4.2 kg CO2 per passenger.',
+      },
+      {
+        legNumber: 3,
+        mode: 'Heritage Alley Stroll',
+        icon: '🚶',
+        from: `${deboardingStation.properties.name} Station`,
+        to: cleanDest,
+        travelMethod: 'Cultural walk through old neighbourhood alleyways',
+        estimatedTimeMin: 10,
+        costRs: 0,
+        tip: 'Pass by verified local heritage spots with clean air & zero vehicle noise.',
+      },
+    ];
+    const path3 = {
+      id: 'path-eco',
+      title: 'Eco Heritage Trail',
+      badge: '🌿 Zero Carbon',
+      badgeColor: 'bg-emerald-600 text-white',
+      icon: '🌿',
+      tagline: 'Scenic historic walkways + Solar electric metro • Maximum CO2 offset',
+      summary: {
+        totalTimeMinutes: ecoTime,
+        totalEstimatedFare: `₹${ecoFare}`,
+        carbonKgSaved: 4.2,
+        trafficDelayAvoidedMinutes: 42,
+        scamRiskLevel: 'Zero (Pedestrian & Smart Card transit)',
+        hopsCount: 3,
+      },
+      optimalRoute: path3Legs.map((l) => ({
+        step: l.legNumber,
+        type: l.mode,
+        instruction: `${l.icon} ${l.mode}: ${l.from} ➔ ${l.to} (${l.travelMethod}, ₹${l.costRs}, ${l.estimatedTimeMin} mins)`,
+        tip: l.tip,
+      })),
+      legs: path3Legs,
+      estimatedOfficialFare: `₹${ecoFare} (₹0 Walk + ₹20 Metro Smart Card + ₹0 Stroll)`,
+      query: `MATCH path = (orig:Location {name: "${cleanOrigin}"})-[:HERITAGE_WALK|ECO_TRANSIT*..5]-(dest:Location {name: "${cleanDest}"}) RETURN path`,
+    };
+
+    // ── Path 4: 🪙 Budget Sharing Micro-Transit (Lowest Possible Cost) ──
+    const budgetTime = totalTimeMin + 4;
+    const budgetFare = 25;
+    const path4Legs = [
+      {
+        legNumber: 1,
+        mode: 'Sharing E-Rickshaw Stand',
+        icon: '🛺',
+        from: cleanOrigin,
+        to: `${boardingStation.properties.name} Station`,
+        travelMethod: 'Shared 4-seater local battery e-rickshaw stand',
+        estimatedTimeMin: 9,
+        costRs: 10,
+        tip: 'Flat ₹10 per seat; board from dedicated sharing stand outside market gate.',
+      },
+      {
+        legNumber: 2,
+        mode: 'Off-Peak Metro Smart Card',
+        icon: '🚇',
+        from: `${boardingStation.properties.name} Station`,
+        to: `${deboardingStation.properties.name} Station`,
+        travelMethod: 'Metro transit with 20% off-peak / smart card discount',
+        estimatedTimeMin: 18,
+        costRs: 15,
+        tip: 'Use NearGo smart card discount; 60% cheaper than Uber or Ola cabs.',
+      },
+      {
+        legNumber: 3,
+        mode: 'Shared Feeder Rickshaw',
+        icon: '🛺',
+        from: `${deboardingStation.properties.name} Station Gate 1`,
+        to: cleanDest,
+        travelMethod: 'Feeder micro-shuttle or shared rickshaw',
+        estimatedTimeMin: 5,
+        costRs: 10,
+        tip: 'Take shared shuttle; never negotiate lump-sum with solo drivers.',
+      },
+    ];
+    const path4 = {
+      id: 'path-budget',
+      title: 'Budget Sharing Route',
+      badge: '🪙 Lowest Cost',
+      badgeColor: 'bg-purple-600 text-white',
+      icon: '🪙',
+      tagline: 'Shared micro-rickshaws + Discounted smart card • 65% cheaper than cabs',
+      summary: {
+        totalTimeMinutes: budgetTime,
+        totalEstimatedFare: `₹${budgetFare}`,
+        carbonKgSaved: 3.1,
+        trafficDelayAvoidedMinutes: 30,
+        scamRiskLevel: 'Zero (Regulated sharing tariff)',
+        hopsCount: 3,
+      },
+      optimalRoute: path4Legs.map((l) => ({
+        step: l.legNumber,
+        type: l.mode,
+        instruction: `${l.icon} ${l.mode}: ${l.from} ➔ ${l.to} (${l.travelMethod}, ₹${l.costRs}, ${l.estimatedTimeMin} mins)`,
+        tip: l.tip,
+      })),
+      legs: path4Legs,
+      estimatedOfficialFare: `₹${budgetFare} (₹10 Sharing + ₹15 Metro + ₹10 Feeder)`,
+      query: `MATCH path = (orig:Location {name: "${cleanOrigin}"})-[:SHARED_FEEDER*..6]-(dest:Location {name: "${cleanDest}"}) RETURN path`,
+    };
+
+    const allPaths = [path1, path2, path3, path4];
+
+    return {
+      query: path1.query,
+      params: { origin: cleanOrigin, dest: cleanDest, city: activeCity },
+      origin: cleanOrigin,
+      destination: cleanDest,
+      city: activeCity,
+      totalPathsAvailable: allPaths.length,
+      paths: allPaths,
+      // Backward compatibility fields
+      multiModalSummary: path1.summary,
+      optimalRoute: path1.optimalRoute,
+      legs: path1.legs,
+      estimatedOfficialFare: path1.estimatedOfficialFare,
       scamWarningsEncountered: 0,
       graphTraversedHops: 3,
     };

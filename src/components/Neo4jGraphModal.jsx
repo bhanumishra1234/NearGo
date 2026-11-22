@@ -16,7 +16,15 @@ import {
   RotateCw,
   Loader2,
   ChevronRight,
-  Info
+  Info,
+  Navigation,
+  SlidersHorizontal,
+  Zap,
+  Leaf,
+  Coins,
+  Clock,
+  CheckCircle2,
+  Route
 } from 'lucide-react';
 
 const LABEL_COLORS = {
@@ -25,6 +33,27 @@ const LABEL_COLORS = {
   LocalGuide: { bg: '#F59E0B', ring: '#FDE68A', text: 'text-amber-500', name: 'Verified Local' },
   City: { bg: '#8B5CF6', ring: '#DDD6FE', text: 'text-purple-500', name: 'Urban Hub' },
   ScamWarningZone: { bg: '#EF4444', ring: '#FECACA', text: 'text-red-500', name: 'Scam Risk Zone' },
+};
+
+const CITY_ROUTE_PRESETS = {
+  'Delhi NCR': [
+    { label: 'Kashmere Gate ➔ Majnu Ka Tilla', from: 'Kashmere Gate', to: 'Majnu Ka Tilla', tag: 'Tibetan Market' },
+    { label: 'Rajiv Chowk ➔ Hauz Khas', from: 'Rajiv Chowk', to: 'Hauz Khas Village', tag: 'Lake & Cafes' },
+    { label: 'Chandni Chowk ➔ India Gate', from: 'Chandni Chowk', to: 'India Gate', tag: 'Heritage Hub' },
+    { label: 'Aerocity ➔ Connaught Place', from: 'Aerocity', to: 'Connaught Place', tag: 'Airport Express' },
+  ],
+  'Mumbai': [
+    { label: 'Andheri ➔ Prithvi Cafe Juhu', from: 'Andheri Station', to: 'Prithvi Theatre Juhu', tag: 'Theatre & Beach' },
+    { label: 'Ghatkopar ➔ Bandra West', from: 'Ghatkopar', to: 'Bandra West', tag: 'Suburban Link' },
+    { label: 'CSMT ➔ Marine Drive', from: 'CSMT', to: 'Marine Drive', tag: 'Heritage Pier' },
+    { label: 'Dadar ➔ Colaba Causeway', from: 'Dadar', to: 'Colaba Causeway', tag: 'South Mumbai' },
+  ],
+  'Bengaluru': [
+    { label: 'Majestic ➔ VV Puram Food Street', from: 'Majestic Station', to: 'VV Puram Food Street', tag: 'Food Street' },
+    { label: 'Indiranagar ➔ Lalbagh Garden', from: 'Indiranagar', to: 'Lalbagh Botanical Garden', tag: 'Green Corridor' },
+    { label: 'Whitefield ➔ MG Road', from: 'Whitefield', to: 'MG Road', tag: 'Tech Purple Line' },
+    { label: 'Koramangala ➔ Cubbon Park', from: 'Koramangala', to: 'Cubbon Park', tag: 'City Park' },
+  ],
 };
 
 export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi NCR' }) {
@@ -44,6 +73,7 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
 
   // Shortest Path state & custom calculator
   const [transitPath, setTransitPath] = useState(null);
+  const [selectedPathId, setSelectedPathId] = useState('path-metro');
   const [customOrigin, setCustomOrigin] = useState('Kashmere Gate');
   const [customDest, setCustomDest] = useState('Majnu Ka Tilla');
   const [transitLoading, setTransitLoading] = useState(false);
@@ -85,7 +115,12 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
         setGraphData(gd);
         if (gd.nodes.length > 0) setSelectedNode(gd.nodes[0]);
       }
-      if (tp.success) setTransitPath(tp.route);
+      if (tp.success) {
+        setTransitPath(tp.route);
+        if (tp.route?.paths?.length > 0) {
+          setSelectedPathId(tp.route.paths[0].id);
+        }
+      }
       setLoading(false);
     });
 
@@ -104,6 +139,9 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
       const data = await res.json();
       if (data.success && data.route) {
         setTransitPath(data.route);
+        if (data.route.paths && data.route.paths.length > 0) {
+          setSelectedPathId(data.route.paths[0].id);
+        }
       }
     } catch (e) {
       console.warn('[Transit Calculation Exception]:', e);
@@ -563,126 +601,282 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
         )}
 
         {/* Tab 3: Shortest Path Multi-Hop Transit */}
-        {activeTab === 'transit' && (
-          <div className="flex-1 p-6 space-y-5 overflow-y-auto">
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-[#0d1624] dark:to-[#0f121d] border border-blue-200 dark:border-[#1e293b]">
-              <div className="text-xs font-bold text-blue-900 dark:text-blue-300 mb-1 flex items-center gap-1.5">
-                <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span>Multi-Hop Graph Pathfinding (Dijkstra Shortest Path)</span>
-              </div>
-              <p className="text-[11px] text-blue-800/80 dark:text-blue-300/80 leading-relaxed">
-                NearGo traverses the Indian urban graph across Metro corridors, verified E-rickshaw stands, and footpaths while strictly computing legal meter tariffs and routing around reported auto tout zones.
-              </p>
-            </div>
+        {activeTab === 'transit' && (() => {
+          const pathsList = transitPath?.paths || (transitPath ? [transitPath] : []);
+          const activePath = pathsList.find((p) => p.id === selectedPathId) || pathsList[0] || transitPath;
+          const activeSummary = activePath?.summary || activePath?.multiModalSummary || {};
+          const activeRoute = activePath?.optimalRoute || [];
+          const presets = CITY_ROUTE_PRESETS[selectedCity] || CITY_ROUTE_PRESETS['Delhi NCR'];
 
-            {/* Interactive Origin/Destination Query Bar */}
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#111] border border-stone-200 dark:border-[#222] shadow-xs space-y-3">
-              <div className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
-                <Navigation className="w-3.5 h-3.5 text-[#008CC1]" />
-                <span>Calculate Any Multi-Hop Graph Transit Route ({selectedCity}):</span>
+          return (
+            <div className="flex-1 p-6 space-y-5 overflow-y-auto">
+              {/* Header Banner */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-[#0d1624] dark:to-[#0f121d] border border-blue-200 dark:border-[#1e293b]">
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
+                  <div className="text-xs font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+                    <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <span>Multi-Hop Graph Pathfinding & Multi-Path Optimization</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                    Neo4j Dijkstra & Cypher Corridors
+                  </span>
+                </div>
+                <p className="text-[11px] text-blue-800/80 dark:text-blue-300/80 leading-relaxed">
+                  NearGo traverses Indian urban transit graphs across high-speed metro lines, regulated municipal auto corridors, pedestrian heritage trails, and shared e-rickshaw stands — computing authentic municipal gazette fares and routing safely around tout-heavy zones.
+                </p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
-                <div className="sm:col-span-5">
-                  <input
-                    type="text"
-                    value={customOrigin}
-                    onChange={(e) => setCustomOrigin(e.target.value)}
-                    placeholder="Origin (e.g. Connaught Place)"
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-50 dark:bg-[#1a1a1a] border border-stone-200 dark:border-[#2c2c2c] text-xs font-semibold outline-none focus:border-[#008CC1]"
-                  />
+
+              {/* Quick City Presets */}
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-extrabold uppercase text-stone-500 dark:text-stone-400 tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Quick Route Presets ({selectedCity}):</span>
                 </div>
-                <div className="sm:col-span-5">
-                  <input
-                    type="text"
-                    value={customDest}
-                    onChange={(e) => setCustomDest(e.target.value)}
-                    placeholder="Destination (e.g. Majnu Ka Tilla)"
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-50 dark:bg-[#1a1a1a] border border-stone-200 dark:border-[#2c2c2c] text-xs font-semibold outline-none focus:border-[#008CC1]"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <button
-                    type="button"
-                    onClick={() => handleCalculateTransit(customOrigin, customDest)}
-                    disabled={transitLoading}
-                    className="w-full py-1.5 px-3 rounded-xl bg-[#008CC1] hover:bg-[#007ba8] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
-                  >
-                    {transitLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
-                    <span>Traverse</span>
-                  </button>
+                <div className="flex flex-wrap gap-2">
+                  {presets.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setCustomOrigin(preset.from);
+                        setCustomDest(preset.to);
+                        handleCalculateTransit(preset.from, preset.to);
+                      }}
+                      className="group px-3 py-1.5 rounded-xl border border-stone-200 dark:border-[#262626] bg-stone-50 dark:bg-[#141414] hover:bg-[#008CC1]/10 hover:border-[#008CC1] text-left transition-all text-xs cursor-pointer flex items-center gap-2"
+                    >
+                      <span className="font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#008CC1]">
+                        {preset.label}
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-stone-200/80 dark:bg-[#202020] text-stone-600 dark:text-stone-400 font-mono">
+                        {preset.tag}
+                      </span>
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
 
-            {transitPath && (
-              <div className="space-y-4">
-                <div className="p-3.5 rounded-xl bg-stone-900 text-white font-mono text-xs">
-                  <span className="text-stone-400">Graph Algorithm:</span> <span>{transitPath.query}</span>
+              {/* Interactive Origin/Destination Query Bar */}
+              <div className="p-4 rounded-2xl bg-white dark:bg-[#111] border border-stone-200 dark:border-[#222] shadow-xs space-y-3">
+                <div className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                  <Navigation className="w-3.5 h-3.5 text-[#008CC1]" />
+                  <span>Traverse Custom Urban Transit Graph:</span>
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+                  <div className="sm:col-span-5">
+                    <input
+                      type="text"
+                      value={customOrigin}
+                      onChange={(e) => setCustomOrigin(e.target.value)}
+                      placeholder="Origin (e.g. Kashmere Gate)"
+                      className="w-full px-3 py-2 rounded-xl bg-stone-50 dark:bg-[#1a1a1a] border border-stone-200 dark:border-[#2c2c2c] text-xs font-semibold outline-none focus:border-[#008CC1]"
+                    />
+                  </div>
+                  <div className="sm:col-span-5">
+                    <input
+                      type="text"
+                      value={customDest}
+                      onChange={(e) => setCustomDest(e.target.value)}
+                      placeholder="Destination (e.g. Majnu Ka Tilla)"
+                      className="w-full px-3 py-2 rounded-xl bg-stone-50 dark:bg-[#1a1a1a] border border-stone-200 dark:border-[#2c2c2c] text-xs font-semibold outline-none focus:border-[#008CC1]"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <button
+                      type="button"
+                      onClick={() => handleCalculateTransit(customOrigin, customDest)}
+                      disabled={transitLoading}
+                      className="w-full py-2 px-3 rounded-xl bg-[#008CC1] hover:bg-[#007ba8] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                    >
+                      {transitLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
+                      <span>Compute</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-                {/* Multi-Modal Metrics Grid */}
-                {transitPath.multiModalSummary && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {transitPath && (
+                <div className="space-y-4">
+                  {/* Multi-Path Selector Cards (User Request: Choose between various paths) */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-extrabold uppercase text-stone-700 dark:text-stone-300 tracking-wider flex items-center gap-1.5">
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-[#008CC1]" />
+                        <span>Choose Between Various Knowledge Graph Paths ({pathsList.length} Options):</span>
+                      </div>
+                      <span className="text-[11px] text-stone-400 font-medium hidden sm:inline">
+                        Click any route option to inspect graph legs
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {pathsList.map((p) => {
+                        const isSelected = (p.id || p.title) === (activePath?.id || activePath?.title);
+                        const summ = p.summary || p.multiModalSummary || {};
+                        return (
+                          <div
+                            key={p.id || p.title}
+                            onClick={() => setSelectedPathId(p.id)}
+                            className={`relative p-3.5 rounded-2xl border transition-all cursor-pointer text-left flex flex-col justify-between ${
+                              isSelected
+                                ? 'border-[#008CC1] bg-blue-50/70 dark:bg-blue-950/40 ring-2 ring-[#008CC1]/40 shadow-sm'
+                                : 'border-stone-200 dark:border-[#222] bg-white dark:bg-[#121212] hover:border-stone-400 dark:hover:border-stone-600 hover:shadow-2xs'
+                            }`}
+                          >
+                            <div>
+                              {/* Header Badge */}
+                              <div className="flex items-center justify-between gap-1.5 mb-2">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${p.badgeColor || 'bg-blue-600 text-white'}`}>
+                                  {p.badge || 'Route Option'}
+                                </span>
+                                {isSelected ? (
+                                  <span className="w-4 h-4 rounded-full bg-[#008CC1] text-white flex items-center justify-center text-[10px] font-bold">
+                                    ✓
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-stone-400 font-mono">select</span>
+                                )}
+                              </div>
+
+                              {/* Title & Icon */}
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-lg">{p.icon || '📍'}</span>
+                                <h4 className="text-xs font-black text-stone-900 dark:text-white leading-tight">
+                                  {p.title}
+                                </h4>
+                              </div>
+
+                              {/* Tagline */}
+                              <p className="text-[11px] text-stone-500 dark:text-stone-400 line-clamp-2 leading-relaxed mb-3">
+                                {p.tagline || 'Optimized multi-modal corridor.'}
+                              </p>
+                            </div>
+
+                            {/* Card Footer Quick Metrics */}
+                            <div className="pt-2 border-t border-stone-100 dark:border-[#202020] flex items-center justify-between text-[11px] font-mono">
+                              <span className="font-bold text-stone-800 dark:text-stone-200">
+                                ⏱️ {summ.totalTimeMinutes || '~'}m
+                              </span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                🪙 {summ.totalEstimatedFare || '~'}
+                              </span>
+                              <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400">
+                                🌿 -{summ.carbonKgSaved || 0}kg
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Active Path Cypher Query */}
+                  <div className="p-3.5 rounded-xl bg-stone-900 text-white font-mono text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-xs">
+                    <div className="overflow-x-auto max-w-full">
+                      <span className="text-stone-400 font-bold">Graph Cypher: </span>
+                      <span className="text-emerald-300 font-semibold">{activePath.query || transitPath.query}</span>
+                    </div>
+                    <span className="shrink-0 px-2 py-0.5 rounded-md bg-stone-800 text-[10px] text-stone-300 border border-stone-700">
+                      Hops: {activeSummary.hopsCount || 3}
+                    </span>
+                  </div>
+
+                  {/* Multi-Modal Metrics Grid for the Active Path */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/40">
-                      <div className="text-[10px] text-blue-700 dark:text-blue-300 font-bold uppercase">Total Time</div>
+                      <div className="text-[10px] text-blue-700 dark:text-blue-300 font-bold uppercase flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        <span>Total Travel Time</span>
+                      </div>
                       <div className="text-base font-extrabold text-blue-900 dark:text-white mt-0.5">
-                        {transitPath.multiModalSummary.totalTimeMinutes} mins
+                        {activeSummary.totalTimeMinutes} mins
                       </div>
                     </div>
                     <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40">
-                      <div className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase">Transit Fare</div>
+                      <div className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase flex items-center gap-1">
+                        <Coins className="w-3 h-3" />
+                        <span>Transit Fare</span>
+                      </div>
                       <div className="text-base font-extrabold text-emerald-900 dark:text-white mt-0.5">
-                        {transitPath.multiModalSummary.totalEstimatedFare}
+                        {activeSummary.totalEstimatedFare}
                       </div>
                     </div>
                     <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40">
-                      <div className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase">Traffic Avoided</div>
+                      <div className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase flex items-center gap-1">
+                        <Zap className="w-3 h-3" />
+                        <span>Traffic Avoided</span>
+                      </div>
                       <div className="text-base font-extrabold text-amber-900 dark:text-white mt-0.5">
-                        {transitPath.multiModalSummary.trafficDelayAvoidedMinutes} mins
+                        {activeSummary.trafficDelayAvoidedMinutes} mins
                       </div>
                     </div>
                     <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/40">
-                      <div className="text-[10px] text-purple-700 dark:text-purple-300 font-bold uppercase">CO2 Saved</div>
+                      <div className="text-[10px] text-purple-700 dark:text-purple-300 font-bold uppercase flex items-center gap-1">
+                        <Leaf className="w-3 h-3" />
+                        <span>CO2 Offset</span>
+                      </div>
                       <div className="text-base font-extrabold text-purple-900 dark:text-white mt-0.5">
-                        {transitPath.multiModalSummary.carbonKgSaved} kg
+                        {activeSummary.carbonKgSaved} kg
                       </div>
                     </div>
                   </div>
-                )}
 
-                <div className="space-y-2.5">
-                  <div className="text-xs font-extrabold uppercase text-stone-400 tracking-wider">
-                    Multi-Modal Intermodal Route Legs:
-                  </div>
-                  {transitPath.optimalRoute.map((step) => (
-                    <div
-                      key={step.step}
-                      className="p-3.5 rounded-2xl bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#1f1f1f] flex items-center gap-3 text-xs"
-                    >
-                      <div className="w-7 h-7 rounded-full bg-[#008CC1] text-white font-black flex items-center justify-center shrink-0">
-                        {step.step}
+                  {/* Scam Risk & Safety Protection Banner */}
+                  {activeSummary.scamRiskLevel && (
+                    <div className="p-2.5 rounded-xl border border-stone-200 dark:border-[#222] bg-white dark:bg-[#121212] flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-stone-700 dark:text-stone-300">
+                          Scam & Overcharging Risk: <strong className="text-stone-900 dark:text-white">{activeSummary.scamRiskLevel}</strong>
+                        </span>
                       </div>
-                      <div className="flex-1">
-                        <div className="font-bold text-stone-900 dark:text-white">{step.type}</div>
-                        <div className="text-[11px] text-stone-600 dark:text-stone-400 mt-0.5">{step.instruction}</div>
-                        {step.tip && (
-                          <div className="text-[10px] text-[#D9532F] font-medium mt-1">
-                            💡 {step.tip}
-                          </div>
-                        )}
-                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold">
+                        NearGo Verified
+                      </span>
                     </div>
-                  ))}
-                </div>
+                  )}
 
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center justify-between">
-                  <span>Official Multi-Modal Tariff:</span>
-                  <span>{transitPath.estimatedOfficialFare}</span>
+                  {/* Multi-Modal Intermodal Route Legs for the Active Path */}
+                  <div className="space-y-2.5">
+                    <div className="text-xs font-extrabold uppercase text-stone-500 dark:text-stone-400 tracking-wider flex items-center gap-1.5">
+                      <Route className="w-3.5 h-3.5 text-[#008CC1]" />
+                      <span>Detailed Route Legs ({activePath.title || 'Selected Path'}):</span>
+                    </div>
+                    {activeRoute.map((step) => (
+                      <div
+                        key={step.step}
+                        className="p-3.5 rounded-2xl bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#1f1f1f] flex items-center gap-3 text-xs"
+                      >
+                        <div className="w-7 h-7 rounded-full bg-[#008CC1] text-white font-black flex items-center justify-center shrink-0">
+                          {step.step}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-bold text-stone-900 dark:text-white">{step.type}</div>
+                          <div className="text-[11px] text-stone-600 dark:text-stone-400 mt-0.5">{step.instruction}</div>
+                          {step.tip && (
+                            <div className="text-[10px] text-[#D9532F] font-medium mt-1">
+                              💡 {step.tip}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Official Tariff Breakdown */}
+                  <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-200 text-xs font-bold flex items-center justify-between flex-wrap gap-2">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>Official Regulated Multi-Modal Tariff:</span>
+                    </span>
+                    <span className="font-mono text-sm text-emerald-700 dark:text-emerald-300">
+                      {activePath.estimatedOfficialFare || transitPath.estimatedOfficialFare}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
