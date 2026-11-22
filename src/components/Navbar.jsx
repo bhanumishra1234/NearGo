@@ -29,6 +29,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { getUserCredTier } from '../utils/credEngine.js';
 import { transcribeAudioWithSarvam } from '../utils/sarvamAudio.js';
 import { executeVoiceTask } from '../utils/voiceTaskEngine.js';
+import VoiceAssistantHUD from './VoiceAssistantHUD.jsx';
 
 export default function Navbar({
   selectedCity,
@@ -59,6 +60,7 @@ export default function Navbar({
   const dropdownRef = useRef(null);
 
   // Saaras AI Voice Search & Action Execution State
+  const [isVoiceHUDOpen, setIsVoiceHUDOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('');
   const [voiceToast, setVoiceToast] = useState(null);
@@ -244,6 +246,33 @@ export default function Navbar({
 
   return (
     <header aria-label="Main Site Navigation" className="sticky top-0 z-[1100] bg-white/95 dark:bg-[#000000]/95 backdrop-blur-md border-b border-[#E8E5DF] dark:border-[#1a1a1a]">
+      {/* NearGo Interactive Voice Assistant HUD */}
+      <VoiceAssistantHUD
+        isOpen={isVoiceHUDOpen}
+        onClose={() => setIsVoiceHUDOpen(false)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedCity={selectedCity}
+        setSelectedCity={setSelectedCity}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenAskModal={onOpenAskModal}
+        onOpenFareModal={onOpenFareModal}
+        onOpenVibeModal={onOpenVibeModal}
+        onOpenCouponModal={onOpenCouponModal}
+        onOpenMerchantModal={onOpenMerchantModal}
+        onOpenTrailsModal={onOpenTrailsModal}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        onRequestLocation={onRequestLocation}
+        onHighlightOnMap={onHighlightOnMap}
+        questions={questions}
+        onShowToast={(msg) => {
+          setVoiceToast(msg);
+          setTimeout(() => setVoiceToast(null), 4500);
+        }}
+      />
+
       {/* Interactive Voice Task Execution Toast */}
       {voiceToast && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[2000] bg-stone-900/95 dark:bg-stone-100/95 text-white dark:text-stone-900 px-4 py-2 rounded-full shadow-2xl border border-stone-700 dark:border-stone-300 flex items-center gap-2.5 text-xs font-bold animate-fadeIn backdrop-blur-md pointer-events-auto">
@@ -345,16 +374,12 @@ export default function Navbar({
                 )}
                 <button
                   type="button"
-                  onClick={handleToggleVoiceSearch}
-                  className={`p-1.5 rounded-full transition-all flex items-center justify-center cursor-pointer ${
-                    isListening
-                      ? 'bg-rose-600 text-white animate-pulse shadow-md'
-                      : 'text-stone-500 hover:text-[#D9532F] hover:bg-stone-200/60 dark:hover:bg-[#202020]'
-                  }`}
-                  title={isListening ? 'Stop voice listening' : 'Voice Search with Sarvam Saaras AI (e.g. "Find nearest metro station")'}
-                  aria-label="Voice Search with Sarvam Saaras"
+                  onClick={() => setIsVoiceHUDOpen(true)}
+                  className="p-1.5 rounded-full transition-all flex items-center justify-center cursor-pointer text-stone-500 hover:text-[#D9532F] hover:bg-stone-200/60 dark:hover:bg-[#202020] active:scale-95 shadow-2xs"
+                  title="Voice AI Assistant: Speak any task (e.g. 'Find nearest metro', 'Check auto fare')"
+                  aria-label="Voice AI Assistant"
                 >
-                  <Mic className={`w-3.5 h-3.5 ${isListening ? 'animate-bounce' : ''}`} />
+                  <Mic className="w-3.5 h-3.5 text-[#D9532F]" />
                 </button>
               </div>
             </div>
