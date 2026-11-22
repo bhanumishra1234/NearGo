@@ -106,7 +106,7 @@ export default function QuestionsFeed({
       {/* 1. Quora / Reddit-Style Composer Box */}
       <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-3.5 sm:p-4 shadow-sm hover:shadow transition-shadow">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-[#D9532F] text-white font-bold flex items-center justify-center shrink-0 shadow-inner">
+          <div className="w-10 h-10 rounded-full bg-[#D9532F] text-white font-bold flex items-center justify-center shrink-0">
             <span>U</span>
           </div>
           <button

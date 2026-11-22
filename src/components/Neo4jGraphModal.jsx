@@ -611,7 +611,7 @@ export default function Neo4jGraphModal({ isOpen, onClose, defaultCity = 'Delhi 
           return (
             <div className="flex-1 p-6 space-y-5 overflow-y-auto">
               {/* Header Banner */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-[#0d1624] dark:to-[#0f121d] border border-blue-200 dark:border-[#1e293b]">
+              <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-[#0d1624] border border-blue-200 dark:border-[#1e293b]">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
                   <div className="text-xs font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
                     <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400" />

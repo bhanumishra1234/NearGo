@@ -376,7 +376,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
 
         {/* 1-Click Evaluator / Judge Quick Sign In (Shown on login and signup) */}
         {(mode === 'login' || mode === 'signup') && (
-          <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-[#18120b] dark:to-[#1a1410] border border-amber-200/80 dark:border-amber-900/40">
+          <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-[#18120b] border border-amber-200/80 dark:border-amber-900/40">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-300">
                 <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
@@ -660,7 +660,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         {mode === 'activation_pending' && (
           <div className="space-y-4 py-2">
             <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-orange-50/60 dark:bg-[#150f0c] border border-orange-200/70 dark:border-[#2a170f]">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#D9532F] to-[#E06A47] text-white flex items-center justify-center shadow-lg shadow-terracotta-500/20 mb-3 animate-pulse">
+              <div className="w-14 h-14 rounded-full bg-[#D9532F] text-white flex items-center justify-center shadow-lg shadow-terracotta-500/20 mb-3 animate-pulse">
                 <SendHorizontal className="w-7 h-7" />
               </div>
               <h3 className="text-base font-bold text-stone-900 dark:text-white">Activation Email Dispatched</h3>

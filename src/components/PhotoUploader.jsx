@@ -1,16 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, Link, X, Plus, Sparkles, Image as ImageIcon, Loader2, CheckCircle2 } from 'lucide-react';
+import { Camera, Upload, Link, X, Loader2 } from 'lucide-react';
 import { uploadImage } from '../utils/imageUpload';
 
-const PRESET_PHOTOS = [
-  { label: '🛺 Auto Rickshaw', url: 'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?auto=format&fit=crop&w=800&q=80' },
-  { label: '🥟 Street Food', url: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80' },
-  { label: '🚇 Metro Station', url: 'https://images.unsplash.com/photo-1581447109200-bf276912b649?auto=format&fit=crop&w=800&q=80' },
-  { label: '🛍️ Flea Market', url: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80' },
-  { label: '🏰 Heritage Fort', url: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=800&q=80' }
-];
-
-export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, label = 'Attach Photos' }) {
+export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, label = 'Photos' }) {
   const [urlInput, setUrlInput] = useState('');
   const [showUrlBox, setShowUrlBox] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -28,7 +20,7 @@ export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, la
     if (!validFiles.length) return;
 
     setUploading(true);
-    setUploadStatus('Optimizing & uploading to Cloudinary CDN...');
+    setUploadStatus('Uploading...');
 
     try {
       const uploadedUrls = [];
@@ -65,149 +57,97 @@ export default function PhotoUploader({ photos = [], onChange, maxPhotos = 4, la
     setShowUrlBox(false);
   };
 
-  const handleAddPreset = (url) => {
-    if (photos.length >= maxPhotos) return;
-    if (photos.includes(url)) return;
-    onChange([...photos, url]);
-  };
-
   const handleRemovePhoto = (index) => {
     const next = photos.filter((_, i) => i !== index);
     onChange(next);
   };
 
   return (
-    <div className="bg-[#FAF8F5] p-3.5 rounded-xl border border-[#E8E5DF] space-y-2.5">
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
-          <Camera className="w-4 h-4 text-[#D9532F]" />
-          <span>{label}</span>
-          <span className="text-[10px] text-stone-400 font-normal">
-            ({photos.length}/{maxPhotos})
-          </span>
-        </label>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setShowUrlBox(!showUrlBox)}
-            className="text-[11px] font-semibold text-stone-600 hover:text-[#D9532F] px-2 py-0.5 rounded-md hover:bg-stone-200/60 transition-colors flex items-center gap-1"
-          >
-            <Link className="w-3 h-3" />
-            <span>Paste URL</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading || photos.length >= maxPhotos}
-            className="text-[11px] font-bold text-white bg-[#D9532F] hover:bg-[#C2411E] px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 disabled:opacity-50 shadow-2xs"
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="w-3 h-3 animate-spin" />
-                <span>Uploading...</span>
-              </>
-            ) : (
-              <>
-                <Upload className="w-3 h-3" />
-                <span>Upload Photo</span>
-              </>
-            )}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-        </div>
-      </div>
+    <div className="space-y-2">
+      {/* Action Buttons Row */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading || photos.length >= maxPhotos}
+          className="px-3 py-1.5 rounded-lg border border-stone-200 dark:border-[#262626] bg-stone-50 dark:bg-[#141414] hover:bg-stone-100 dark:hover:bg-[#1a1a1a] text-stone-700 dark:text-stone-300 text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D9532F]" />
+              <span>{uploadStatus}</span>
+            </>
+          ) : (
+            <>
+              <Camera className="w-3.5 h-3.5 text-[#D9532F]" />
+              <span>Attach Photos ({photos.length}/{maxPhotos})</span>
+            </>
+          )}
+        </button>
 
-      {/* Uploading progress indicator */}
-      {uploading && (
-        <div className="flex items-center gap-2 py-1 px-2.5 bg-amber-50 border border-amber-200/70 rounded-lg text-amber-800 text-[11px]">
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D9532F] shrink-0" />
-          <span className="font-medium">{uploadStatus || 'Processing image...'}</span>
-        </div>
-      )}
+        <button
+          type="button"
+          onClick={() => setShowUrlBox(!showUrlBox)}
+          disabled={photos.length >= maxPhotos}
+          className="px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-[#262626] bg-stone-50 dark:bg-[#141414] hover:bg-stone-100 dark:hover:bg-[#1a1a1a] text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 text-xs font-medium flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
+        >
+          <Link className="w-3 h-3" />
+          <span>URL</span>
+        </button>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+      </div>
 
       {/* URL input box */}
       {showUrlBox && (
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex items-center gap-2 pt-1 animate-fadeIn">
           <input
             type="url"
             placeholder="Paste image link (https://...)"
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
-            className="flex-1 bg-white border border-[#E8E5DF] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-terracotta-400"
+            className="flex-1 bg-white dark:bg-[#141414] border border-stone-200 dark:border-[#262626] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white focus:outline-none focus:border-[#D9532F]"
           />
           <button
             type="button"
             onClick={handleAddUrl}
-            className="px-3 py-1.5 rounded-lg bg-stone-900 text-white font-bold text-xs hover:bg-black transition-colors shrink-0"
+            className="px-3 py-1.5 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-bold text-xs hover:bg-black transition-colors shrink-0 cursor-pointer"
           >
-            Add Link
+            Add
           </button>
-        </div>
-      )}
-
-      {/* Preset Photo Suggestions */}
-      {photos.length < maxPhotos && (
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
-          <span className="text-[10px] text-stone-400 font-medium shrink-0 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-amber-600" />
-            <span>Presets:</span>
-          </span>
-          {PRESET_PHOTOS.map((preset, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => handleAddPreset(preset.url)}
-              disabled={photos.includes(preset.url)}
-              className={`px-2 py-0.5 rounded-full whitespace-nowrap font-medium border text-[11px] transition-colors ${
-                photos.includes(preset.url)
-                  ? 'bg-stone-100 border-stone-200 text-stone-400 cursor-default'
-                  : 'bg-white border-[#E8E5DF] text-stone-700 hover:border-terracotta-400 hover:text-[#D9532F]'
-              }`}
-            >
-              + {preset.label}
-            </button>
-          ))}
         </div>
       )}
 
       {/* Thumbnails preview strip */}
       {photos.length > 0 && (
-        <div className="grid grid-cols-4 gap-2 pt-1">
-          {photos.map((photo, index) => {
-            const isCloudinary = typeof photo === 'string' && photo.includes('cloudinary.com');
-            return (
-              <div
-                key={index}
-                className="relative aspect-square rounded-lg overflow-hidden border border-[#E8E5DF] bg-stone-100 group shadow-2xs"
+        <div className="flex items-center gap-2 pt-1 flex-wrap">
+          {photos.map((photo, index) => (
+            <div
+              key={index}
+              className="relative w-12 h-12 rounded-lg overflow-hidden border border-stone-200 dark:border-[#282828] bg-stone-100 group shadow-2xs"
+            >
+              <img
+                src={photo}
+                alt={`Upload preview ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => handleRemovePhoto(index)}
+                className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/75 hover:bg-black text-white flex items-center justify-center transition-colors"
+                title="Remove photo"
               >
-                <img
-                  src={photo}
-                  alt={`Upload preview ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-                {isCloudinary && (
-                  <span className="absolute bottom-1 left-1 bg-black/60 backdrop-blur-xs text-[9px] text-emerald-300 px-1 py-0.2 rounded font-medium">
-                    CDN
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleRemovePhoto(index)}
-                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center transition-colors"
-                  title="Remove photo"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            );
-          })}
+                <X className="w-2.5 h-2.5" />
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -377,7 +377,7 @@ export default function MapContainer({
           className: 'partner-deal-pin',
           html: `
             <div class="relative flex items-center justify-center cursor-pointer group">
-              <div class="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white ring-4 ring-amber-300 dark:ring-amber-900/60 shadow-xl flex items-center justify-center transition-transform hover:scale-125">
+              <div class="w-8 h-8 rounded-full bg-[#D9532F] text-white ring-2 ring-stone-200 dark:ring-stone-800 shadow-lg flex items-center justify-center transition-transform hover:scale-125">
                 <span class="text-xs">⭐</span>
               </div>
               <div class="absolute -bottom-1 w-2 h-2 bg-orange-500 rotate-45"></div>
@@ -511,7 +511,7 @@ export default function MapContainer({
               onClick={handlePanIndiaView}
               className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
                 isPanIndiaView
-                  ? 'bg-gradient-to-r from-orange-500 via-amber-500 to-emerald-600 text-white ring-2 ring-amber-300'
+                  ? 'bg-[#D9532F] text-white shadow-xs'
                   : 'bg-stone-100 dark:bg-[#181818] text-stone-800 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-[#222222]'
               }`}
               title="Official Survey of India Sovereign Boundary (Full J&K, Ladakh & NE)"

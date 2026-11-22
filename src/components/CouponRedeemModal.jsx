@@ -86,7 +86,7 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
       <div className="relative w-full max-w-2xl max-h-[92vh] bg-white dark:bg-[#0c0c0c] border border-stone-200 dark:border-[#1e1e1e] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-stone-900 dark:text-stone-100">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-stone-200 dark:border-[#1e1e1e] flex items-center justify-between bg-gradient-to-r from-orange-500 to-amber-500 text-white">
+        <div className="p-4 sm:p-5 border-b border-stone-200 dark:border-[#1e1e1e] flex items-center justify-between bg-[#D9532F] text-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
               <Gift className="w-5 h-5" />
@@ -197,7 +197,7 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
                       className={`p-3.5 rounded-xl border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
                         isRedeemed
                           ? 'bg-stone-100 dark:bg-[#141414] border-stone-300 dark:border-[#262626] opacity-75'
-                          : 'border-amber-200 dark:border-amber-900/40 bg-gradient-to-br from-amber-50/40 via-white to-orange-50/20 dark:from-amber-950/20 dark:via-[#111111] dark:to-orange-950/10'
+                          : 'border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-[#141414]'
                       }`}
                     >
                       <div className="space-y-1">

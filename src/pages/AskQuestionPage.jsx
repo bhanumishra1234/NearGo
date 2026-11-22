@@ -291,12 +291,12 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
           <main className="lg:col-span-8 bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-5 sm:p-6 shadow-xs">
             <form onSubmit={handleSubmit} className="space-y-3.5">
               
-              {/* Category Pills (Horizontal Scrollbar-free) */}
+              {/* Category Pills (Clean Minimal Chips) */}
               <div>
-                <label className="block text-[11px] font-bold text-stone-700 dark:text-stone-300 mb-1">
+                <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5">
                   Topic Category
                 </label>
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
                   {TOPIC_CATEGORIES.map((cat) => {
                     const Icon = cat.icon;
                     const isSelected = category === cat.id;
@@ -305,13 +305,13 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                         key={cat.id}
                         type="button"
                         onClick={() => setCategory(cat.id)}
-                        className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
                           isSelected
-                            ? 'bg-terracotta-50 dark:bg-terracotta-950/40 border-[#D9532F] text-[#D9532F] shadow-2xs'
-                            : 'bg-[#FAF8F5] dark:bg-[#121212] border-stone-200 dark:border-[#222] text-stone-600 dark:text-stone-400 hover:border-stone-300'
+                            ? 'bg-[#D9532F] text-white shadow-xs'
+                            : 'bg-stone-100 dark:bg-[#161616] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                         }`}
                       >
-                        <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#D9532F]' : 'text-stone-500'}`} />
+                        <Icon className="w-3.5 h-3.5" />
                         <span>{cat.label}</span>
                       </button>
                     );
@@ -322,22 +322,22 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
               {/* Title Field */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
+                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
                     Discussion Title
                   </label>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => handleToggleVoice('title')}
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all ${
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${
                         isRecording === 'title'
                           ? 'bg-red-500 text-white animate-pulse'
-                          : 'bg-stone-100 dark:bg-[#1c1c1c] text-[#D9532F] hover:bg-stone-200'
+                          : 'text-stone-500 hover:text-[#D9532F]'
                       }`}
-                      title="Speak title in Hindi/English (Sarvam Saaras AI)"
+                      title="Speak title (Sarvam AI)"
                     >
-                      <Mic className={`w-2.5 h-2.5 ${isRecording === 'title' ? 'animate-bounce' : ''}`} />
-                      <span>{isRecording === 'title' ? '🔴 Stop Listening' : '🎙️ Speak (Sarvam)'}</span>
+                      <Mic className="w-3 h-3" />
+                      <span>{isRecording === 'title' ? 'Stop' : 'Voice'}</span>
                     </button>
                     <span className="text-[10px] text-stone-400 font-mono">
                       {title.length}/100
@@ -351,34 +351,28 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                   placeholder="e.g. Fair auto fare from Nizamuddin Station to Karol Bagh at 10 PM?"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl px-3.5 py-2 text-xs sm:text-sm text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-terracotta-400 font-medium"
+                  className="w-full bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#242424] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-[#D9532F] font-medium"
                 />
-                {isRecording === 'title' && (
-                  <p className="text-[10px] text-red-600 dark:text-red-400 font-semibold animate-pulse mt-1 flex items-center gap-1">
-                    <span>🔴</span>
-                    <span>Listening in Hindi or English... Speak into your mic, then tap Stop.</span>
-                  </p>
-                )}
               </div>
 
-              {/* Body / Context (Compact) */}
+              {/* Body / Context */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
+                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
                     Details & Context
                   </label>
                   <button
                     type="button"
                     onClick={() => handleToggleVoice('body')}
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all ${
+                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${
                       isRecording === 'body'
-                        ? 'bg-red-600 text-white animate-pulse'
-                        : 'bg-stone-100 dark:bg-[#1c1c1c] text-[#D9532F] hover:bg-stone-200'
+                        ? 'bg-red-500 text-white animate-pulse'
+                        : 'text-stone-500 hover:text-[#D9532F]'
                     }`}
-                    title="Speak details in Hindi/English (Sarvam Saaras AI)"
+                    title="Speak details (Sarvam AI)"
                   >
-                    <Mic className={`w-2.5 h-2.5 ${isRecording === 'body' ? 'animate-bounce' : ''}`} />
-                    <span>{isRecording === 'body' ? '🔴 Stop Listening' : '🎙️ Speak (Sarvam)'}</span>
+                    <Mic className="w-3 h-3" />
+                    <span>{isRecording === 'body' ? 'Stop' : 'Voice'}</span>
                   </button>
                 </div>
                 <textarea
@@ -387,20 +381,14 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                   placeholder="Provide context (e.g. driver quoted ₹350, or looking for authentic late night street food)..."
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  className="w-full bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-xl p-2.5 text-xs text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-terracotta-400 leading-relaxed"
+                  className="w-full bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#242424] rounded-xl p-3 text-xs text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-[#D9532F] leading-relaxed"
                 />
-                {isRecording === 'body' && (
-                  <p className="text-[10px] text-red-600 dark:text-red-400 font-semibold animate-pulse mt-1 flex items-center gap-1">
-                    <span>🔴</span>
-                    <span>Listening in Hindi or English... Speak into your mic, then tap Stop.</span>
-                  </p>
-                )}
               </div>
 
-              {/* Location Pinning (Compact Row) */}
-              <div className="bg-[#FAF8F5] dark:bg-[#121212] p-2.5 rounded-xl border border-stone-200 dark:border-[#222] space-y-2">
+              {/* Location Pinning (Minimal Section) */}
+              <div className="space-y-1.5 pt-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-[#D9532F]" />
                     <span>Pin Location</span>
                   </span>
@@ -408,24 +396,24 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                     <button
                       type="button"
                       onClick={() => setLocationMode('landmark')}
-                      className={`px-2 py-0.5 rounded-md font-bold transition-all ${
+                      className={`px-2.5 py-0.5 rounded-full font-semibold transition-all cursor-pointer ${
                         locationMode === 'landmark'
-                          ? 'bg-white dark:bg-[#252525] text-[#D9532F] shadow-2xs'
+                          ? 'bg-stone-200 dark:bg-[#252525] text-stone-900 dark:text-white'
                           : 'text-stone-500 hover:text-stone-800'
                       }`}
                     >
-                      🏛️ Hub/Metro
+                      Hub / Metro
                     </button>
                     <button
                       type="button"
                       onClick={() => setLocationMode('map')}
-                      className={`px-2 py-0.5 rounded-md font-bold transition-all ${
+                      className={`px-2.5 py-0.5 rounded-full font-semibold transition-all cursor-pointer ${
                         locationMode === 'map'
-                          ? 'bg-white dark:bg-[#252525] text-[#D9532F] shadow-2xs'
+                          ? 'bg-stone-200 dark:bg-[#252525] text-stone-900 dark:text-white'
                           : 'text-stone-500 hover:text-stone-800'
                       }`}
                     >
-                      📍 Interactive Pin
+                      Map Pin
                     </button>
                   </div>
                 </div>
@@ -437,7 +425,7 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                       aria-label="Nearby Hub or Metro"
                       value={selectedLandmarkId}
                       onChange={(e) => setSelectedLandmarkId(e.target.value)}
-                      className="bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white font-medium"
+                      className="bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#242424] rounded-lg px-2.5 py-2 text-xs text-stone-900 dark:text-white font-medium focus:outline-none focus:border-[#D9532F]"
                     >
                       {POPULAR_LANDMARKS.map((l) => (
                         <option key={l.id} value={l.id}>
@@ -447,10 +435,10 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                     </select>
                     <input
                       type="text"
-                      placeholder="Custom area (e.g. Near Exit Gate 2)"
+                      placeholder="Custom area / gate hint (optional)"
                       value={customSpotName}
                       onChange={(e) => setCustomSpotName(e.target.value)}
-                      className="bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
+                      className="bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#242424] rounded-lg px-2.5 py-2 text-xs text-stone-900 dark:text-white focus:outline-none focus:border-[#D9532F]"
                     />
                   </div>
                 ) : (
@@ -461,22 +449,15 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                       spotName={customSpotName}
                       onSpotNameChange={setCustomSpotName}
                       onSelectLocation={setCustomCoords}
-                      height="170px"
+                      height="160px"
                     />
-                    <div className="flex items-center justify-between text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-50/80 dark:bg-emerald-950/30 px-2.5 py-1 rounded-lg border border-emerald-200/60 dark:border-emerald-800/40 font-medium">
-                      <span className="flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-[#D9532F]" />
-                        <span>Interactive Spatial Pinning Active</span>
-                      </span>
-                      <span className="font-bold text-[9px] bg-emerald-100 dark:bg-emerald-900/60 px-1.5 py-0.2 rounded">50+ Local Cred Unlocked</span>
-                    </div>
                   </div>
                 )}
               </div>
 
               {/* Fair Fare Check Request (Collapsible Minimal Row) */}
-              <div className="bg-[#FAF8F5] dark:bg-[#121212] p-2.5 rounded-xl border border-stone-200 dark:border-[#222] space-y-2">
-                <label className="text-xs font-bold text-stone-900 dark:text-white flex items-center justify-between cursor-pointer">
+              <div className="pt-2 border-t border-stone-100 dark:border-[#1a1a1a] space-y-2">
+                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 flex items-center justify-between cursor-pointer">
                   <span className="flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#D9532F]" />
                     <span>Include Fair Fare Tariff Audit</span>
@@ -485,40 +466,39 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                     type="checkbox"
                     checked={requestFareCheck}
                     onChange={(e) => setRequestFareCheck(e.target.checked)}
-                    className="rounded accent-[#D9532F] w-3.5 h-3.5"
+                    className="rounded accent-[#D9532F] w-4 h-4 cursor-pointer"
                   />
                 </label>
 
                 {requestFareCheck && (
-                  <div className="pt-2 border-t border-stone-200/80 dark:border-[#1f1f1f] grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fadeIn">
                     <input
                       type="text"
                       placeholder="Origin (e.g. New Delhi Station)"
                       value={fareOrigin}
                       onChange={(e) => setFareOrigin(e.target.value)}
-                      className="bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
+                      className="bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#242424] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white focus:outline-none focus:border-[#D9532F]"
                     />
                     <input
                       type="text"
                       placeholder="Destination (e.g. India Gate)"
                       value={fareDestination}
                       onChange={(e) => setFareDestination(e.target.value)}
-                      className="bg-white dark:bg-[#181818] border border-[#E8E5DF] dark:border-[#262626] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white"
+                      className="bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#242424] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white focus:outline-none focus:border-[#D9532F]"
                     />
                   </div>
                 )}
               </div>
 
-              {/* Photos & User Profile (Compact Row) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
+              {/* Photos & User Profile (Clean Row) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-stone-100 dark:border-[#1a1a1a]">
                 <div>
-                  <label className="block text-[11px] font-bold text-stone-700 dark:text-stone-300 mb-1">
-                    Attach Photos (Optional)
+                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5">
+                    Photos (Optional)
                   </label>
                   <PhotoUploader
                     photos={photos}
                     onChange={setPhotos}
-                    label="Attach Photos (0/4)"
                     maxPhotos={4}
                   />
                 </div>
@@ -534,13 +514,13 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                         placeholder="Your Name"
                         value={authorName}
                         onChange={(e) => setAuthorName(e.target.value)}
-                        className="bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-lg px-2.5 py-1.5 text-xs text-stone-900 dark:text-white font-medium"
+                        className="bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#242424] rounded-lg px-2.5 py-2 text-xs text-stone-900 dark:text-white font-medium focus:outline-none focus:border-[#D9532F]"
                       />
                       <select
                         aria-label="Vibe Preference"
                         value={vibeCategory}
                         onChange={(e) => setVibeCategory(e.target.value)}
-                        className="bg-[#FAF8F5] dark:bg-[#141414] border border-[#E8E5DF] dark:border-[#222] rounded-lg px-2 py-1.5 text-xs text-stone-900 dark:text-white font-medium"
+                        className="bg-stone-50 dark:bg-[#141414] border border-stone-200 dark:border-[#242424] rounded-lg px-2.5 py-2 text-xs text-stone-900 dark:text-white font-medium focus:outline-none focus:border-[#D9532F]"
                       >
                         <option value="student_budget">🎓 Student</option>
                         <option value="heritage">🏰 Heritage</option>
@@ -563,7 +543,7 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
                     <button
                       type="submit"
                       disabled={isSubmitting || !title.trim() || !body.trim()}
-                      className="px-5 py-2 rounded-xl bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-md shadow-terracotta-500/20 flex items-center gap-1.5 transition-all hover:scale-[1.02] disabled:opacity-50"
+                      className="px-5 py-2 rounded-xl bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all disabled:opacity-40 cursor-pointer"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>{isSubmitting ? 'Posting...' : 'Publish Question'}</span>

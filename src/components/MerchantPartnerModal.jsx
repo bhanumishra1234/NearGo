@@ -85,7 +85,7 @@ export default function MerchantPartnerModal({ isOpen, onClose, defaultMerchantN
       <div className="relative w-full max-w-2xl max-h-[92vh] bg-white dark:bg-[#0c0c0c] border border-stone-200 dark:border-[#1e1e1e] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-stone-900 dark:text-stone-100">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-stone-200 dark:border-[#1e1e1e] flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50 dark:from-[#17120a] dark:to-[#1a0f0a]">
+        <div className="p-4 sm:p-5 border-b border-stone-200 dark:border-[#1e1e1e] flex items-center justify-between bg-amber-50/80 dark:bg-[#17120a]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-md">
               <Award className="w-5 h-5" />

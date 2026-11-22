@@ -389,7 +389,7 @@ export default function QuestionDetailPage({
               {/* Author Row */}
               <div className="flex items-center justify-between pt-1 border-t border-stone-100 dark:border-[#161616]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-[#D9532F] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                  <div className="w-10 h-10 rounded-full bg-[#D9532F] text-white font-bold flex items-center justify-center text-sm shadow-xs">
                     {question.author?.name?.[0] || 'T'}
                   </div>
                   <div>

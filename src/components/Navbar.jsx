@@ -617,7 +617,7 @@ export default function Navbar({
                             setProfileDropdownOpen(false);
                             signInAsDemo('Aarav Sharma (Verified Local)');
                           }}
-                          className="w-full py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-[#D9532F] hover:from-amber-600 hover:to-[#C2411E] text-white font-bold text-center flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                          className="w-full py-1.5 rounded-lg bg-[#D9532F] hover:bg-[#C2411E] text-white font-bold text-center flex items-center justify-center gap-1.5 transition-all shadow-xs"
                         >
                           <Sparkles className="w-3.5 h-3.5" />
                           <span>⚡ 1-Click Demo Login</span>

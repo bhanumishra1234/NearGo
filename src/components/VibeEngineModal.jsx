@@ -41,7 +41,7 @@ export default function VibeEngineModal({ onClose, onHighlightOnMap }) {
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-[#E8E5DF] bg-[#FAF8F5] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-[#D9532F] text-white font-bold flex items-center justify-center shadow-md shadow-terracotta-500/20">
+            <div className="w-9 h-9 rounded-full bg-[#D9532F] text-white font-bold flex items-center justify-center shadow-xs">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
