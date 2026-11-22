@@ -19,26 +19,28 @@ export default function HeritageTrailsModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-[1250] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
       <div className="relative w-full max-w-2xl max-h-[92vh] bg-white dark:bg-[#0c0c0c] border border-stone-200 dark:border-[#1e1e1e] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-stone-900 dark:text-stone-100">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-stone-200 dark:border-[#1e1e1e] flex items-center justify-between bg-teal-800 text-white">
+        <div className="p-4 sm:p-5 border-b border-stone-100 dark:border-[#1e1e1e] flex items-center justify-between bg-white dark:bg-[#0c0c0c]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-              <Landmark className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-stone-100 dark:bg-[#161616] text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <Landmark className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black tracking-tight">DMRC & Delhi Tourism Heritage Trails</h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-400 text-emerald-950 tracking-wide">
-                  Official B2G Partnership
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-stone-900 dark:text-white">
+                  Heritage Trails & Metro Corridors
+                </h2>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-100 dark:bg-[#1a1a1a] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-[#262626]">
+                  Official Guide
                 </span>
               </div>
-              <p className="text-xs text-emerald-100">
-                Survey of India Compliant • Public Transit & Pedestrian Heritage Corridors.
+              <p className="text-xs text-stone-500 dark:text-stone-400">
+                Public transit & pedestrian heritage corridors
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-[#181818] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
