@@ -22,8 +22,7 @@ import {
   Mic,
   MicOff,
   Volume2,
-  Zap,
-  Sparkles
+  Zap
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getUserCredTier } from '../utils/credEngine.js';

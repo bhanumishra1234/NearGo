@@ -235,7 +235,7 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
     <div className="w-full pb-10 bg-[#F4F1EA] dark:bg-[#050505] min-h-[calc(100vh-65px)]">
       {/* Top Bar - Compact Header */}
       <div className="border-b border-[#E8E5DF] dark:border-[#1a1a1a] bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-md sticky top-0 z-30 transition-colors">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-6 h-12 flex items-center justify-between">
           <button
             onClick={onBack}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-stone-300 hover:text-[#D9532F] dark:hover:text-[#D9532F] bg-stone-100 dark:bg-[#141414] hover:bg-stone-200 dark:hover:bg-[#1f1f1f] px-3 py-1 rounded-full transition-all"
@@ -252,27 +252,27 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
       </div>
 
       {/* Main Form + Live Preview Layout */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-5">
         
         {/* Compact Title + City Selector Row */}
-        <div className="mb-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#E8E5DF]/70 dark:border-[#1a1a1a]">
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E8E5DF]/70 dark:border-[#1a1a1a]">
           <div>
-            <h1 className="text-lg sm:text-xl font-extrabold text-stone-900 dark:text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-stone-900 dark:text-white tracking-tight">
               Ask Locals a Real Question
             </h1>
-            <p className="text-[11px] text-stone-500 dark:text-stone-400">
+            <p className="text-xs text-stone-500 dark:text-stone-400">
               Get genuine local answers, pinpoint custom spots, and verify legal meter fares.
             </p>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">City:</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">City:</span>
             <div className="flex items-center gap-1 bg-stone-100 dark:bg-[#141414] p-1 rounded-xl">
               {CITIES.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setSelectedCity(c)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     selectedCity === c
                       ? 'bg-[#D9532F] text-white shadow-2xs'
                       : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
@@ -285,10 +285,10 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* Main Creation Form (7 cols) - Space-Efficient */}
-          <main className="lg:col-span-7 bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-4 sm:p-5 shadow-xs">
+          {/* Main Creation Form (8 cols) - Space-Efficient & Wide */}
+          <main className="lg:col-span-8 bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-5 sm:p-6 shadow-xs">
             <form onSubmit={handleSubmit} className="space-y-3.5">
               
               {/* Category Pills (Horizontal Scrollbar-free) */}
@@ -574,8 +574,8 @@ export default function AskQuestionPage({ onBack, onAddQuestion, initialCity = '
             </form>
           </main>
 
-          {/* Right Column: Compact Live Post Preview (5 cols) */}
-          <aside className="lg:col-span-5 space-y-3 lg:sticky lg:top-14">
+          {/* Right Column: Compact Live Post Preview (4 cols) */}
+          <aside className="lg:col-span-4 space-y-4 lg:sticky lg:top-16">
             
             {/* Live Card Preview */}
             <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl border border-[#E8E5DF] dark:border-[#1a1a1a] p-3.5 shadow-xs space-y-2">

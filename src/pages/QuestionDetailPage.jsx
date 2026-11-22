@@ -248,7 +248,7 @@ export default function QuestionDetailPage({
     <div className="w-full pb-16 bg-[#F4F1EA] dark:bg-[#050505] min-h-[calc(100vh-65px)]">
       {/* Top Breadcrumb & Navigation Bar */}
       <div className="border-b border-[#E8E5DF] dark:border-[#1a1a1a] bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-md sticky top-0 z-30 transition-colors">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
@@ -302,7 +302,7 @@ export default function QuestionDetailPage({
       </div>
 
       {/* Main Container: 2-Column Responsive Layout */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-6 sm:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Main Discussion & Answers Column (8 cols) */}
