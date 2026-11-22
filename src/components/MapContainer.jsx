@@ -369,7 +369,7 @@ export default function MapContainer({
       });
     }
 
-    // 3.5 Sponsored Promoted Community Partner Pins (B2B Merchant Monetization)
+    // 3.5 Local Guild Vouched Gems (NearGo Trust Layer - Zero Pay-to-Rank)
     COMMUNITY_PARTNER_DEALS
       .filter((deal) => !selectedCity || deal.city.toLowerCase().includes(selectedCity.toLowerCase().split(' ')[0]))
       .forEach((deal) => {
@@ -377,14 +377,14 @@ export default function MapContainer({
           className: 'partner-deal-pin',
           html: `
             <div class="relative flex items-center justify-center cursor-pointer group">
-              <div class="w-8 h-8 rounded-full bg-[#D9532F] text-white ring-2 ring-stone-200 dark:ring-stone-800 shadow-lg flex items-center justify-center transition-transform hover:scale-125">
-                <span class="text-xs">⭐</span>
+              <div class="w-7 h-7 rounded-full bg-stone-900 dark:bg-stone-100 text-amber-500 dark:text-amber-600 ring-2 ring-stone-200 dark:ring-stone-800 shadow-md flex items-center justify-center transition-transform hover:scale-125">
+                <span class="text-xs">🏅</span>
               </div>
-              <div class="absolute -bottom-1 w-2 h-2 bg-orange-500 rotate-45"></div>
+              <div class="absolute -bottom-1 w-2 h-2 bg-stone-900 dark:bg-stone-100 rotate-45"></div>
             </div>
           `,
-          iconSize: [32, 38],
-          iconAnchor: [16, 38],
+          iconSize: [28, 34],
+          iconAnchor: [14, 34],
         });
 
         const pMarker = L.marker([deal.lat, deal.lng], { icon: partnerIcon }).addTo(markersLayer.current);
@@ -393,10 +393,10 @@ export default function MapContainer({
             <div style="font-size:10px; font-weight:800; color:#D97706; text-transform:uppercase;">${deal.badge}</div>
             <div style="font-weight:800; font-size:13px; color:#1C1917; margin:2px 0;">${deal.merchantName}</div>
             <div style="font-size:11px; color:#6B7280; margin-bottom:6px;">📍 ${deal.area}</div>
-            <div style="background:#FEF3C7; color:#92400E; font-size:11px; font-weight:700; padding:6px 8px; border-radius:6px; margin-bottom:6px; border:1px solid #FDE68A;">
+            <div style="background:#F5F5F4; color:#1C1917; font-size:11px; font-weight:600; padding:6px 8px; border-radius:6px; margin-bottom:6px; border:1px solid #E7E5E4;">
               🎁 ${deal.perk}
             </div>
-            <div style="font-size:10px; color:#78716C;">Digital Voucher: <strong style="font-family:monospace; color:#1C1917;">${deal.couponCode}</strong></div>
+            <div style="font-size:10px; color:#78716C;">In-Store Code: <span style="filter:blur(3.5px); user-select:none; font-family:monospace; background:#E7E5E4; padding:1px 5px; border-radius:3px;">●●●●●●●●</span> <span style="font-size:9px; color:#D9532F; font-weight:700;">(Unlock in Deals)</span></div>
           </div>
         `);
 

@@ -2,17 +2,15 @@ import React, { useState, useEffect } from 'react';
 import {
   Tag,
   Gift,
-  Copy,
   Check,
   X,
   Sparkles,
   Clock,
   Store,
   MapPin,
-  ExternalLink,
   ShieldCheck,
-  AlertTriangle,
-  QrCode
+  Lock,
+  Award
 } from 'lucide-react';
 import { COMMUNITY_PARTNER_DEALS } from '../utils/monetization.js';
 import { calculateDistance } from '../data/tariffs.js';
@@ -89,19 +87,19 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
         <div className="p-4 sm:p-5 border-b border-stone-100 dark:border-[#1e1e1e] flex items-center justify-between bg-white dark:bg-[#0c0c0c]">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-stone-100 dark:bg-[#161616] text-[#D9532F] flex items-center justify-center shrink-0">
-              <Gift className="w-4 h-4" />
+              <Award className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base sm:text-lg font-bold tracking-tight text-stone-900 dark:text-white">
-                  Community Perks & Vouchers
+                  Local Guild Perks
                 </h2>
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-100 dark:bg-[#1a1a1a] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-[#262626]">
-                  Geo-Verified
+                  Invite-Only
                 </span>
               </div>
               <p className="text-xs text-stone-500 dark:text-stone-400">
-                Exclusive digital vouchers with storekeeper validation
+                Authentic perks vouched by neighborhood scouts — zero ads, zero pay-to-win
               </p>
             </div>
           </div>
@@ -121,7 +119,7 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
           <div className="p-6 space-y-4 text-center bg-white dark:bg-[#0c0c0c] overflow-y-auto">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 dark:bg-[#1a1a1a] text-stone-700 dark:text-stone-300 font-semibold text-xs border border-stone-200 dark:border-[#262626]">
               <Clock className="w-3.5 h-3.5 text-[#D9532F]" />
-              <span>Counter Pass Active • Expires in {formatTime(countdown)}</span>
+              <span>In-Store Counter Pass • Valid for {formatTime(countdown)}</span>
             </div>
 
             <div>
@@ -135,7 +133,7 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
 
             <div className="p-4 bg-stone-50 dark:bg-[#141414] rounded-xl border border-stone-200 dark:border-[#262626] max-w-xs mx-auto space-y-2">
               <div className="text-[10px] uppercase font-bold tracking-wider text-stone-400">
-                Show Voucher Code to Storekeeper
+                Present Code to Counter Staff
               </div>
               <div className="font-mono text-2xl font-black text-stone-900 dark:text-white select-all tracking-wider">
                 {redeemingDeal.couponCode}
@@ -146,7 +144,7 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
             </div>
 
             <p className="text-xs text-stone-500 dark:text-stone-400 max-w-sm mx-auto leading-relaxed">
-              Present this screen to the counter staff before billing. Staff will verify your perk.
+              Show this unblurred screen to the counter chef or cashier before billing. Facilitated via NearGo Local Guild.
             </p>
 
             <div className="flex items-center justify-center gap-3 pt-2">
@@ -154,7 +152,7 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
                 onClick={() => setRedeemingDeal(null)}
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-[#181818] transition-colors"
               >
-                Back to Deals
+                Back to Perks
               </button>
               <button
                 onClick={() => handleConfirmStorekeeper(redeemingDeal.id)}
@@ -191,7 +189,7 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
             <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-2.5">
               {filteredDeals.length === 0 ? (
                 <div className="text-center py-8 text-stone-400 text-xs">
-                  No active vouchers in this city right now. Check back soon!
+                  No active guild perks in this city right now. Check back soon!
                 </div>
               ) : (
                 filteredDeals.map((deal) => {
@@ -232,9 +230,17 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
                       <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-100 dark:border-[#1a1a1a]">
                         <div className="text-right">
                           <span className="text-[10px] text-stone-400 block mb-0.5">Voucher Code:</span>
-                          <span className="font-mono font-bold text-xs text-stone-900 dark:text-white bg-stone-100 dark:bg-[#181818] px-2 py-1 rounded-md border border-stone-200 dark:border-[#262626] select-all">
-                            {deal.couponCode}
-                          </span>
+                          <div className="relative overflow-hidden rounded-md border border-stone-200 dark:border-[#262626] bg-stone-100 dark:bg-[#181818] px-2.5 py-1">
+                            <span className="font-mono font-bold text-xs text-stone-800 dark:text-stone-200 filter blur-[4px] select-none pointer-events-none tracking-widest inline-block">
+                              {deal.couponCode}
+                            </span>
+                            <div className="absolute inset-0 flex items-center justify-center bg-stone-100/40 dark:bg-black/30 backdrop-blur-[0.5px]">
+                              <span className="text-[10px] font-bold text-stone-600 dark:text-stone-300 flex items-center gap-1">
+                                <Lock className="w-2.5 h-2.5 text-[#D9532F]" />
+                                <span>In-Store Code</span>
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
                         {isRedeemed ? (
@@ -245,18 +251,11 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
                         ) : (
                           <div className="flex items-center gap-1.5">
                             <button
-                              onClick={() => handleCopyCode(deal.id, deal.couponCode)}
-                              className="p-1.5 rounded-lg border border-stone-200 dark:border-[#262626] text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-[#181818] cursor-pointer"
-                              title="Copy Code"
-                            >
-                              {copiedId === deal.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                            </button>
-                            <button
                               onClick={() => handleStartRedemption(deal)}
-                              className="px-3 py-1.5 rounded-lg bg-[#D9532F] hover:bg-[#C2411E] text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                              className="px-3.5 py-1.5 rounded-lg bg-[#D9532F] hover:bg-[#C2411E] text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
                               <Store className="w-3.5 h-3.5" />
-                              <span>Redeem in Store</span>
+                              <span>Redeem at Counter</span>
                             </button>
                           </div>
                         )}
@@ -271,7 +270,7 @@ export default function CouponRedeemModal({ isOpen, onClose, selectedCity = 'Del
             <div className="p-3 sm:p-4 border-t border-stone-100 dark:border-[#1a1a1a] bg-stone-50/50 dark:bg-[#101010] flex items-center justify-between text-xs text-stone-500">
               <span className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Verified in-store redemption with counter staff</span>
+                <span>NearGo Trust Layer: Zero pay-to-rank • Vouched by local scouts</span>
               </span>
               <button
                 onClick={onClose}

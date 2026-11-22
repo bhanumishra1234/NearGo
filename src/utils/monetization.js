@@ -118,8 +118,9 @@ export function generateStayAndTourLinks({
 }
 
 /**
- * Verified Community Partner Flash Deals & Digital Coupons
- * Local cafes & street food gems offering exclusive perks to NearGo community members.
+ * Local Guild Perks & Vouchers (Pillar 3 of NearGo Trust Model)
+ * Local stalls & indie cafes vouched by Transit Elders and local scouts.
+ * Zero ads, zero pay-to-rank, invite-only.
  */
 export const COMMUNITY_PARTNER_DEALS = [
   {
@@ -129,12 +130,12 @@ export const COMMUNITY_PARTNER_DEALS = [
     area: 'Moolchand Metro Flyover',
     lat: 28.5653,
     lng: 77.2341,
-    badge: '⭐ Verified Community Partner',
+    badge: '🏅 Vouched by Locals',
     perk: 'Complimentary Hot Masala Chai with any Paratha',
     couponCode: 'NEARGO-CHAI-100',
     validUntil: 'Dec 31, 2026',
     discountValue: '₹35 Value',
-    terms: 'Show this digital voucher on NearGo to the counter chef before billing.',
+    terms: 'Valid for in-store redemption at billing counter with active NearGo counter pass.',
     claimedCount: 428,
   },
   {
@@ -144,12 +145,12 @@ export const COMMUNITY_PARTNER_DEALS = [
     area: 'Tibetan Settlement, New Aruna Nagar',
     lat: 28.7018,
     lng: 77.2279,
-    badge: '⭐ Verified Community Partner',
+    badge: '🏅 Vouched by Locals',
     perk: '10% Off on Artisanal Himalayan Pour-Over & Pastries',
     couponCode: 'NEARGO-MKT-AMA',
     validUntil: 'Dec 31, 2026',
     discountValue: '10% Off',
-    terms: 'Valid on dine-in orders between 11 AM and 6 PM on weekdays.',
+    terms: 'Valid for in-store dine-in orders between 11 AM and 6 PM on weekdays.',
     claimedCount: 890,
   },
   {
@@ -159,7 +160,7 @@ export const COMMUNITY_PARTNER_DEALS = [
     area: 'Opp. KC College, Churchgate',
     lat: 18.9328,
     lng: 72.8279,
-    badge: '⭐ Verified Community Partner',
+    badge: '🏅 Vouched by Locals',
     perk: 'Free Double Cheese Upgrade on Mumbai Panini Grill',
     couponCode: 'NEARGO-MUM-RAJU',
     validUntil: 'Dec 31, 2026',
@@ -174,7 +175,7 @@ export const COMMUNITY_PARTNER_DEALS = [
     area: '100ft Road, Indiranagar',
     lat: 12.9792,
     lng: 77.6408,
-    badge: '⭐ Verified Community Partner',
+    badge: '🏅 Vouched by Locals',
     perk: 'Complimentary Taster Flight (4 Signature Brews) with Food Order',
     couponCode: 'NEARGO-BLR-TOIT',
     validUntil: 'Dec 31, 2026',
@@ -189,7 +190,7 @@ export const COMMUNITY_PARTNER_DEALS = [
     area: 'Margosa Road, 15th Cross',
     lat: 12.9982,
     lng: 77.5715,
-    badge: '⭐ Verified Community Partner',
+    badge: '🏅 Vouched by Locals',
     perk: 'Complimentary Second Cup of Degree Filter Coffee',
     couponCode: 'NEARGO-BLR-VEENA',
     validUntil: 'Dec 31, 2026',
